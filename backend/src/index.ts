@@ -8,6 +8,7 @@ import { authRoutes } from './routes/auth.js'
 import { postRoutes } from './routes/posts.js'
 import { voteRoutes } from './routes/votes.js'
 import { userRoutes } from './routes/users.js'
+import { followRoutes } from './routes/follows.js'
 
 const app = new Hono()
 
@@ -29,6 +30,7 @@ app.route('/api/auth', authRoutes)
 app.route('/api/posts', postRoutes)
 app.route('/api/votes', voteRoutes)
 app.route('/api/users', userRoutes)
+app.route('/api/users', followRoutes)
 
 // 404 handler
 app.notFound((c) => c.json({ error: 'Not found' }, 404))
