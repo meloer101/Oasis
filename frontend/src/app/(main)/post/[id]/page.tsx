@@ -8,6 +8,7 @@ import { apiClient } from '@/lib/api-client'
 import { timeAgo, formatCoins } from '@/lib/utils'
 import VoteButton from '@/components/feed/vote-button'
 import type { Comment } from '@/lib/types'
+import { useAuth } from '@/providers/auth-provider'
 
 export default function PostPage() {
   const params = useParams()
@@ -153,6 +154,7 @@ function CommentForm({
 }) {
   const [content, setContent] = useState('')
   const queryClient = useQueryClient()
+  const { refreshBalance } = useAuth()
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -163,6 +165,7 @@ function CommentForm({
     onSuccess: () => {
       setContent('')
       queryClient.invalidateQueries({ queryKey: ['comments', postId] })
+      refreshBalance()
       onDone?.()
     },
   })

@@ -42,7 +42,10 @@ export default function Sidebar() {
 
       {/* User */}
       <div className="border-t border-zinc-800/50 pt-3 mt-2">
-        <div className="flex items-center gap-2.5 px-3 mb-2">
+        <Link
+          href={`/user/${user?.username}`}
+          className="flex items-center gap-2.5 px-3 mb-2 rounded-lg hover:bg-zinc-900 transition-colors py-1"
+        >
           <div className="w-8 h-8 rounded-full bg-emerald-800 flex items-center justify-center text-sm font-semibold text-emerald-200 shrink-0">
             {initials}
           </div>
@@ -54,7 +57,7 @@ export default function Sidebar() {
               ⚡ {formatCoins(balance)} coins
             </p>
           </div>
-        </div>
+        </Link>
         <button
           onClick={handleLogout}
           className="w-full text-left px-3 py-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors rounded-lg hover:bg-zinc-900"

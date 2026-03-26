@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { formatCoins } from '@/lib/utils'
+import { useAuth } from '@/providers/auth-provider'
 
 interface Props {
   postId: string
@@ -17,6 +18,7 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
   const [amount, setAmount] = useState(10)
   const [voted, setVoted] = useState(false)
   const queryClient = useQueryClient()
+  const { refreshBalance } = useAuth()
 
   const mutation = useMutation({
     mutationFn: (amt: number) => apiClient.post('/api/votes', { postId, amount: amt }),
@@ -24,6 +26,7 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
       setVoted(true)
       setOpen(false)
       queryClient.invalidateQueries({ queryKey })
+      refreshBalance()
     },
     onError: (err: unknown) => {
       const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code

@@ -3,8 +3,9 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { users, userBalances, userBadges, posts } from '../db/schema.js'
+import { users, userBalances, userBadges, userFollows, posts } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
+import { verifyToken } from '../lib/jwt.js'
 
 export const userRoutes = new Hono()
 
@@ -76,6 +77,16 @@ userRoutes.patch('/me', authenticate, zValidator('json', updateProfileSchema), a
 userRoutes.get('/:username', async (c) => {
   const username = c.req.param('username')
 
+  // Optional auth: detect current user if logged in
+  let currentUserId: string | null = null
+  try {
+    const authHeader = c.req.header('Authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const payload = verifyToken(authHeader.slice(7))
+      currentUserId = payload.userId
+    }
+  } catch {}
+
   const [user] = await db
     .select({
       id: users.id,
@@ -94,7 +105,17 @@ userRoutes.get('/:username', async (c) => {
 
   const badges = await db.select().from(userBadges).where(eq(userBadges.userId, user.id))
 
-  return c.json({ ...user, badges })
+  let isFollowing = false
+  if (currentUserId && currentUserId !== user.id) {
+    const [f] = await db
+      .select()
+      .from(userFollows)
+      .where(and(eq(userFollows.followerId, currentUserId), eq(userFollows.followingId, user.id)))
+      .limit(1)
+    isFollowing = !!f
+  }
+
+  return c.json({ ...user, badges, isFollowing })
 })
 
 // GET /api/users/:username/posts — user's published posts

@@ -23,9 +23,12 @@ export default function PostCard({ post, feedQueryKey }: Props) {
             {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
           </div>
           <span className="text-sm text-zinc-400 truncate">
-            <span className="text-zinc-300 font-medium">
+            <Link
+              href={`/user/${post.author.username}`}
+              className="text-zinc-300 font-medium hover:text-emerald-400 transition-colors"
+            >
               {post.author.displayName ?? post.author.username}
-            </span>
+            </Link>
             <span className="mx-1.5 text-zinc-600">·</span>
             <span className="text-xs">{timeAgo(post.createdAt)}</span>
           </span>

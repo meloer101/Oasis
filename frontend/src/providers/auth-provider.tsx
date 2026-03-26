@@ -17,6 +17,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (token: string, user: User) => void
   logout: () => void
+  refreshBalance: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -56,8 +57,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setBalance(0)
   }
 
+  const refreshBalance = async () => {
+    const res = await apiClient.get('/api/users/me')
+    setBalance(res.data.balance?.balance ?? 0)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, balance, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, balance, isLoading, login, logout, refreshBalance }}>
       {children}
     </AuthContext.Provider>
   )
