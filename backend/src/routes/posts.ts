@@ -10,6 +10,10 @@ import {
   coinTransactions,
   comments,
   userFollows,
+  votes,
+  tags,
+  postTags,
+  notifications,
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 import { verifyToken } from '../lib/jwt.js'
@@ -38,6 +42,7 @@ const createPostSchema = z.object({
   linkUrl: z.string().url().optional(),
   imageUrl: z.string().url().optional(),
   visibility: z.enum(['public', 'circle_only']).default('public'),
+  tags: z.array(z.string().min(1).max(50)).max(5).optional().default([]),
 })
 
 const feedQuerySchema = z.object({
@@ -55,6 +60,7 @@ const createCommentSchema = z.object({
 const postSelect = {
   id: posts.id,
   title: posts.title,
+  content: posts.content,
   contentType: posts.contentType,
   linkUrl: posts.linkUrl,
   imageUrl: posts.imageUrl,
@@ -72,24 +78,52 @@ const postSelect = {
   },
 }
 
+/** Try to extract current user from optional Bearer header */
+function tryGetUserId(authHeader: string | undefined): string | undefined {
+  if (!authHeader?.startsWith('Bearer ')) return undefined
+  try {
+    return verifyToken(authHeader.slice(7)).userId
+  } catch {
+    return undefined
+  }
+}
+
+/** Batch-fetch tags for a list of post IDs */
+async function fetchTagsForPosts(postIds: string[]): Promise<Record<string, string[]>> {
+  if (postIds.length === 0) return {}
+  const rows = await db
+    .select({ postId: postTags.postId, tagName: tags.name })
+    .from(postTags)
+    .innerJoin(tags, eq(postTags.tagId, tags.id))
+    .where(inArray(postTags.postId, postIds))
+  const map: Record<string, string[]> = {}
+  for (const { postId, tagName } of rows) {
+    if (!map[postId]) map[postId] = []
+    map[postId].push(tagName)
+  }
+  return map
+}
+
+/** Batch-fetch which posts the user has voted on */
+async function fetchVotedPostIds(userId: string, postIds: string[]): Promise<Set<string>> {
+  if (postIds.length === 0) return new Set()
+  const rows = await db
+    .select({ postId: votes.postId })
+    .from(votes)
+    .where(and(eq(votes.voterId, userId), inArray(votes.postId, postIds)))
+  return new Set(rows.map((r) => r.postId))
+}
+
 // GET /api/posts — feed with cursor pagination
 postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
   const { feed, limit, cursor } = c.req.valid('query')
   const fetchLimit = limit + 1
 
+  const currentUserId = tryGetUserId(c.req.header('Authorization'))
+
   // follow feed requires auth
-  let currentUserId: string | undefined
-  if (feed === 'follow') {
-    const authHeader = c.req.header('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return c.json({ error: 'Unauthorized' }, 401)
-    }
-    try {
-      const payload = verifyToken(authHeader.replace('Bearer ', ''))
-      currentUserId = payload.userId
-    } catch {
-      return c.json({ error: 'Unauthorized' }, 401)
-    }
+  if (feed === 'follow' && !currentUserId) {
+    return c.json({ error: 'Unauthorized' }, 401)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -181,12 +215,26 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
         : encodeCursor({ value: (last.createdAt as Date).toISOString(), id: last.id })
   }
 
-  return c.json({ items: page, nextCursor })
+  // Batch-enrich with tags and hasVoted
+  const postIds = page.map((p) => p.id)
+  const [tagMap, votedIds] = await Promise.all([
+    fetchTagsForPosts(postIds),
+    currentUserId ? fetchVotedPostIds(currentUserId, postIds) : Promise.resolve(new Set<string>()),
+  ])
+
+  const enriched = page.map((p) => ({
+    ...p,
+    tags: tagMap[p.id] ?? [],
+    hasVoted: votedIds.has(p.id),
+  }))
+
+  return c.json({ items: enriched, nextCursor })
 })
 
 // GET /api/posts/:id
 postRoutes.get('/:id', async (c) => {
   const id = c.req.param('id')
+  const currentUserId = tryGetUserId(c.req.header('Authorization'))
 
   const [post] = await db
     .select({
@@ -225,19 +273,42 @@ postRoutes.get('/:id', async (c) => {
     .where(eq(posts.id, id))
     .catch(() => {})
 
-  return c.json(post)
+  const [tagMap, votedIds] = await Promise.all([
+    fetchTagsForPosts([id]),
+    currentUserId ? fetchVotedPostIds(currentUserId, [id]) : Promise.resolve(new Set<string>()),
+  ])
+
+  return c.json({
+    ...post,
+    tags: tagMap[id] ?? [],
+    hasVoted: votedIds.has(id),
+  })
 })
 
 // POST /api/posts — create post
 postRoutes.post('/', authenticate, zValidator('json', createPostSchema), async (c) => {
   const userId = c.get('userId')
-  const data = c.req.valid('json')
+  const { tags: tagNames, ...postData } = c.req.valid('json')
 
   const newPost = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(posts)
-      .values({ authorId: userId, ...data })
+      .values({ authorId: userId, ...postData })
       .returning()
+
+    // Handle tags: upsert each tag and link to post
+    for (const name of tagNames) {
+      const normalized = name.toLowerCase().trim().replace(/\s+/g, '-')
+      const [tag] = await tx
+        .insert(tags)
+        .values({ name: normalized })
+        .onConflictDoUpdate({
+          target: tags.name,
+          set: { postCount: sql`${tags.postCount} + 1` },
+        })
+        .returning({ id: tags.id })
+      await tx.insert(postTags).values({ postId: post.id, tagId: tag.id })
+    }
 
     // Post creation reward: +5 coins
     await tx
@@ -260,7 +331,7 @@ postRoutes.post('/', authenticate, zValidator('json', createPostSchema), async (
     return post
   })
 
-  return c.json(newPost, 201)
+  return c.json({ ...newPost, tags: tagNames }, 201)
 })
 
 // DELETE /api/posts/:id
@@ -329,7 +400,7 @@ postRoutes.post(
     const { content, parentId } = c.req.valid('json')
 
     const [post] = await db
-      .select({ id: posts.id })
+      .select({ id: posts.id, authorId: posts.authorId })
       .from(posts)
       .where(and(eq(posts.id, postId), eq(posts.status, 'published')))
       .limit(1)
@@ -374,6 +445,18 @@ postRoutes.post(
         .update(posts)
         .set({ commentCount: sql`${posts.commentCount} + 1` })
         .where(eq(posts.id, postId))
+
+      // Notify post author if they're not the commenter
+      if (post.authorId !== userId) {
+        await tx.insert(notifications).values({
+          userId: post.authorId,
+          type: 'comment_on_post',
+          actorId: userId,
+          relatedPostId: postId,
+          relatedCommentId: comment.id,
+          content: '有人评论了你的帖子',
+        })
+      }
 
       return comment
     })

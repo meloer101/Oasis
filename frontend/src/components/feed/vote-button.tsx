@@ -10,13 +10,22 @@ interface Props {
   postId: string
   voterCount: number
   totalVoteAmount: number
+  hasVoted: boolean
   queryKey: string[]
 }
 
-export default function VoteButton({ postId, voterCount, totalVoteAmount, queryKey }: Props) {
+const QUICK_AMOUNTS = [1, 5, 10, 20, 50]
+
+export default function VoteButton({
+  postId,
+  voterCount,
+  totalVoteAmount,
+  hasVoted: initialHasVoted,
+  queryKey,
+}: Props) {
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState(10)
-  const [voted, setVoted] = useState(false)
+  const [voted, setVoted] = useState(initialHasVoted)
   const queryClient = useQueryClient()
   const { refreshBalance } = useAuth()
 
@@ -29,8 +38,8 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
       refreshBalance()
     },
     onError: (err: unknown) => {
-      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code
-      if (code === 'ALREADY_VOTED') setVoted(true)
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      if (msg === 'ALREADY_VOTED') setVoted(true)
       setOpen(false)
     },
   })
@@ -38,20 +47,35 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
   if (voted) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
-        ✓ Agreed
+        ✓ 已认同
+        {voterCount > 0 && (
+          <span className="text-zinc-600">
+            · {voterCount} 人 · {formatCoins(totalVoteAmount)} 币
+          </span>
+        )}
       </span>
     )
   }
 
   if (open) {
     return (
-      <div className="inline-flex items-center gap-1.5">
-        <button
-          onClick={() => setAmount((a) => Math.max(1, a - 5))}
-          className="w-6 h-6 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-sm flex items-center justify-center transition-colors"
-        >
-          −
-        </button>
+      <div className="inline-flex items-center gap-1.5 flex-wrap">
+        {/* Quick pick buttons */}
+        <div className="flex items-center gap-1">
+          {QUICK_AMOUNTS.map((q) => (
+            <button
+              key={q}
+              onClick={() => setAmount(q)}
+              className={`px-1.5 py-0.5 rounded text-xs transition-colors ${
+                amount === q
+                  ? 'bg-emerald-700 text-white'
+                  : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+              }`}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
         <input
           type="number"
           min={1}
@@ -61,17 +85,11 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
           className="w-14 bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-center text-sm text-zinc-100 focus:outline-none focus:border-emerald-700"
         />
         <button
-          onClick={() => setAmount((a) => a + 5)}
-          className="w-6 h-6 rounded bg-zinc-800 text-zinc-300 hover:bg-zinc-700 text-sm flex items-center justify-center transition-colors"
-        >
-          ＋
-        </button>
-        <button
           onClick={() => mutation.mutate(amount)}
           disabled={mutation.isPending}
           className="px-2.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium transition-colors"
         >
-          {mutation.isPending ? '…' : '✓'}
+          {mutation.isPending ? '…' : '确认投币'}
         </button>
         <button
           onClick={() => setOpen(false)}
@@ -89,10 +107,10 @@ export default function VoteButton({ postId, voterCount, totalVoteAmount, queryK
       className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-emerald-400 transition-colors font-medium"
     >
       <span>⚡</span>
-      <span>Agree</span>
+      <span>认同</span>
       {voterCount > 0 && (
         <span className="text-zinc-600">
-          · {voterCount} · {formatCoins(totalVoteAmount)} coins
+          · {voterCount} · {formatCoins(totalVoteAmount)} 币
         </span>
       )}
     </button>

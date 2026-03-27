@@ -84,12 +84,30 @@ export default function PostPage() {
           <p className="text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
         )}
 
+        {/* Tags */}
+        {post.tags && post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-4">
+            {post.tags.map((tag) => (
+              <a
+                key={tag}
+                href={`/tag/${tag}`}
+                className="text-xs px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 hover:text-emerald-400 hover:bg-zinc-700 transition-colors"
+              >
+                #{tag}
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="flex items-center gap-5 mt-4 pt-4 border-t border-zinc-800/50 text-xs text-zinc-500">
-          <span>👁 {post.viewCount} views</span>
-          <span>💬 {post.commentCount} comments</span>
+          <span>👁 {post.viewCount} 浏览</span>
+          <span>💬 {post.commentCount} 评论</span>
           {post.voterCount > 0 && (
-            <span>⚡ {post.voterCount} agreed · {formatCoins(post.totalVoteAmount)} coins</span>
+            <span>⚡ {post.voterCount} 人认同 · {formatCoins(post.totalVoteAmount)} 币</span>
+          )}
+          {parseFloat(post.temperature) > 0 && (
+            <span>🌡️ {Math.round(parseFloat(post.temperature))}</span>
           )}
         </div>
 
@@ -99,6 +117,7 @@ export default function PostPage() {
             postId={post.id}
             voterCount={post.voterCount}
             totalVoteAmount={post.totalVoteAmount}
+            hasVoted={post.hasVoted ?? false}
             queryKey={['post', id]}
           />
         </div>

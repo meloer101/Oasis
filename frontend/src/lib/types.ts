@@ -1,9 +1,39 @@
+// ==============================
+// USERS
+// ==============================
+
+export type BadgeType = 'newcomer' | 'resonator' | 'vibe_master' | 'founder'
+
 export interface Author {
   id: string
   username: string
   displayName: string | null
   avatarUrl: string | null
 }
+
+export interface UserBadge {
+  id: string
+  badgeType: BadgeType
+  isActive: boolean
+  earnedAt: string
+}
+
+export interface User {
+  id: string
+  username: string
+  email: string
+  displayName: string | null
+  bio: string | null
+  avatarUrl: string | null
+  founderNumber: number | null
+  createdAt: string
+  balance?: { balance: number; totalEarned: number; totalSpent: number }
+  badges?: UserBadge[]
+}
+
+// ==============================
+// POSTS
+// ==============================
 
 export interface Post {
   id: string
@@ -12,11 +42,15 @@ export interface Post {
   contentType: 'markdown' | 'link' | 'image'
   linkUrl: string | null
   imageUrl: string | null
+  circleId: string | null
+  visibility: string
   viewCount: number
   commentCount: number
   voterCount: number
   totalVoteAmount: number
   temperature: string
+  tags: string[]
+  hasVoted: boolean
   createdAt: string
   updatedAt?: string
   author: Author
@@ -31,3 +65,75 @@ export interface Comment {
 }
 
 export type FeedType = 'hot' | 'fresh' | 'follow'
+
+// ==============================
+// WALLET
+// ==============================
+
+export interface WalletInfo {
+  balance: number
+  totalEarned: number
+  totalSpent: number
+  currentBadge: BadgeType | null
+  nextBadgeThreshold: number | null
+  badges: string[]
+}
+
+export interface Transaction {
+  id: string
+  amount: number
+  transactionType: string
+  fromUserId: string | null
+  toUserId: string | null
+  relatedPostId: string | null
+  note: string | null
+  createdAt: string
+  isCredit: boolean
+  displayAmount: number
+}
+
+// ==============================
+// CIRCLES
+// ==============================
+
+export interface Circle {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  avatarUrl: string | null
+  visibility: string
+  joinFee: number
+  memberCount: number
+  postCount: number
+  createdAt: string
+  isMember?: boolean
+  memberRole?: string | null
+  creator: Author
+}
+
+// ==============================
+// TAGS
+// ==============================
+
+export interface Tag {
+  id: string
+  name: string
+  postCount: number
+}
+
+// ==============================
+// NOTIFICATIONS
+// ==============================
+
+export interface Notification {
+  id: string
+  type: string
+  content: string | null
+  isRead: boolean
+  relatedPostId: string | null
+  relatedCommentId: string | null
+  relatedCircleId: string | null
+  createdAt: string
+  actor: Author | null
+}

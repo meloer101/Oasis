@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { userBalances, votes, coinTransactions, posts, users } from '../db/schema.js'
+import { userBalances, votes, coinTransactions, posts, notifications } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 
 export const voteRoutes = new Hono()
@@ -41,11 +41,11 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
       if (!post) throw new Error('POST_NOT_FOUND')
       if (post.authorId === userId) throw new Error('CANNOT_VOTE_OWN_POST')
 
-      // 3. Check for duplicate vote
+      // 3. Check for duplicate vote — per post
       const [existingVote] = await tx
         .select({ id: votes.id })
         .from(votes)
-        .where(eq(votes.voterId, userId))
+        .where(and(eq(votes.voterId, userId), eq(votes.postId, postId)))
         .limit(1)
 
       if (existingVote) throw new Error('ALREADY_VOTED')
@@ -100,15 +100,26 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
         },
       ])
 
-      // 9. Update post stats
+      // 9. Update post stats + recalculate temperature
+      // temperature = totalVoteAmount / GREATEST(viewCount, 1) * 1000
       await tx
         .update(posts)
         .set({
           voterCount: sql`${posts.voterCount} + 1`,
           totalVoteAmount: sql`${posts.totalVoteAmount} + ${amount}`,
+          temperature: sql`((${posts.totalVoteAmount} + ${amount})::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
           updatedAt: new Date(),
         })
         .where(eq(posts.id, postId))
+
+      // 10. Notify the post author
+      await tx.insert(notifications).values({
+        userId: post.authorId,
+        type: 'vote_received',
+        actorId: userId,
+        relatedPostId: postId,
+        content: `有人给你的帖子投了 ${amount} 枚认同币`,
+      })
 
       return { vote, authorAmount, burnAmount }
     })

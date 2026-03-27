@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { users, userFollows } from '../db/schema.js'
+import { users, userFollows, notifications } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 
 export const followRoutes = new Hono()
@@ -27,6 +27,14 @@ followRoutes.post('/:username/follow', authenticate, async (c) => {
     .returning()
 
   if (!inserted) return c.json({ error: 'Already following' }, 409)
+
+  // Notify the followed user
+  await db.insert(notifications).values({
+    userId: target.id,
+    type: 'new_follower',
+    actorId: currentUserId,
+    content: '有人关注了你',
+  }).catch(() => {})
 
   return c.json({ success: true })
 })

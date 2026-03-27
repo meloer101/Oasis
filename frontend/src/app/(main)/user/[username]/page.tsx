@@ -79,6 +79,10 @@ export default function UserProfilePage() {
         ...p,
         linkUrl: null,
         imageUrl: null,
+        circleId: null,
+        visibility: 'public',
+        tags: [],
+        hasVoted: false,
         author: {
           id: profile.id,
           username: profile.username,

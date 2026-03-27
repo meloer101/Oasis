@@ -4,6 +4,9 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import Sidebar from '@/components/layout/sidebar'
+import Header from '@/components/layout/header'
+import RightPanel from '@/components/layout/right-panel'
+import MobileNav from '@/components/layout/mobile-nav'
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -26,13 +29,25 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (!user) return null
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <main className="flex-1 min-w-0 max-w-2xl mx-auto px-4 py-6">
-        {children}
-      </main>
-      {/* Right panel placeholder — future */}
-      <div className="w-72 shrink-0 hidden xl:block" />
+    <div className="min-h-screen">
+      {/* Mobile header */}
+      <Header />
+
+      <div className="flex">
+        {/* Left sidebar — desktop */}
+        <Sidebar />
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0 md:ml-0 max-w-2xl mx-auto px-4 py-6 pb-20 md:pb-6">
+          {children}
+        </main>
+
+        {/* Right panel — xl screens */}
+        <RightPanel />
+      </div>
+
+      {/* Mobile bottom nav */}
+      <MobileNav />
     </div>
   )
 }
