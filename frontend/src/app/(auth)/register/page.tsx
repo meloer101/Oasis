@@ -14,9 +14,14 @@ const schema = z.object({
     .string()
     .min(3, 'At least 3 characters')
     .max(50)
-    .regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, underscores'),
-  displayName: z.string().min(1, 'Display name required').max(100),
-  email: z.string().email('Invalid email'),
+    .regex(/^[a-zA-Z0-9_]+$/, 'Only letters, numbers, underscores')
+    .transform((s) => s.trim().toLowerCase()),
+  displayName: z
+    .string()
+    .min(1, 'Display name required')
+    .max(100)
+    .transform((s) => s.trim()),
+  email: z.string().email('Invalid email').transform((s) => s.trim().toLowerCase()),
   password: z.string().min(8, 'At least 8 characters'),
 })
 type FormData = z.infer<typeof schema>
@@ -36,11 +41,19 @@ export default function RegisterPage() {
     setError('')
     try {
       const res = await apiClient.post('/api/auth/register', data)
-      login(res.data.token, res.data.user)
+      login(res.data.accessToken, res.data.refreshToken, res.data.user)
       router.replace('/feed')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
-      setError(msg ?? 'Registration failed')
+      const axiosErr = err as {
+        response?: { status?: number; data?: { error?: string } }
+      }
+      const status = axiosErr.response?.status
+      const msg = axiosErr.response?.data?.error
+      if (status === 429) {
+        setError(msg ? `${msg} 请稍后再试。` : '请求过于频繁，请稍后再试。')
+      } else {
+        setError(msg ?? '注册失败')
+      }
     }
   }
 

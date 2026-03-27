@@ -31,6 +31,7 @@ export const users = pgTable(
     isActive: boolean('is_active').notNull().default(true),
     lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
     founderNumber: integer('founder_number').unique(), // first 100 users only
+    tokenVersion: integer('token_version').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -38,6 +39,24 @@ export const users = pgTable(
     index('idx_users_username').on(t.username),
     index('idx_users_email').on(t.email),
     index('idx_users_last_active').on(t.lastActiveAt),
+  ]
+)
+
+export const refreshTokens = pgTable(
+  'refresh_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: varchar('token_hash', { length: 64 }).notNull().unique(),
+    tokenVersion: integer('token_version').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('idx_refresh_tokens_user').on(t.userId),
+    index('idx_refresh_tokens_expires').on(t.expiresAt),
   ]
 )
 

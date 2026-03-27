@@ -16,7 +16,7 @@ import {
   notifications,
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
-import { verifyToken } from '../lib/jwt.js'
+import { verifyAccessToken } from '../lib/jwt.js'
 
 export const postRoutes = new Hono()
 
@@ -82,7 +82,7 @@ const postSelect = {
 function tryGetUserId(authHeader: string | undefined): string | undefined {
   if (!authHeader?.startsWith('Bearer ')) return undefined
   try {
-    return verifyToken(authHeader.slice(7)).userId
+    return verifyAccessToken(authHeader.slice(7)).userId
   } catch {
     return undefined
   }

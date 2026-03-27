@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect } from 'react'
-import { apiClient } from '@/lib/api-client'
+import { apiClient, bareApi } from '@/lib/api-client'
 
 interface User {
   id: string
@@ -15,8 +15,8 @@ interface AuthContextType {
   user: User | null
   balance: number
   isLoading: boolean
-  login: (token: string, user: User) => void
-  logout: () => void
+  login: (accessToken: string, refreshToken: string, user: User) => void
+  logout: () => Promise<void>
   refreshBalance: () => Promise<void>
 }
 
@@ -28,30 +28,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('oasis_token')
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
+    async function bootstrap() {
+      if (typeof window === 'undefined') return
 
-    apiClient
-      .get('/api/users/me')
-      .then((res) => {
+      const legacy = localStorage.getItem('oasis_token')
+      if (legacy && !localStorage.getItem('oasis_access_token')) {
+        localStorage.setItem('oasis_access_token', legacy)
+        localStorage.removeItem('oasis_token')
+      }
+
+      let access = localStorage.getItem('oasis_access_token')
+      const refresh = localStorage.getItem('oasis_refresh_token')
+
+      if (!access && !refresh) {
+        setIsLoading(false)
+        return
+      }
+
+      if (!access && refresh) {
+        try {
+          const { data } = await bareApi.post<{
+            accessToken: string
+            refreshToken: string
+          }>('/api/auth/refresh', { refreshToken: refresh })
+          localStorage.setItem('oasis_access_token', data.accessToken)
+          localStorage.setItem('oasis_refresh_token', data.refreshToken)
+          access = data.accessToken
+        } catch {
+          localStorage.removeItem('oasis_access_token')
+          localStorage.removeItem('oasis_refresh_token')
+          setIsLoading(false)
+          return
+        }
+      }
+
+      try {
+        const res = await apiClient.get('/api/users/me')
         setUser(res.data)
         setBalance(res.data.balance?.balance ?? 0)
-      })
-      .catch(() => {
+      } catch {
+        localStorage.removeItem('oasis_access_token')
+        localStorage.removeItem('oasis_refresh_token')
         localStorage.removeItem('oasis_token')
-      })
-      .finally(() => setIsLoading(false))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    bootstrap()
   }, [])
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem('oasis_token', token)
+  const login = (accessToken: string, refreshToken: string, userData: User) => {
+    localStorage.setItem('oasis_access_token', accessToken)
+    localStorage.setItem('oasis_refresh_token', refreshToken)
+    localStorage.removeItem('oasis_token')
     setUser(userData)
   }
 
-  const logout = () => {
+  const logout = async () => {
+    const rt =
+      typeof window !== 'undefined' ? localStorage.getItem('oasis_refresh_token') : null
+    try {
+      if (rt) {
+        await bareApi.post('/api/auth/logout', { refreshToken: rt })
+      }
+    } catch {
+      // still clear local session
+    }
+    localStorage.removeItem('oasis_access_token')
+    localStorage.removeItem('oasis_refresh_token')
     localStorage.removeItem('oasis_token')
     setUser(null)
     setBalance(0)

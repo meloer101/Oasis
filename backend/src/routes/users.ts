@@ -5,7 +5,7 @@ import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userBalances, userBadges, userFollows, posts } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
-import { verifyToken } from '../lib/jwt.js'
+import { verifyAccessToken } from '../lib/jwt.js'
 
 export const userRoutes = new Hono()
 
@@ -82,7 +82,7 @@ userRoutes.get('/:username', async (c) => {
   try {
     const authHeader = c.req.header('Authorization')
     if (authHeader?.startsWith('Bearer ')) {
-      const payload = verifyToken(authHeader.slice(7))
+      const payload = verifyAccessToken(authHeader.slice(7))
       currentUserId = payload.userId
     }
   } catch {}

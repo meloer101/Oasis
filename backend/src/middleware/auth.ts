@@ -1,5 +1,5 @@
 import { createMiddleware } from 'hono/factory'
-import { verifyToken } from '../lib/jwt.js'
+import { verifyAccessToken } from '../lib/jwt.js'
 
 type AuthVariables = {
   userId: string
@@ -15,7 +15,7 @@ export const authenticate = createMiddleware<{ Variables: AuthVariables }>(
 
     const token = authorization.slice(7)
     try {
-      const payload = verifyToken(token)
+      const payload = verifyAccessToken(token)
       c.set('userId', payload.userId)
       c.set('username', payload.username)
       await next()

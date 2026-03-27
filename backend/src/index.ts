@@ -14,6 +14,7 @@ import { circleRoutes } from './routes/circles.js'
 import { tagRoutes } from './routes/tag-routes.js'
 import { notificationRoutes } from './routes/notifications.js'
 import { distributeDailyCoins, scheduleDailyCoins } from './jobs/daily-coins.js'
+import { scheduleCleanupRefreshTokens } from './jobs/cleanup-tokens.js'
 
 const app = new Hono()
 
@@ -70,3 +71,6 @@ serve({ fetch: app.fetch, port })
 
 // Start daily coin distribution scheduler
 scheduleDailyCoins()
+
+// Expired refresh token cleanup (daily)
+scheduleCleanupRefreshTokens()

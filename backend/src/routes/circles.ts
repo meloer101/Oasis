@@ -12,7 +12,7 @@ import {
   coinTransactions,
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
-import { verifyToken } from '../lib/jwt.js'
+import { verifyAccessToken } from '../lib/jwt.js'
 
 export const circleRoutes = new Hono()
 
@@ -95,7 +95,7 @@ circleRoutes.get('/:id', async (c) => {
   try {
     const authHeader = c.req.header('Authorization')
     if (authHeader?.startsWith('Bearer ')) {
-      currentUserId = verifyToken(authHeader.slice(7)).userId
+      currentUserId = verifyAccessToken(authHeader.slice(7)).userId
     }
   } catch {}
 

@@ -46,8 +46,8 @@ export default function Sidebar() {
   const { data: notifData } = useNotifications()
   const unread = notifData?.unreadCount ?? 0
 
-  function handleLogout() {
-    logout()
+  async function handleLogout() {
+    await logout()
     router.replace('/login')
   }
 

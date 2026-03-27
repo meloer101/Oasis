@@ -10,7 +10,7 @@ import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/providers/auth-provider'
 
 const schema = z.object({
-  email: z.string().email('Invalid email'),
+  email: z.string().email('Invalid email').transform((s) => s.trim().toLowerCase()),
   password: z.string().min(1, 'Password required'),
 })
 type FormData = z.infer<typeof schema>
@@ -30,11 +30,19 @@ export default function LoginPage() {
     setError('')
     try {
       const res = await apiClient.post('/api/auth/login', data)
-      login(res.data.token, res.data.user)
+      login(res.data.accessToken, res.data.refreshToken, res.data.user)
       router.replace('/feed')
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
-      setError(msg ?? 'Login failed')
+      const axiosErr = err as {
+        response?: { status?: number; data?: { error?: string } }
+      }
+      const status = axiosErr.response?.status
+      const msg = axiosErr.response?.data?.error
+      if (status === 429) {
+        setError(msg ? `${msg} 请稍后再试。` : '请求过于频繁，请稍后再试。')
+      } else {
+        setError(msg ?? '登录失败')
+      }
     }
   }
 
