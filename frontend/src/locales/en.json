@@ -1,0 +1,191 @@
+{
+  "sidebar": {
+    "feed": "Feed",
+    "notifications": "Notifications",
+    "wallet": "Wallet",
+    "createCircle": "Create circle",
+    "settings": "Settings",
+    "newPost": "New post",
+    "coins": "coins",
+    "logout": "Log out",
+    "language": "Language"
+  },
+  "mobileNav": {
+    "feed": "Feed",
+    "notifications": "Notifications",
+    "newPost": "Post",
+    "wallet": "Wallet",
+    "settings": "Settings"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "appearance": "Appearance",
+    "cycleAria": "Cycle theme: light, dark, system"
+  },
+  "auth": {
+    "login": {
+      "tagline": "Where ideas find consensus",
+      "signIn": "Sign in",
+      "signingIn": "Signing in…",
+      "noAccount": "No account?",
+      "createOne": "Create one",
+      "rateLimit": "Too many requests. Please try again later.",
+      "failed": "Sign in failed"
+    },
+    "register": {
+      "tagline": "Join the consensus",
+      "bonus": "You'll receive 100 Agreecoins to get started 🎉",
+      "createAccount": "Create account",
+      "creating": "Creating account…",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "rateLimit": "Too many requests. Please try again later.",
+      "failed": "Registration failed"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "username": "Username",
+    "usernameReadonly": "Username cannot be changed",
+    "displayName": "Display name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself…",
+    "avatarUrl": "Avatar URL",
+    "saveError": "Save failed. Please try again.",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "save": "Save changes"
+  },
+  "wallet": {
+    "title": "Wallet",
+    "balance": "Agreecoin balance",
+    "earnedSpent": "Total earned {earned} · Total spent {spent}",
+    "badgeProgress": "Badge progress",
+    "current": "Current",
+    "nextBadge": "{amount} more Agreecoins to reach the next level",
+    "transactions": "Transactions",
+    "noTransactions": "No transactions yet",
+    "loadingMore": "Loading…",
+    "loadMore": "Load more",
+    "badges": {
+      "newcomer": "Sprout",
+      "resonator": "Resonator",
+      "vibe_master": "Vibe Master",
+      "founder": "Founder"
+    },
+    "tx": {
+      "daily_distribution": "Daily check-in reward",
+      "post_reward": "Post reward",
+      "comment_reward": "Comment reward",
+      "vote_received": "Post agreed",
+      "transaction_fee_burned": "Platform fee",
+      "circle_join_fee": "Join circle",
+      "system_mint": "System grant"
+    }
+  },
+  "feedNew": {
+    "title": "New post",
+    "cancel": "Cancel",
+    "markdown": "Body",
+    "link": "Link",
+    "titlePlaceholder": "Title",
+    "linkDescPlaceholder": "Describe this link…",
+    "bodyPlaceholder": "Write something… (Markdown supported)",
+    "tagsPlaceholder": "Add tags (Enter to add, max 5)",
+    "tagsHint": "Press Enter or comma to add tags",
+    "rewardHint": "Earn +5 Agreecoins for posting",
+    "publishing": "Publishing…",
+    "publish": "Publish",
+    "publishError": "Failed to publish. Please try again.",
+    "titleRequired": "Title is required",
+    "contentRequired": "Content is required"
+  },
+  "vote": {
+    "agreed": "Agreed",
+    "peopleCoins": "· {count} people · {amount} coins",
+    "shortStats": "· {count} · {amount} coins",
+    "confirm": "Confirm",
+    "agree": "Agree"
+  },
+  "post": {
+    "notFound": "Post not found.",
+    "goBack": "Go back",
+    "back": "← Back",
+    "views": "views",
+    "comments": "comments",
+    "agreeStats": "{count} agreed · {amount} coins",
+    "commentsHeading": "Comments",
+    "noComments": "No comments yet.",
+    "replyPlaceholder": "Reply…",
+    "commentPlaceholder": "Add a comment… (+2 coins)",
+    "post": "Post",
+    "reply": "Reply"
+  },
+  "tag": {
+    "notFound": "Tag “{name}” does not exist",
+    "back": "Back",
+    "return": "← Back",
+    "postCount": "{count} posts",
+    "empty": "No posts with this tag yet"
+  },
+  "circle": {
+    "create": {
+      "back": "← Back",
+      "title": "Create circle",
+      "name": "Circle name *",
+      "namePlaceholder": "e.g. AI tools",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this circle…",
+      "visibility": "Visibility",
+      "public": "Public",
+      "private": "Private",
+      "joinFee": "Join fee (Agreecoins)",
+      "joinFeeHint": "Set to 0 for free to join",
+      "error": "Failed to create. Please try again.",
+      "cancel": "Cancel",
+      "creating": "Creating…",
+      "submit": "Create circle"
+    },
+    "detail": {
+      "notFound": "Circle not found",
+      "back": "Back",
+      "members": "members",
+      "posts": "posts",
+      "joinFee": "Join costs {amount} coins",
+      "createdBy": "Created by @{user} · {time}",
+      "leave": "Leave circle",
+      "owner": "Owner",
+      "joinPaid": "Join ({amount} coins)",
+      "join": "Join circle",
+      "empty": "No posts in this circle yet"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet",
+    "viewPost": "View post →"
+  },
+  "feed": {
+    "tabHot": "🔥 Hot",
+    "tabFresh": "✨ Fresh",
+    "tabFollow": "👥 Following",
+    "loadError": "Failed to load feed. Make sure the backend is running.",
+    "emptyFollow": "Follow some users to see their posts here.",
+    "empty": "No posts yet. Be the first to share something.",
+    "loadMore": "Load more",
+    "loading": "Loading…"
+  },
+  "user": {
+    "notFound": "User not found.",
+    "goBack": "Go back",
+    "back": "← Back",
+    "joined": "Joined {time}",
+    "following": "Following",
+    "follow": "Follow",
+    "posts": "Posts",
+    "noPosts": "No posts yet."
+  }
+}

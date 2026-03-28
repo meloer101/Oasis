@@ -12,7 +12,7 @@ export default function Header() {
   const initials = (user?.displayName ?? user?.username ?? '?').charAt(0).toUpperCase()
 
   return (
-    <header className="sticky top-0 z-10 h-14 border-b border-zinc-800/50 bg-black/80 backdrop-blur-sm flex items-center px-4 gap-3 md:hidden">
+    <header className="sticky top-0 z-10 h-14 border-b border-border-subtle bg-white/80 dark:bg-black/80 backdrop-blur-sm flex items-center px-4 gap-3 md:hidden">
       {/* Logo */}
       <Link
         href="/feed"
@@ -24,7 +24,7 @@ export default function Header() {
       {/* Notifications */}
       <Link
         href="/notifications"
-        className="relative w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-200 transition-colors"
+        className="relative w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
       >
         🔔
         {unread > 0 && (

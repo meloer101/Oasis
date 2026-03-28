@@ -25,11 +25,11 @@ function TemperatureBar({ temperature }: { temperature: string }) {
       : 'bg-emerald-500'
 
   return (
-    <div className="flex items-center gap-2 text-xs text-zinc-500 mb-2.5">
-      <div className="flex-1 h-1 bg-zinc-800 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2 text-xs text-text-muted mb-2.5">
+      <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className={`font-mono text-[11px] ${t >= 500 ? 'text-amber-400' : 'text-zinc-500'}`}>
+      <span className={`font-mono text-[11px] ${t >= 500 ? 'text-amber-400' : 'text-text-muted'}`}>
         {t >= 1 ? Math.round(t) : t.toFixed(1)}
       </span>
     </div>
@@ -43,21 +43,21 @@ export default function PostCard({ post, feedQueryKey }: Props) {
     : ''
 
   return (
-    <article className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-4 hover:border-zinc-700/50 transition-colors">
+    <article className="bg-surface border border-border-subtle rounded-xl p-4 hover:border-zinc-400/50 dark:hover:border-zinc-600/50 transition-colors">
       {/* Header */}
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-300 shrink-0">
+          <div className="w-6 h-6 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-text-secondary shrink-0">
             {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
           </div>
-          <span className="text-sm text-zinc-400 truncate">
+          <span className="text-sm text-text-secondary truncate">
             <Link
               href={`/user/${post.author.username}`}
-              className="text-zinc-300 font-medium hover:text-emerald-400 transition-colors"
+              className="text-text-primary font-medium hover:text-emerald-400 transition-colors"
             >
               {post.author.displayName ?? post.author.username}
             </Link>
-            <span className="mx-1.5 text-zinc-600">·</span>
+            <span className="mx-1.5 text-text-muted">·</span>
             <span className="text-xs">{timeAgo(post.createdAt)}</span>
           </span>
         </div>
@@ -68,14 +68,14 @@ export default function PostCard({ post, feedQueryKey }: Props) {
 
       {/* Title */}
       <Link href={`/post/${post.id}`}>
-        <h2 className="text-zinc-100 font-semibold leading-snug mb-1.5 hover:text-emerald-400 transition-colors">
+        <h2 className="text-text-primary font-semibold leading-snug mb-1.5 hover:text-emerald-400 transition-colors">
           {post.title}
         </h2>
       </Link>
 
       {/* Content preview */}
       {preview && (
-        <p className="text-sm text-zinc-500 leading-relaxed mb-2.5 line-clamp-2">{preview}</p>
+        <p className="text-sm text-text-muted leading-relaxed mb-2.5 line-clamp-2">{preview}</p>
       )}
 
       {/* Link preview */}
@@ -84,7 +84,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-xs text-emerald-500 hover:text-emerald-400 mb-2.5 truncate"
+          className="block text-xs text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 mb-2.5 truncate"
         >
           🔗 {post.linkUrl}
         </a>
@@ -97,7 +97,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
             <Link
               key={tag}
               href={`/tag/${tag}`}
-              className="text-xs px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-500 hover:text-emerald-400 hover:bg-zinc-700 transition-colors"
+              className="text-xs px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-text-muted hover:text-emerald-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
             >
               #{tag}
             </Link>
@@ -109,7 +109,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
       <TemperatureBar temperature={post.temperature} />
 
       {/* Actions */}
-      <div className="flex items-center gap-4 pt-2 border-t border-zinc-800/50">
+      <div className="flex items-center gap-4 pt-2 border-t border-border-subtle">
         <VoteButton
           postId={post.id}
           voterCount={post.voterCount}
@@ -119,11 +119,11 @@ export default function PostCard({ post, feedQueryKey }: Props) {
         />
         <Link
           href={`/post/${post.id}`}
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-text-muted hover:text-text-secondary transition-colors"
         >
           💬 {post.commentCount}
         </Link>
-        <span className="text-xs text-zinc-700">👁 {post.viewCount}</span>
+        <span className="text-xs text-text-muted">👁 {post.viewCount}</span>
       </div>
     </article>
   )

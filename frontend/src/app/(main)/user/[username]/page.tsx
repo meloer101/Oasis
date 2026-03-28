@@ -8,6 +8,7 @@ import { timeAgo, formatCoins } from '@/lib/utils'
 import PostCard from '@/components/feed/post-card'
 import { useAuth } from '@/providers/auth-provider'
 import type { Post } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface UserProfile {
   id: string
@@ -39,6 +40,7 @@ export default function UserProfilePage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { user: currentUser } = useAuth()
+  const { t } = useLocale()
 
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery<UserProfile>({
     queryKey: ['user', username],
@@ -102,10 +104,10 @@ export default function UserProfilePage() {
 
   if (profileError || !profile) {
     return (
-      <div className="text-center py-16 text-zinc-500 text-sm">
-        User not found.{' '}
+      <div className="text-center py-16 text-text-muted text-sm">
+        {t('user.notFound')}{' '}
         <button onClick={() => router.back()} className="text-emerald-400 hover:text-emerald-300">
-          Go back
+          {t('user.goBack')}
         </button>
       </div>
     )
@@ -116,60 +118,56 @@ export default function UserProfilePage() {
 
   return (
     <div>
-      {/* Back */}
       <button
         onClick={() => router.back()}
-        className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-5 flex items-center gap-1"
+        className="text-sm text-text-muted hover:text-text-secondary transition-colors mb-5 flex items-center gap-1"
       >
-        ← Back
+        {t('user.back')}
       </button>
 
-      {/* Profile header */}
-      <div className="bg-zinc-900 border border-zinc-800/50 rounded-xl p-6 mb-6">
+      <div className="bg-surface border border-border-subtle rounded-xl p-6 mb-6">
         <div className="flex items-start gap-4">
-          {/* Avatar */}
           <div className="w-16 h-16 rounded-full bg-emerald-600 flex items-center justify-center text-2xl font-bold text-white shrink-0">
             {initial}
           </div>
 
-          {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-zinc-100">{displayName}</h1>
+              <h1 className="text-xl font-bold text-text-primary">{displayName}</h1>
               {profile.founderNumber && (
                 <span className="text-xs bg-amber-900/40 text-amber-400 border border-amber-800/50 rounded px-1.5 py-0.5">
                   Founder #{profile.founderNumber}
                 </span>
               )}
             </div>
-            <p className="text-sm text-zinc-500 mt-0.5">@{profile.username}</p>
+            <p className="text-sm text-text-muted mt-0.5">@{profile.username}</p>
             {profile.bio && (
-              <p className="text-sm text-zinc-300 mt-2 leading-relaxed">{profile.bio}</p>
+              <p className="text-sm text-text-secondary mt-2 leading-relaxed">{profile.bio}</p>
             )}
-            <p className="text-xs text-zinc-600 mt-2">Joined {timeAgo(profile.createdAt)}</p>
+            <p className="text-xs text-text-muted mt-2">
+              {t('user.joined', { time: timeAgo(profile.createdAt) })}
+            </p>
           </div>
 
-          {/* Follow button */}
           {currentUser && !isOwnProfile && (
             <button
               onClick={() => followMutation.mutate(!isFollowing)}
               disabled={followMutation.isPending}
               className={`shrink-0 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
                 isFollowing
-                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700'
+                  ? 'bg-zinc-200 dark:bg-zinc-800 text-text-primary hover:bg-zinc-300 dark:hover:bg-zinc-700 border border-border-subtle'
                   : 'bg-emerald-600 text-white hover:bg-emerald-500'
               }`}
             >
-              {isFollowing ? 'Following' : 'Follow'}
+              {isFollowing ? t('user.following') : t('user.follow')}
             </button>
           )}
         </div>
       </div>
 
-      {/* Posts */}
       <div>
-        <h2 className="text-sm font-semibold text-zinc-400 mb-3 uppercase tracking-wider">
-          Posts
+        <h2 className="text-sm font-semibold text-text-secondary mb-3 uppercase tracking-wider">
+          {t('user.posts')}
         </h2>
 
         {postsLoading && (
@@ -179,7 +177,7 @@ export default function UserProfilePage() {
         )}
 
         {!postsLoading && postsAsPost.length === 0 && (
-          <p className="text-sm text-zinc-600 text-center py-8">No posts yet.</p>
+          <p className="text-sm text-text-muted text-center py-8">{t('user.noPosts')}</p>
         )}
 
         <div className="space-y-3">

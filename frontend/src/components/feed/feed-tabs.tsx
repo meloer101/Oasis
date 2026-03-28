@@ -1,29 +1,32 @@
 'use client'
 
 import type { FeedType } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 interface Props {
   active: FeedType
   onChange: (feed: FeedType) => void
 }
 
-const TABS: { value: FeedType; label: string }[] = [
-  { value: 'hot', label: '🔥 Hot' },
-  { value: 'fresh', label: '✨ Fresh' },
-  { value: 'follow', label: '👥 Following' },
-]
-
 export default function FeedTabs({ active, onChange }: Props) {
+  const { t } = useLocale()
+
+  const TABS: { value: FeedType; label: string }[] = [
+    { value: 'hot', label: t('feed.tabHot') },
+    { value: 'fresh', label: t('feed.tabFresh') },
+    { value: 'follow', label: t('feed.tabFollow') },
+  ]
+
   return (
-    <div className="flex gap-1 border-b border-zinc-800 mb-4">
+    <div className="flex gap-1 border-b border-border-subtle mb-4">
       {TABS.map((tab) => (
         <button
           key={tab.value}
           onClick={() => onChange(tab.value)}
           className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
             active === tab.value
-              ? 'border-emerald-500 text-zinc-100'
-              : 'border-transparent text-zinc-500 hover:text-zinc-300'
+              ? 'border-emerald-500 text-text-primary'
+              : 'border-transparent text-text-muted hover:text-text-secondary'
           }`}
         >
           {tab.label}

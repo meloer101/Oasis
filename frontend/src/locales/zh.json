@@ -1,0 +1,191 @@
+{
+  "sidebar": {
+    "feed": "动态",
+    "notifications": "通知",
+    "wallet": "钱包",
+    "createCircle": "创建圈子",
+    "settings": "设置",
+    "newPost": "发布帖子",
+    "coins": "币",
+    "logout": "退出登录",
+    "language": "语言"
+  },
+  "mobileNav": {
+    "feed": "动态",
+    "notifications": "通知",
+    "newPost": "发帖",
+    "wallet": "钱包",
+    "settings": "设置"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "appearance": "外观",
+    "cycleAria": "切换主题：浅色、深色、跟随系统"
+  },
+  "auth": {
+    "login": {
+      "tagline": "让想法找到共识",
+      "signIn": "登录",
+      "signingIn": "登录中…",
+      "noAccount": "还没有账号？",
+      "createOne": "注册",
+      "rateLimit": "请求过于频繁，请稍后再试。",
+      "failed": "登录失败"
+    },
+    "register": {
+      "tagline": "加入共识",
+      "bonus": "注册即送 100 枚认同币 🎉",
+      "createAccount": "注册",
+      "creating": "注册中…",
+      "hasAccount": "已有账号？",
+      "signIn": "登录",
+      "rateLimit": "请求过于频繁，请稍后再试。",
+      "failed": "注册失败"
+    }
+  },
+  "settings": {
+    "title": "设置",
+    "username": "用户名",
+    "usernameReadonly": "用户名暂不支持修改",
+    "displayName": "显示名称",
+    "bio": "个人简介",
+    "bioPlaceholder": "介绍一下自己…",
+    "avatarUrl": "头像 URL",
+    "saveError": "保存失败，请重试",
+    "saving": "保存中…",
+    "saved": "已保存",
+    "save": "保存更改"
+  },
+  "wallet": {
+    "title": "钱包",
+    "balance": "Agreecoin 余额",
+    "earnedSpent": "累计获得 {earned} · 累计花费 {spent}",
+    "badgeProgress": "徽章进度",
+    "current": "当前",
+    "nextBadge": "距下一级还需 {amount} 枚认同币",
+    "transactions": "收支明细",
+    "noTransactions": "暂无记录",
+    "loadingMore": "加载中…",
+    "loadMore": "加载更多",
+    "badges": {
+      "newcomer": "新芽",
+      "resonator": "共鸣者",
+      "vibe_master": "Vibe Master",
+      "founder": "创始人"
+    },
+    "tx": {
+      "daily_distribution": "每日签到奖励",
+      "post_reward": "发帖奖励",
+      "comment_reward": "评论奖励",
+      "vote_received": "帖子被认同",
+      "transaction_fee_burned": "平台手续费",
+      "circle_join_fee": "加入圈子",
+      "system_mint": "系统发放"
+    }
+  },
+  "feedNew": {
+    "title": "发布帖子",
+    "cancel": "取消",
+    "markdown": "正文",
+    "link": "链接",
+    "titlePlaceholder": "标题",
+    "linkDescPlaceholder": "描述这个链接…",
+    "bodyPlaceholder": "写点什么…（支持 Markdown）",
+    "tagsPlaceholder": "添加标签（回车确认，最多 5 个）",
+    "tagsHint": "回车或逗号添加标签",
+    "rewardHint": "发帖获得 +5 枚认同币奖励",
+    "publishing": "发布中…",
+    "publish": "发布",
+    "publishError": "发布失败，请重试",
+    "titleRequired": "标题不能为空",
+    "contentRequired": "内容不能为空"
+  },
+  "vote": {
+    "agreed": "已认同",
+    "peopleCoins": "· {count} 人 · {amount} 币",
+    "shortStats": "· {count} · {amount} 币",
+    "confirm": "确认投币",
+    "agree": "认同"
+  },
+  "post": {
+    "notFound": "帖子不存在。",
+    "goBack": "返回",
+    "back": "← 返回",
+    "views": "浏览",
+    "comments": "评论",
+    "agreeStats": "{count} 人认同 · {amount} 币",
+    "commentsHeading": "评论",
+    "noComments": "还没有评论。",
+    "replyPlaceholder": "回复…",
+    "commentPlaceholder": "发表评论…（+2 币）",
+    "post": "发布",
+    "reply": "回复"
+  },
+  "tag": {
+    "notFound": "标签「{name}」不存在",
+    "back": "返回",
+    "return": "← 返回",
+    "postCount": "{count} 篇帖子",
+    "empty": "这个标签下还没有帖子"
+  },
+  "circle": {
+    "create": {
+      "back": "← 返回",
+      "title": "创建圈子",
+      "name": "圈子名称 *",
+      "namePlaceholder": "例如：AI 工具圈",
+      "description": "圈子简介",
+      "descriptionPlaceholder": "介绍一下这个圈子…",
+      "visibility": "可见性",
+      "public": "公开",
+      "private": "私密",
+      "joinFee": "加入费用（认同币）",
+      "joinFeeHint": "设为 0 表示免费加入",
+      "error": "创建失败，请重试",
+      "cancel": "取消",
+      "creating": "创建中…",
+      "submit": "创建圈子"
+    },
+    "detail": {
+      "notFound": "圈子不存在",
+      "back": "返回",
+      "members": "成员",
+      "posts": "帖子",
+      "joinFee": "加入需 {amount} 币",
+      "createdBy": "由 @{user} 创建 · {time}",
+      "leave": "退出圈子",
+      "owner": "山主",
+      "joinPaid": "加入 ({amount} 币)",
+      "join": "加入圈子",
+      "empty": "圈子里还没有帖子"
+    }
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部已读",
+    "empty": "暂无通知",
+    "viewPost": "查看帖子 →"
+  },
+  "feed": {
+    "tabHot": "🔥 热门",
+    "tabFresh": "✨ 最新",
+    "tabFollow": "👥 关注",
+    "loadError": "加载失败，请确认后端已启动。",
+    "emptyFollow": "关注一些用户，在这里查看他们的帖子。",
+    "empty": "还没有帖子，来做第一个分享的人吧。",
+    "loadMore": "加载更多",
+    "loading": "加载中…"
+  },
+  "user": {
+    "notFound": "用户不存在。",
+    "goBack": "返回",
+    "back": "← 返回",
+    "joined": "加入于 {time}",
+    "following": "已关注",
+    "follow": "关注",
+    "posts": "帖子",
+    "noPosts": "还没有帖子。"
+  }
+}

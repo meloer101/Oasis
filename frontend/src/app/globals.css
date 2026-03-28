@@ -1,23 +1,62 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-background: #09090b;
-  --color-surface: #18181b;
-  --color-border-subtle: #27272a;
+  --color-background: var(--bg);
+  --color-foreground: var(--text-primary);
+  --color-surface: var(--surface);
+  --color-border-subtle: var(--border);
   --color-accent: #10b981;
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-nav-active: var(--nav-active-bg);
+  --color-nav-hover: var(--nav-hover-bg);
+  --color-mobile-bar: var(--mobile-bar-bg);
+}
+
+:root {
+  --bg: #fafafa;
+  --surface: #f4f4f5;
+  --border: #e4e4e7;
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --nav-active-bg: #e4e4e7;
+  --nav-hover-bg: #f4f4f5;
+  --mobile-bar-bg: rgb(255 255 255 / 0.95);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #09090b;
+  --surface: #18181b;
+  --border: #27272a;
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --nav-active-bg: #27272a;
+  --nav-hover-bg: #18181b;
+  --mobile-bar-bg: rgb(9 9 11 / 0.95);
+  color-scheme: dark;
 }
 
 html {
+  color-scheme: light;
+}
+
+html.dark {
   color-scheme: dark;
 }
 
 body {
-  background: #09090b;
-  color: #f4f4f5;
+  background-color: var(--bg);
+  color: var(--text-primary);
   font-family: var(--font-geist-sans, system-ui, sans-serif);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+  scrollbar-color: var(--border) transparent;
 }

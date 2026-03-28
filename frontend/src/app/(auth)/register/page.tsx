@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/providers/auth-provider'
+import { useLocale } from '@/hooks/use-locale'
 
 const schema = z.object({
   username: z
@@ -28,6 +29,7 @@ type FormData = z.infer<typeof schema>
 
 export default function RegisterPage() {
   const { login } = useAuth()
+  const { t } = useLocale()
   const router = useRouter()
   const [error, setError] = useState('')
 
@@ -50,21 +52,21 @@ export default function RegisterPage() {
       const status = axiosErr.response?.status
       const msg = axiosErr.response?.data?.error
       if (status === 429) {
-        setError(msg ? `${msg} 请稍后再试。` : '请求过于频繁，请稍后再试。')
+        setError(t('auth.register.rateLimit'))
       } else {
-        setError(msg ?? '注册失败')
+        setError(msg ?? t('auth.register.failed'))
       }
     }
   }
 
   const inputClass =
-    'w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-emerald-700 transition-colors text-sm'
+    'w-full bg-surface border border-border-subtle rounded-lg px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-emerald-700 transition-colors text-sm'
 
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
         <div className="text-3xl font-bold text-emerald-400 mb-1">Oasis</div>
-        <p className="text-zinc-500 text-sm">Join the consensus</p>
+        <p className="text-text-muted text-sm">{t('auth.register.tagline')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
@@ -115,23 +117,21 @@ export default function RegisterPage() {
 
         {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
-        <p className="text-xs text-zinc-600 text-center">
-          You'll receive 100 Agreecoins to get started 🎉
-        </p>
+        <p className="text-xs text-text-muted text-center">{t('auth.register.bonus')}</p>
 
         <button
           type="submit"
           disabled={isSubmitting}
           className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg px-4 py-3 transition-colors text-sm"
         >
-          {isSubmitting ? 'Creating account…' : 'Create account'}
+          {isSubmitting ? t('auth.register.creating') : t('auth.register.createAccount')}
         </button>
       </form>
 
-      <p className="mt-6 text-center text-zinc-600 text-sm">
-        Already have an account?{' '}
+      <p className="mt-6 text-center text-text-muted text-sm">
+        {t('auth.register.hasAccount')}{' '}
         <Link href="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">
-          Sign in
+          {t('auth.register.signIn')}
         </Link>
       </p>
     </div>

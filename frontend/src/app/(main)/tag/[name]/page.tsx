@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import PostCard from '@/components/feed/post-card'
 import type { Tag, Post } from '@/lib/types'
+import { useLocale } from '@/hooks/use-locale'
 
 function useTagDetail(name: string) {
   return useQuery<{ tag: Tag; posts: Post[] }>({
@@ -20,6 +21,7 @@ export default function TagPage() {
   const params = useParams()
   const name = params.name as string
   const router = useRouter()
+  const { t } = useLocale()
   const { data, isLoading, error } = useTagDetail(name)
 
   if (isLoading) {
@@ -32,10 +34,10 @@ export default function TagPage() {
 
   if (error || !data) {
     return (
-      <div className="text-center py-16 text-zinc-500">
-        <p>标签「{name}」不存在</p>
+      <div className="text-center py-16 text-text-muted">
+        <p>{t('tag.notFound', { name })}</p>
         <button onClick={() => router.back()} className="text-emerald-400 text-sm mt-2">
-          返回
+          {t('tag.back')}
         </button>
       </div>
     )
@@ -43,24 +45,24 @@ export default function TagPage() {
 
   return (
     <div>
-      {/* Tag header */}
       <div className="mb-5">
         <button
           onClick={() => router.back()}
-          className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors mb-4 flex items-center gap-1"
+          className="text-sm text-text-muted hover:text-text-secondary transition-colors mb-4 flex items-center gap-1"
         >
-          ← 返回
+          {t('tag.return')}
         </button>
         <div className="flex items-center gap-3">
-          <span className="text-2xl font-bold text-zinc-100">#{data.tag.name}</span>
-          <span className="text-sm text-zinc-600">{data.tag.postCount} 篇帖子</span>
+          <span className="text-2xl font-bold text-text-primary">#{data.tag.name}</span>
+          <span className="text-sm text-text-muted">
+            {t('tag.postCount', { count: data.tag.postCount })}
+          </span>
         </div>
       </div>
 
-      {/* Posts */}
       <div className="space-y-3">
         {data.posts.length === 0 ? (
-          <p className="text-center py-12 text-zinc-600 text-sm">这个标签下还没有帖子</p>
+          <p className="text-center py-12 text-text-muted text-sm">{t('tag.empty')}</p>
         ) : (
           data.posts.map((post) => (
             <PostCard key={post.id} post={post} feedQueryKey={['tag', name]} />
