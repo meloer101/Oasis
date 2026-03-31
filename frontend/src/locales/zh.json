@@ -3,6 +3,7 @@
     "feed": "广场",
     "notifications": "通知",
     "wallet": "钱包",
+    "circles": "圈子",
     "createCircle": "创建圈子",
     "settings": "设置",
     "newPost": "发布帖子",
@@ -82,7 +83,8 @@
       "vote_received": "帖子被认同",
       "transaction_fee_burned": "平台手续费",
       "circle_join_fee": "加入圈子",
-      "system_mint": "系统发放"
+      "system_mint": "系统发放",
+      "disagree_burned": "质疑销毁"
     }
   },
   "feedNew": {
@@ -96,6 +98,8 @@
     "bodyPlaceholder": "写正文…支持加粗、标题、图片链接、公式等",
     "tagsPlaceholder": "添加标签（回车确认，最多 5 个）",
     "tagsHint": "回车或逗号添加标签",
+    "circle": "发布到圈子",
+    "circleNone": "不归属圈子（公开广场）",
     "rewardHint": "发帖获得 +5 枚认同币奖励",
     "publishing": "发布中…",
     "publish": "发布",
@@ -105,10 +109,15 @@
   },
   "vote": {
     "agreed": "已认同",
+    "disagreed": "已质疑",
     "peopleCoins": "· {count} 人 · {amount} 币",
     "shortStats": "· {count} · {amount} 币",
     "confirm": "确认投币",
-    "agree": "认同"
+    "agree": "认同",
+    "disagree": "质疑",
+    "disagreeConfirm": "确认质疑",
+    "disagreeStats": "· {amount} 币质疑",
+    "disagreeLabel": "币质疑"
   },
   "post": {
     "notFound": "帖子不存在。",
@@ -122,7 +131,9 @@
     "replyPlaceholder": "回复…",
     "commentPlaceholder": "发表评论…（+2 币）",
     "post": "发布",
-    "reply": "回复"
+    "reply": "回复",
+    "delete": "删除",
+    "deleteConfirm": "确认删除这篇帖子？此操作不可撤销。"
   },
   "tag": {
     "notFound": "标签「{name}」不存在",
@@ -130,6 +141,14 @@
     "return": "← 返回",
     "postCount": "{count} 篇帖子",
     "empty": "这个标签下还没有帖子"
+  },
+  "circles": {
+    "title": "圈子",
+    "create": "创建圈子",
+    "empty": "还没有圈子，来创建第一个吧！",
+    "free": "免费",
+    "members": "成员",
+    "posts": "帖子"
   },
   "circle": {
     "create": {
@@ -181,7 +200,8 @@
     "searchPlaceholder": "搜索帖子…",
     "searchEmpty": "没有找到与\"{q}\"相关的帖子",
     "searchError": "搜索失败，请稍后再试。",
-    "clearSearch": "清除"
+    "clearSearch": "清除",
+    "followFallbackBanner": "还没有关注的人，以下是当前热门内容 — 去探索发现有趣的人吧"
   },
   "user": {
     "notFound": "用户不存在。",

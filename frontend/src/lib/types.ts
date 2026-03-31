@@ -43,14 +43,16 @@ export interface Post {
   linkUrl: string | null
   imageUrl: string | null
   circleId: string | null
+  circle?: { id: string; name: string } | null
   visibility: string
   viewCount: number
   commentCount: number
   voterCount: number
   totalVoteAmount: number
+  disagreeVoteAmount: number
   temperature: string
   tags: string[]
-  hasVoted: boolean
+  userVoteType: 'agree' | 'disagree' | null
   createdAt: string
   updatedAt?: string
   author: Author

@@ -14,6 +14,7 @@ import {
   tags,
   postTags,
   notifications,
+  circles,
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
@@ -71,6 +72,8 @@ const postSelect = {
   contentType: posts.contentType,
   linkUrl: posts.linkUrl,
   imageUrl: posts.imageUrl,
+  circleId: posts.circleId,
+  circleName: circles.name,
   viewCount: posts.viewCount,
   commentCount: posts.commentCount,
   voterCount: posts.voterCount,
@@ -111,14 +114,17 @@ async function fetchTagsForPosts(postIds: string[]): Promise<Record<string, stri
   return map
 }
 
-/** Batch-fetch which posts the user has voted on */
-async function fetchVotedPostIds(userId: string, postIds: string[]): Promise<Set<string>> {
-  if (postIds.length === 0) return new Set()
+/** Batch-fetch user vote types for given posts */
+async function fetchUserVoteMap(
+  userId: string,
+  postIds: string[],
+): Promise<Map<string, 'agree' | 'disagree'>> {
+  if (postIds.length === 0) return new Map()
   const rows = await db
-    .select({ postId: votes.postId })
+    .select({ postId: votes.postId, voteType: votes.voteType })
     .from(votes)
     .where(and(eq(votes.voterId, userId), inArray(votes.postId, postIds)))
-  return new Set(rows.map((r) => r.postId))
+  return new Map(rows.map((r) => [r.postId, r.voteType as 'agree' | 'disagree']))
 }
 
 // GET /api/posts — feed with cursor pagination
@@ -136,6 +142,10 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let items: any[]
 
+  // Hot score with time decay: temperature × 0.98^hours_elapsed
+  // This prevents old posts from permanently dominating the hot feed
+  const hotScoreExpr = sql<string>`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600))`
+
   if (feed === 'hot') {
     const conditions = [eq(posts.status, 'published')]
     if (cursor) {
@@ -143,18 +153,25 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
       if (value && id) {
         conditions.push(
           or(
-            lt(posts.temperature, value),
-            and(eq(posts.temperature, value), lt(posts.id, id))
+            sql`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)) < ${value}`,
+            and(
+              sql`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)) = ${value}`,
+              lt(posts.id, id)
+            )
           )!
         )
       }
     }
     items = await db
-      .select(postSelect)
+      .select({ ...postSelect, hotScore: hotScoreExpr })
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(circles, eq(posts.circleId, circles.id))
       .where(and(...conditions))
-      .orderBy(desc(posts.temperature), desc(posts.id))
+      .orderBy(
+        sql`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)) DESC`,
+        desc(posts.id),
+      )
       .limit(fetchLimit)
   } else if (feed === 'fresh') {
     const conditions = [eq(posts.status, 'published')]
@@ -174,6 +191,7 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
       .select(postSelect)
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(circles, eq(posts.circleId, circles.id))
       .where(and(...conditions))
       .orderBy(desc(posts.createdAt), desc(posts.id))
       .limit(fetchLimit)
@@ -185,7 +203,33 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
       .where(eq(userFollows.followerId, currentUserId!))
 
     if (following.length === 0) {
-      return c.json({ items: [], nextCursor: null })
+      // Cold start: no follows yet — return hot feed items as fallback
+      const hotItems = await db
+        .select(postSelect)
+        .from(posts)
+        .innerJoin(users, eq(posts.authorId, users.id))
+        .leftJoin(circles, eq(posts.circleId, circles.id))
+        .where(eq(posts.status, 'published'))
+        .orderBy(
+          sql`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)) DESC`,
+          desc(posts.id),
+        )
+        .limit(limit)
+
+      const fallbackIds = hotItems.map((p) => p.id)
+      const [fallbackTagMap, fallbackVoteMap] = await Promise.all([
+        fetchTagsForPosts(fallbackIds),
+        currentUserId
+          ? fetchUserVoteMap(currentUserId, fallbackIds)
+          : Promise.resolve(new Map<string, 'agree' | 'disagree'>()),
+      ])
+      const fallbackEnriched = hotItems.map(({ circleName, ...p }) => ({
+        ...p,
+        circle: p.circleId && circleName ? { id: p.circleId, name: circleName } : null,
+        tags: fallbackTagMap[p.id] ?? [],
+        userVoteType: fallbackVoteMap.get(p.id) ?? null,
+      }))
+      return c.json({ items: fallbackEnriched, nextCursor: null, followFallback: true })
     }
 
     const followingIds = following.map((f) => f.followingId)
@@ -206,6 +250,7 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
       .select(postSelect)
       .from(posts)
       .innerJoin(users, eq(posts.authorId, users.id))
+      .leftJoin(circles, eq(posts.circleId, circles.id))
       .where(and(...conditions))
       .orderBy(desc(posts.createdAt), desc(posts.id))
       .limit(fetchLimit)
@@ -218,21 +263,22 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
     const last = page[page.length - 1]
     nextCursor =
       feed === 'hot'
-        ? encodeCursor({ value: last.temperature, id: last.id })
+        ? encodeCursor({ value: last.hotScore ?? last.temperature, id: last.id })
         : encodeCursor({ value: (last.createdAt as Date).toISOString(), id: last.id })
   }
 
   // Batch-enrich with tags and hasVoted
   const postIds = page.map((p) => p.id)
-  const [tagMap, votedIds] = await Promise.all([
+  const [tagMap, voteMap] = await Promise.all([
     fetchTagsForPosts(postIds),
-    currentUserId ? fetchVotedPostIds(currentUserId, postIds) : Promise.resolve(new Set<string>()),
+    currentUserId ? fetchUserVoteMap(currentUserId, postIds) : Promise.resolve(new Map<string, 'agree' | 'disagree'>()),
   ])
 
-  const enriched = page.map((p) => ({
+  const enriched = page.map(({ circleName, ...p }) => ({
     ...p,
+    circle: p.circleId && circleName ? { id: p.circleId, name: circleName } : null,
     tags: tagMap[p.id] ?? [],
-    hasVoted: votedIds.has(p.id),
+    userVoteType: voteMap.get(p.id) ?? null,
   }))
 
   return c.json({ items: enriched, nextCursor })
@@ -277,6 +323,7 @@ postRoutes.get('/search', zValidator('query', searchQuerySchema), async (c) => {
     .select(postSelect)
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(circles, eq(posts.circleId, circles.id))
     .where(and(...conditions))
     .orderBy(desc(posts.createdAt), desc(posts.id))
     .limit(fetchLimit)
@@ -290,15 +337,16 @@ postRoutes.get('/search', zValidator('query', searchQuerySchema), async (c) => {
   }
 
   const postIds = page.map((p) => p.id)
-  const [tagMap, votedIds] = await Promise.all([
+  const [tagMap, voteMap] = await Promise.all([
     fetchTagsForPosts(postIds),
-    currentUserId ? fetchVotedPostIds(currentUserId, postIds) : Promise.resolve(new Set<string>()),
+    currentUserId ? fetchUserVoteMap(currentUserId, postIds) : Promise.resolve(new Map<string, 'agree' | 'disagree'>()),
   ])
 
-  const enriched = page.map((p) => ({
+  const enriched = page.map(({ circleName, ...p }) => ({
     ...p,
+    circle: p.circleId && circleName ? { id: p.circleId, name: circleName } : null,
     tags: tagMap[p.id] ?? [],
-    hasVoted: votedIds.has(p.id),
+    userVoteType: voteMap.get(p.id) ?? null,
   }))
 
   return c.json({ items: enriched, nextCursor })
@@ -346,15 +394,15 @@ postRoutes.get('/:id', async (c) => {
     .where(eq(posts.id, id))
     .catch(() => {})
 
-  const [tagMap, votedIds] = await Promise.all([
+  const [tagMap, voteMap] = await Promise.all([
     fetchTagsForPosts([id]),
-    currentUserId ? fetchVotedPostIds(currentUserId, [id]) : Promise.resolve(new Set<string>()),
+    currentUserId ? fetchUserVoteMap(currentUserId, [id]) : Promise.resolve(new Map<string, 'agree' | 'disagree'>()),
   ])
 
   return c.json({
     ...post,
     tags: tagMap[id] ?? [],
-    hasVoted: votedIds.has(id),
+    userVoteType: voteMap.get(id) ?? null,
   })
 })
 

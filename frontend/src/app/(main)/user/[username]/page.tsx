@@ -84,7 +84,8 @@ export default function UserProfilePage() {
         circleId: null,
         visibility: 'public',
         tags: [],
-        hasVoted: false,
+        disagreeVoteAmount: 0,
+        userVoteType: null,
         author: {
           id: profile.id,
           username: profile.username,

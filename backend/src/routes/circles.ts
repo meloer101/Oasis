@@ -13,6 +13,7 @@ import {
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
+import { checkAndUpdateBadge } from '../lib/badges.js'
 
 export const circleRoutes = new Hono()
 
@@ -234,6 +235,8 @@ circleRoutes.post('/:id/join', authenticate, async (c) => {
         .set({ memberCount: sql`${circles.memberCount} + 1` })
         .where(eq(circles.id, circleId))
     })
+    // Fire-and-forget: check if join fee triggered a badge downgrade
+    checkAndUpdateBadge(userId).catch(() => {})
   } else {
     await db.insert(circleMembers).values({ circleId, userId, role: 'member' })
     await db

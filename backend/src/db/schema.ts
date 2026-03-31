@@ -196,6 +196,7 @@ export const posts = pgTable(
     commentCount: integer('comment_count').notNull().default(0),
     voterCount: integer('voter_count').notNull().default(0),
     totalVoteAmount: bigint('total_vote_amount', { mode: 'number' }).notNull().default(0),
+    disagreeVoteAmount: bigint('disagree_vote_amount', { mode: 'number' }).notNull().default(0),
     impressionCount: bigint('impression_count', { mode: 'number' }).notNull().default(0),
     temperature: decimal('temperature', { precision: 10, scale: 4 }).notNull().default('0'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

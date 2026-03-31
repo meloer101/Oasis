@@ -4,37 +4,12 @@ import Link from 'next/link'
 import type { Post } from '@/lib/types'
 import { timeAgo, heatBadge } from '@/lib/utils'
 import VoteButton from './vote-button'
+import { TemperatureBar } from './temperature-bar'
 import { stripHtmlToText } from '@/lib/html'
 
 interface Props {
   post: Post
   feedQueryKey: string[]
-}
-
-function TemperatureBar({ temperature }: { temperature: string }) {
-  const t = parseFloat(temperature)
-  if (t <= 0) return null
-
-  const pct = Math.min((t / 1000) * 100, 100)
-  const color =
-    t >= 1000
-      ? 'bg-red-500'
-      : t >= 500
-      ? 'bg-orange-400'
-      : t >= 100
-      ? 'bg-amber-400'
-      : 'bg-emerald-500'
-
-  return (
-    <div className="flex items-center gap-1.5 flex-1">
-      <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className={`font-mono text-[11px] ${t >= 500 ? 'text-amber-400' : 'text-text-muted'}`}>
-        {t >= 1 ? Math.round(t) : t.toFixed(1)}
-      </span>
-    </div>
-  )
 }
 
 export default function PostCard({ post, feedQueryKey }: Props) {
@@ -64,6 +39,18 @@ export default function PostCard({ post, feedQueryKey }: Props) {
             </Link>
             <span className="mx-1.5 text-text-muted">·</span>
             <span className="text-xs">{timeAgo(post.createdAt)}</span>
+            {post.circle && (
+              <>
+                <span className="mx-1.5 text-text-muted">·</span>
+                <Link
+                  href={`/circle/${post.circle.id}`}
+                  className="text-xs text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  📍 {post.circle.name}
+                </Link>
+              </>
+            )}
           </span>
         </div>
         {heat && (
@@ -116,7 +103,8 @@ export default function PostCard({ post, feedQueryKey }: Props) {
           postId={post.id}
           voterCount={post.voterCount}
           totalVoteAmount={post.totalVoteAmount}
-          hasVoted={post.hasVoted}
+          disagreeVoteAmount={post.disagreeVoteAmount}
+          userVoteType={post.userVoteType}
           queryKey={feedQueryKey}
         />
         <Link

@@ -3,6 +3,7 @@
     "feed": "Feed",
     "notifications": "Notifications",
     "wallet": "Wallet",
+    "circles": "Circles",
     "createCircle": "Create circle",
     "settings": "Settings",
     "newPost": "New post",
@@ -82,7 +83,8 @@
       "vote_received": "Post agreed",
       "transaction_fee_burned": "Platform fee",
       "circle_join_fee": "Join circle",
-      "system_mint": "System grant"
+      "system_mint": "System grant",
+      "disagree_burned": "Doubt burned"
     }
   },
   "feedNew": {
@@ -96,6 +98,8 @@
     "bodyPlaceholder": "Write your post… bold, headings, images, math, and more",
     "tagsPlaceholder": "Add tags (Enter to add, max 5)",
     "tagsHint": "Press Enter or comma to add tags",
+    "circle": "Post to circle",
+    "circleNone": "No circle (public feed)",
     "rewardHint": "Earn +5 Agreecoins for posting",
     "publishing": "Publishing…",
     "publish": "Publish",
@@ -105,10 +109,15 @@
   },
   "vote": {
     "agreed": "Agreed",
+    "disagreed": "Doubted",
     "peopleCoins": "· {count} people · {amount} coins",
     "shortStats": "· {count} · {amount} coins",
     "confirm": "Confirm",
-    "agree": "Agree"
+    "agree": "Agree",
+    "disagree": "Doubt",
+    "disagreeConfirm": "Confirm doubt",
+    "disagreeStats": "· {amount} coins doubted",
+    "disagreeLabel": "coins doubted"
   },
   "post": {
     "notFound": "Post not found.",
@@ -122,7 +131,9 @@
     "replyPlaceholder": "Reply…",
     "commentPlaceholder": "Add a comment… (+2 coins)",
     "post": "Post",
-    "reply": "Reply"
+    "reply": "Reply",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this post? This cannot be undone."
   },
   "tag": {
     "notFound": "Tag “{name}” does not exist",
@@ -130,6 +141,14 @@
     "return": "← Back",
     "postCount": "{count} posts",
     "empty": "No posts with this tag yet"
+  },
+  "circles": {
+    "title": "Circles",
+    "create": "Create circle",
+    "empty": "No circles yet. Be the first to create one!",
+    "free": "Free",
+    "members": "members",
+    "posts": "posts"
   },
   "circle": {
     "create": {
@@ -181,7 +200,8 @@
     "searchPlaceholder": "Search posts…",
     "searchEmpty": "No posts found for \"{q}\"",
     "searchError": "Search failed. Please try again.",
-    "clearSearch": "Clear"
+    "clearSearch": "Clear",
+    "followFallbackBanner": "You're not following anyone yet — here are the current hot posts to get you started"
   },
   "user": {
     "notFound": "User not found.",

@@ -7,6 +7,7 @@ import { usePost, useComments } from '@/hooks/use-post'
 import { apiClient } from '@/lib/api-client'
 import { timeAgo, formatCoins } from '@/lib/utils'
 import VoteButton from '@/components/feed/vote-button'
+import { TemperatureBar } from '@/components/feed/temperature-bar'
 import type { Comment } from '@/lib/types'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
@@ -17,8 +18,18 @@ export default function PostPage() {
   const id = params.id as string
   const router = useRouter()
   const { t } = useLocale()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { data: post, isLoading: postLoading, error: postError } = usePost(id)
   const { data: comments, isLoading: commentsLoading } = useComments(id)
+
+  const deleteMutation = useMutation({
+    mutationFn: () => apiClient.delete(`/api/posts/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feed'] })
+      router.back()
+    },
+  })
 
   if (postLoading) {
     return (
@@ -53,13 +64,26 @@ export default function PostPage() {
           <div className="w-7 h-7 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-text-secondary">
             {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
           </div>
-          <span className="text-sm text-text-secondary">
+          <span className="text-sm text-text-secondary flex-1">
             <span className="text-text-primary font-medium">
               {post.author.displayName ?? post.author.username}
             </span>
             <span className="mx-1.5 text-text-muted">·</span>
             {timeAgo(post.createdAt)}
           </span>
+          {user?.id === post.author.id && (
+            <button
+              onClick={() => {
+                if (window.confirm(t('post.deleteConfirm'))) {
+                  deleteMutation.mutate()
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              className="text-xs text-red-400 hover:text-red-300 disabled:opacity-40 transition-colors"
+            >
+              {t('post.delete')}
+            </button>
+          )}
         </div>
 
         <h1 className="text-xl font-bold text-text-primary leading-snug mb-3">{post.title}</h1>
@@ -98,14 +122,18 @@ export default function PostPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-5 mt-4 pt-4 border-t border-border-subtle text-xs text-text-muted flex-wrap">
+        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border-subtle">
+          <TemperatureBar temperature={post.temperature} />
+        </div>
+
+        <div className="flex items-center gap-5 mt-2 text-xs text-text-muted flex-wrap">
           <span>
             👁 {post.viewCount} {t('post.views')}
           </span>
           <span>
             💬 {post.commentCount} {t('post.comments')}
           </span>
-          {post.voterCount > 0 && (
+          {post.totalVoteAmount > 0 && (
             <span>
               ⚡{' '}
               {t('post.agreeStats', {
@@ -114,8 +142,8 @@ export default function PostPage() {
               })}
             </span>
           )}
-          {parseFloat(post.temperature) > 0 && (
-            <span>🌡️ {Math.round(parseFloat(post.temperature))}</span>
+          {post.disagreeVoteAmount > 0 && (
+            <span>💧 {formatCoins(post.disagreeVoteAmount)} {t('vote.disagreeLabel')}</span>
           )}
         </div>
 
@@ -124,7 +152,8 @@ export default function PostPage() {
             postId={post.id}
             voterCount={post.voterCount}
             totalVoteAmount={post.totalVoteAmount}
-            hasVoted={post.hasVoted ?? false}
+            disagreeVoteAmount={post.disagreeVoteAmount}
+            userVoteType={post.userVoteType ?? null}
             queryKey={['post', id]}
           />
         </div>

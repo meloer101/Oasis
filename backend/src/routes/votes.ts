@@ -5,18 +5,20 @@ import { eq, sql, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { userBalances, votes, coinTransactions, posts, notifications } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
+import { checkAndUpdateBadge } from '../lib/badges.js'
 
 export const voteRoutes = new Hono()
 
 const castVoteSchema = z.object({
   postId: z.string().uuid(),
   amount: z.number().int().min(1).max(10000),
+  voteType: z.enum(['agree', 'disagree']).default('agree'),
 })
 
 // POST /api/votes — cast a vote (spend coins on a post)
 voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c) => {
   const userId = c.get('userId')
-  const { postId, amount } = c.req.valid('json')
+  const { postId, amount, voteType } = c.req.valid('json')
 
   try {
     const result = await db.transaction(async (tx) => {
@@ -50,11 +52,7 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
 
       if (existingVote) throw new Error('ALREADY_VOTED')
 
-      // 4. Calculate split: 80% to author, 20% burned
-      const authorAmount = Math.floor(amount * 0.8)
-      const burnAmount = amount - authorAmount
-
-      // 5. Deduct from voter
+      // 4. Deduct from voter (both agree and disagree cost coins)
       await tx
         .update(userBalances)
         .set({
@@ -64,65 +62,96 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
         })
         .where(eq(userBalances.userId, userId))
 
-      // 6. Add to author (80%)
-      await tx
-        .update(userBalances)
-        .set({
-          balance: sql`${userBalances.balance} + ${authorAmount}`,
-          totalEarned: sql`${userBalances.totalEarned} + ${authorAmount}`,
-          updatedAt: new Date(),
-        })
-        .where(eq(userBalances.userId, post.authorId))
-
-      // 7. Record the vote
+      // 5. Record the vote with voteType
       const [vote] = await tx
         .insert(votes)
-        .values({ voterId: userId, postId, amount })
+        .values({ voterId: userId, postId, amount, voteType })
         .returning()
 
-      // 8. Immutable audit log — two entries
-      await tx.insert(coinTransactions).values([
-        {
-          fromUserId: userId,
-          toUserId: post.authorId,
-          amount: authorAmount,
-          transactionType: 'vote_received',
+      let authorAmount = 0
+
+      if (voteType === 'agree') {
+        // Agree: 80% to author, 20% burned
+        authorAmount = Math.floor(amount * 0.8)
+        const burnAmount = amount - authorAmount
+
+        await tx
+          .update(userBalances)
+          .set({
+            balance: sql`${userBalances.balance} + ${authorAmount}`,
+            totalEarned: sql`${userBalances.totalEarned} + ${authorAmount}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(userBalances.userId, post.authorId))
+
+        await tx.insert(coinTransactions).values([
+          {
+            fromUserId: userId,
+            toUserId: post.authorId,
+            amount: authorAmount,
+            transactionType: 'vote_received',
+            relatedPostId: postId,
+            relatedVoteId: vote.id,
+          },
+          {
+            fromUserId: userId,
+            toUserId: null, // burned
+            amount: burnAmount,
+            transactionType: 'transaction_fee_burned',
+            relatedPostId: postId,
+            relatedVoteId: vote.id,
+          },
+        ])
+
+        // Update post stats: agree path
+        // temperature = (totalVoteAmount + amount - disagreeVoteAmount) / GREATEST(viewCount, 1) * 1000
+        await tx
+          .update(posts)
+          .set({
+            voterCount: sql`${posts.voterCount} + 1`,
+            totalVoteAmount: sql`${posts.totalVoteAmount} + ${amount}`,
+            temperature: sql`((${posts.totalVoteAmount} + ${amount} - ${posts.disagreeVoteAmount})::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.id, postId))
+
+        // Notify author only for agree
+        await tx.insert(notifications).values({
+          userId: post.authorId,
+          type: 'vote_received',
+          actorId: userId,
           relatedPostId: postId,
-          relatedVoteId: vote.id,
-        },
-        {
+          content: `有人给你的帖子投了 ${amount} 枚认同币`,
+        })
+      } else {
+        // Disagree: 100% burned, no author reward
+        await tx.insert(coinTransactions).values({
           fromUserId: userId,
           toUserId: null, // burned
-          amount: burnAmount,
-          transactionType: 'transaction_fee_burned',
+          amount,
+          transactionType: 'disagree_burned',
           relatedPostId: postId,
           relatedVoteId: vote.id,
-        },
-      ])
-
-      // 9. Update post stats + recalculate temperature
-      // temperature = totalVoteAmount / GREATEST(viewCount, 1) * 1000
-      await tx
-        .update(posts)
-        .set({
-          voterCount: sql`${posts.voterCount} + 1`,
-          totalVoteAmount: sql`${posts.totalVoteAmount} + ${amount}`,
-          temperature: sql`((${posts.totalVoteAmount} + ${amount})::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
-          updatedAt: new Date(),
         })
-        .where(eq(posts.id, postId))
 
-      // 10. Notify the post author
-      await tx.insert(notifications).values({
-        userId: post.authorId,
-        type: 'vote_received',
-        actorId: userId,
-        relatedPostId: postId,
-        content: `有人给你的帖子投了 ${amount} 枚认同币`,
-      })
+        // Update post stats: disagree path
+        // temperature = (totalVoteAmount - (disagreeVoteAmount + amount)) / GREATEST(viewCount, 1) * 1000
+        await tx
+          .update(posts)
+          .set({
+            voterCount: sql`${posts.voterCount} + 1`,
+            disagreeVoteAmount: sql`${posts.disagreeVoteAmount} + ${amount}`,
+            temperature: sql`((${posts.totalVoteAmount} - (${posts.disagreeVoteAmount} + ${amount}))::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.id, postId))
+      }
 
-      return { vote, authorAmount, burnAmount }
+      return { vote, authorAmount, burnAmount: amount - authorAmount }
     })
+
+    // Fire-and-forget: check if voter's balance drop triggered a badge downgrade
+    checkAndUpdateBadge(userId).catch(() => {})
 
     return c.json({
       success: true,

@@ -10,6 +10,7 @@ import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
 import { RichEditor } from '@/components/editor/rich-editor'
+import { useCircles } from '@/hooks/use-circle'
 
 function hasMeaningfulRichText(html: string): boolean {
   const text = html
@@ -28,7 +29,9 @@ export default function NewPostPage() {
   const [serverError, setServerError] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [tags, setTags] = useState<string[]>([])
+  const [circleId, setCircleId] = useState<string>('')
   const tagRef = useRef<HTMLInputElement>(null)
+  const { data: circles } = useCircles()
 
   const schema = useMemo(
     () =>
@@ -100,6 +103,9 @@ export default function NewPostPage() {
       }
       if (data.contentType === 'link' && data.linkUrl) {
         body.linkUrl = data.linkUrl
+      }
+      if (circleId) {
+        body.circleId = circleId
       }
       return apiClient.post('/api/posts', body)
     },
@@ -189,6 +195,24 @@ export default function NewPostPage() {
               className={inputClass}
             />
             {errors.linkUrl && <p className="mt-1 text-xs text-red-400">{errors.linkUrl.message}</p>}
+          </div>
+        )}
+
+        {circles && circles.length > 0 && (
+          <div>
+            <label className="text-sm text-text-secondary block mb-1.5">{t('feedNew.circle')}</label>
+            <select
+              value={circleId}
+              onChange={(e) => setCircleId(e.target.value)}
+              className="w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-emerald-700 transition-colors"
+            >
+              <option value="">{t('feedNew.circleNone')}</option>
+              {circles.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 

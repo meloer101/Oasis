@@ -78,8 +78,8 @@ export default function Sidebar() {
         <NavItem href="/wallet" active={pathname === '/wallet'} icon="💰">
           {t('sidebar.wallet')}
         </NavItem>
-        <NavItem href="/circle/create" active={pathname === '/circle/create'} icon="🏔️">
-          {t('sidebar.createCircle')}
+        <NavItem href="/circles" active={pathname.startsWith('/circles') || pathname.startsWith('/circle')} icon="🏔️">
+          {t('sidebar.circles')}
         </NavItem>
         <NavItem href="/settings" active={pathname === '/settings'} icon="⚙️">
           {t('sidebar.settings')}

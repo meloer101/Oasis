@@ -43,6 +43,7 @@ export default function FeedPage() {
 
   const feedPosts = feed.data?.pages.flatMap((p) => p.items) ?? []
   const searchPosts = search.data?.pages.flatMap((p) => p.items) ?? []
+  const followFallback = feedType === 'follow' && (feed.data?.pages[0]?.followFallback ?? false)
   const feedQueryKey = isSearching ? ['post-search', searchQuery] : ['feed', feedType]
 
   function handleSearch(e: FormEvent) {
@@ -107,6 +108,13 @@ export default function FeedPage() {
       )}
       {isSearching && search.error && (
         <div className="text-center py-12 text-text-muted text-sm">{t('feed.searchError')}</div>
+      )}
+
+      {/* Follow cold-start fallback banner */}
+      {!isSearching && followFallback && (
+        <div className="mb-3 px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 border border-border-subtle text-sm text-text-muted">
+          {t('feed.followFallbackBanner')}
+        </div>
       )}
 
       {/* Empty state */}

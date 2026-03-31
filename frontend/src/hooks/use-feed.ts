@@ -5,6 +5,7 @@ import type { Post, FeedType } from '@/lib/types'
 interface FeedPage {
   items: Post[]
   nextCursor: string | null
+  followFallback?: boolean
 }
 
 export function useFeed(feedType: FeedType) {

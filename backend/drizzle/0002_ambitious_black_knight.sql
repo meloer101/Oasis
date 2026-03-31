@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "disagree_vote_amount" bigint DEFAULT 0 NOT NULL;
