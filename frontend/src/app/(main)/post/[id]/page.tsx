@@ -10,6 +10,7 @@ import VoteButton from '@/components/feed/vote-button'
 import type { Comment } from '@/lib/types'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
+import { PostHtmlContent } from '@/components/post/post-html-content'
 
 export default function PostPage() {
   const params = useParams()
@@ -77,6 +78,8 @@ export default function PostPage() {
               <p className="text-text-secondary text-sm leading-relaxed">{post.content}</p>
             )}
           </>
+        ) : post.contentType === 'rich' && post.content ? (
+          <PostHtmlContent html={post.content} />
         ) : (
           <p className="text-text-secondary text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
         )}

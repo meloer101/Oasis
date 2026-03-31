@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, KeyboardEvent, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useRouter } from 'next/navigation'
@@ -9,6 +9,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
+import { RichEditor } from '@/components/editor/rich-editor'
+
+function hasMeaningfulRichText(html: string): boolean {
+  const text = html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return text.length > 0
+}
 
 export default function NewPostPage() {
   const router = useRouter()
@@ -22,12 +32,30 @@ export default function NewPostPage() {
 
   const schema = useMemo(
     () =>
-      z.object({
-        title: z.string().min(1, t('feedNew.titleRequired')).max(300),
-        content: z.string().min(1, t('feedNew.contentRequired')),
-        contentType: z.enum(['markdown', 'link', 'image']),
-        linkUrl: z.string().url().optional().or(z.literal('')),
-      }),
+      z
+        .object({
+          title: z.string().min(1, t('feedNew.titleRequired')).max(300),
+          content: z.string(),
+          contentType: z.enum(['rich', 'link']),
+          linkUrl: z.string().url().optional().or(z.literal('')),
+        })
+        .superRefine((data, ctx) => {
+          if (data.contentType === 'rich') {
+            if (!hasMeaningfulRichText(data.content)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: t('feedNew.contentRequired'),
+                path: ['content'],
+              })
+            }
+          } else if (!data.content.trim()) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: t('feedNew.contentRequired'),
+              path: ['content'],
+            })
+          }
+        }),
     [t],
   )
 
@@ -35,12 +63,13 @@ export default function NewPostPage() {
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { contentType: 'markdown' },
+    defaultValues: { contentType: 'rich', content: '' },
   })
 
   const contentType = watch('contentType')
@@ -106,9 +135,8 @@ export default function NewPostPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Content type selector */}
         <div className="flex gap-3">
-          {(['markdown', 'link'] as const).map((type) => (
+          {(['rich', 'link'] as const).map((type) => (
             <label key={type} className="flex items-center gap-1.5 cursor-pointer">
               <input
                 {...register('contentType')}
@@ -117,7 +145,7 @@ export default function NewPostPage() {
                 className="accent-emerald-500"
               />
               <span className="text-sm text-text-secondary capitalize">
-                {type === 'markdown' ? `📝 ${t('feedNew.markdown')}` : `🔗 ${t('feedNew.link')}`}
+                {type === 'rich' ? `📝 ${t('feedNew.richText')}` : `🔗 ${t('feedNew.link')}`}
               </span>
             </label>
           ))}
@@ -129,14 +157,26 @@ export default function NewPostPage() {
         </div>
 
         <div>
-          <textarea
-            {...register('content')}
-            placeholder={
-              contentType === 'link' ? t('feedNew.linkDescPlaceholder') : t('feedNew.bodyPlaceholder')
-            }
-            rows={6}
-            className={inputClass + ' resize-none'}
-          />
+          {contentType === 'rich' ? (
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <RichEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t('feedNew.bodyPlaceholder')}
+                />
+              )}
+            />
+          ) : (
+            <textarea
+              {...register('content')}
+              placeholder={t('feedNew.linkDescPlaceholder')}
+              rows={6}
+              className={inputClass + ' resize-none'}
+            />
+          )}
           {errors.content && <p className="mt-1 text-xs text-red-400">{errors.content.message}</p>}
         </div>
 
@@ -152,7 +192,6 @@ export default function NewPostPage() {
           </div>
         )}
 
-        {/* Tags input */}
         <div>
           <div
             className="flex flex-wrap gap-1.5 min-h-[44px] bg-surface border border-border-subtle rounded-lg px-3 py-2 focus-within:border-emerald-700 transition-colors cursor-text"

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, desc, sql, and, or, lt, inArray } from 'drizzle-orm'
+import { eq, desc, sql, and, or, lt, inArray, ilike } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import {
   posts,
@@ -17,6 +17,7 @@ import {
 } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
+import { sanitizePostRichHtml } from '../lib/sanitize-post-html.js'
 
 export const postRoutes = new Hono()
 
@@ -37,7 +38,7 @@ function decodeCursor(cursor: string): { value: string; id: string } {
 const createPostSchema = z.object({
   title: z.string().min(1).max(300),
   content: z.string().min(1),
-  contentType: z.enum(['markdown', 'link', 'image']).default('markdown'),
+  contentType: z.enum(['markdown', 'link', 'image', 'rich']).default('markdown'),
   circleId: z.string().uuid().optional(),
   linkUrl: z.string().url().optional(),
   imageUrl: z.string().url().optional(),
@@ -47,6 +48,12 @@ const createPostSchema = z.object({
 
 const feedQuerySchema = z.object({
   feed: z.enum(['hot', 'fresh', 'follow']).default('hot'),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+  cursor: z.string().optional(),
+})
+
+const searchQuerySchema = z.object({
+  q: z.string().min(1).max(100),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   cursor: z.string().optional(),
 })
@@ -231,6 +238,72 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
   return c.json({ items: enriched, nextCursor })
 })
 
+// GET /api/posts/search?q=...
+postRoutes.get('/search', zValidator('query', searchQuerySchema), async (c) => {
+  const { q, limit, cursor } = c.req.valid('query')
+  const currentUserId = tryGetUserId(c.req.header('Authorization'))
+  const fetchLimit = limit + 1
+  const pattern = `%${q}%`
+
+  const tagMatchSubquery = db
+    .select({ postId: postTags.postId })
+    .from(postTags)
+    .innerJoin(tags, eq(postTags.tagId, tags.id))
+    .where(ilike(tags.name, pattern))
+
+  const conditions = [
+    eq(posts.status, 'published'),
+    or(
+      ilike(posts.title, pattern),
+      ilike(posts.content, pattern),
+      inArray(posts.id, tagMatchSubquery)
+    )!,
+  ]
+
+  if (cursor) {
+    const { value, id } = decodeCursor(cursor)
+    if (value && id) {
+      const cursorDate = new Date(value)
+      conditions.push(
+        or(
+          lt(posts.createdAt, cursorDate),
+          and(eq(posts.createdAt, cursorDate), lt(posts.id, id))
+        )!
+      )
+    }
+  }
+
+  const items = await db
+    .select(postSelect)
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .where(and(...conditions))
+    .orderBy(desc(posts.createdAt), desc(posts.id))
+    .limit(fetchLimit)
+
+  const hasMore = items.length > limit
+  const page = hasMore ? items.slice(0, limit) : items
+  let nextCursor: string | null = null
+  if (hasMore) {
+    const last = page[page.length - 1]
+    nextCursor = encodeCursor({ value: (last.createdAt as Date).toISOString(), id: last.id })
+  }
+
+  const postIds = page.map((p) => p.id)
+  const [tagMap, votedIds] = await Promise.all([
+    fetchTagsForPosts(postIds),
+    currentUserId ? fetchVotedPostIds(currentUserId, postIds) : Promise.resolve(new Set<string>()),
+  ])
+
+  const enriched = page.map((p) => ({
+    ...p,
+    tags: tagMap[p.id] ?? [],
+    hasVoted: votedIds.has(p.id),
+  }))
+
+  return c.json({ items: enriched, nextCursor })
+})
+
 // GET /api/posts/:id
 postRoutes.get('/:id', async (c) => {
   const id = c.req.param('id')
@@ -290,10 +363,15 @@ postRoutes.post('/', authenticate, zValidator('json', createPostSchema), async (
   const userId = c.get('userId')
   const { tags: tagNames, ...postData } = c.req.valid('json')
 
+  const payload =
+    postData.contentType === 'rich'
+      ? { ...postData, content: sanitizePostRichHtml(postData.content) }
+      : postData
+
   const newPost = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(posts)
-      .values({ authorId: userId, ...postData })
+      .values({ authorId: userId, ...payload })
       .returning()
 
     // Handle tags: upsert each tag and link to post

@@ -89,10 +89,11 @@
     "title": "New post",
     "cancel": "Cancel",
     "markdown": "Body",
+    "richText": "Rich text",
     "link": "Link",
     "titlePlaceholder": "Title",
     "linkDescPlaceholder": "Describe this link…",
-    "bodyPlaceholder": "Write something… (Markdown supported)",
+    "bodyPlaceholder": "Write your post… bold, headings, images, math, and more",
     "tagsPlaceholder": "Add tags (Enter to add, max 5)",
     "tagsHint": "Press Enter or comma to add tags",
     "rewardHint": "Earn +5 Agreecoins for posting",
@@ -176,7 +177,11 @@
     "emptyFollow": "Follow some users to see their posts here.",
     "empty": "No posts yet. Be the first to share something.",
     "loadMore": "Load more",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "searchPlaceholder": "Search posts…",
+    "searchEmpty": "No posts found for \"{q}\"",
+    "searchError": "Search failed. Please try again.",
+    "clearSearch": "Clear"
   },
   "user": {
     "notFound": "User not found.",

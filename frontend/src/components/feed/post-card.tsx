@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import type { Post } from '@/lib/types'
-import { timeAgo, heatBadge, formatCoins } from '@/lib/utils'
+import { timeAgo, heatBadge } from '@/lib/utils'
 import VoteButton from './vote-button'
+import { stripHtmlToText } from '@/lib/html'
 
 interface Props {
   post: Post
@@ -25,7 +26,7 @@ function TemperatureBar({ temperature }: { temperature: string }) {
       : 'bg-emerald-500'
 
   return (
-    <div className="flex items-center gap-2 text-xs text-text-muted mb-2.5">
+    <div className="flex items-center gap-1.5 flex-1">
       <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
@@ -38,16 +39,20 @@ function TemperatureBar({ temperature }: { temperature: string }) {
 
 export default function PostCard({ post, feedQueryKey }: Props) {
   const heat = heatBadge(post.temperature)
-  const preview = post.content
-    ? post.content.slice(0, 160) + (post.content.length > 160 ? '…' : '')
+  const previewPlain =
+    post.contentType === 'rich' && post.content
+      ? stripHtmlToText(post.content)
+      : post.content ?? ''
+  const preview = previewPlain
+    ? previewPlain.slice(0, 160) + (previewPlain.length > 160 ? '…' : '')
     : ''
 
   return (
-    <article className="bg-surface border border-border-subtle rounded-xl p-4 hover:border-zinc-400/50 dark:hover:border-zinc-600/50 transition-colors">
+    <article className="bg-surface border border-border-subtle rounded-xl px-4 py-3 hover:border-zinc-400/50 dark:hover:border-zinc-600/50 transition-colors">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2.5">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-6 h-6 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-text-secondary shrink-0">
+          <div className="w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-text-secondary shrink-0">
             {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
           </div>
           <span className="text-sm text-text-secondary truncate">
@@ -68,14 +73,14 @@ export default function PostCard({ post, feedQueryKey }: Props) {
 
       {/* Title */}
       <Link href={`/post/${post.id}`}>
-        <h2 className="text-text-primary font-semibold leading-snug mb-1.5 hover:text-emerald-400 transition-colors">
+        <h2 className="text-text-primary font-semibold leading-snug mb-1 hover:text-emerald-400 transition-colors">
           {post.title}
         </h2>
       </Link>
 
       {/* Content preview */}
       {preview && (
-        <p className="text-sm text-text-muted leading-relaxed mb-2.5 line-clamp-2">{preview}</p>
+        <p className="text-sm text-text-muted leading-relaxed mb-1 line-clamp-2">{preview}</p>
       )}
 
       {/* Link preview */}
@@ -84,7 +89,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-xs text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 mb-2.5 truncate"
+          className="block text-xs text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 mb-1 truncate"
         >
           🔗 {post.linkUrl}
         </a>
@@ -92,7 +97,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
 
       {/* Tags */}
       {post.tags && post.tags.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2.5">
+        <div className="flex flex-wrap gap-1 mb-1">
           {post.tags.map((tag) => (
             <Link
               key={tag}
@@ -105,11 +110,8 @@ export default function PostCard({ post, feedQueryKey }: Props) {
         </div>
       )}
 
-      {/* Temperature bar */}
-      <TemperatureBar temperature={post.temperature} />
-
-      {/* Actions */}
-      <div className="flex items-center gap-4 pt-2 border-t border-border-subtle">
+      {/* Actions + temperature bar */}
+      <div className="flex items-center gap-3 pt-1.5 border-t border-border-subtle">
         <VoteButton
           postId={post.id}
           voterCount={post.voterCount}
@@ -124,6 +126,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
           💬 {post.commentCount}
         </Link>
         <span className="text-xs text-text-muted">👁 {post.viewCount}</span>
+        <TemperatureBar temperature={post.temperature} />
       </div>
     </article>
   )

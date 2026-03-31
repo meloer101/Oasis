@@ -39,7 +39,7 @@ export interface Post {
   id: string
   title: string
   content?: string
-  contentType: 'markdown' | 'link' | 'image'
+  contentType: 'markdown' | 'link' | 'image' | 'rich'
   linkUrl: string | null
   imageUrl: string | null
   circleId: string | null

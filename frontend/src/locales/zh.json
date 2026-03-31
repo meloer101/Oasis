@@ -1,6 +1,6 @@
 {
   "sidebar": {
-    "feed": "动态",
+    "feed": "广场",
     "notifications": "通知",
     "wallet": "钱包",
     "createCircle": "创建圈子",
@@ -11,7 +11,7 @@
     "language": "语言"
   },
   "mobileNav": {
-    "feed": "动态",
+    "feed": "广场",
     "notifications": "通知",
     "newPost": "发帖",
     "wallet": "钱包",
@@ -89,10 +89,11 @@
     "title": "发布帖子",
     "cancel": "取消",
     "markdown": "正文",
+    "richText": "富文本",
     "link": "链接",
     "titlePlaceholder": "标题",
     "linkDescPlaceholder": "描述这个链接…",
-    "bodyPlaceholder": "写点什么…（支持 Markdown）",
+    "bodyPlaceholder": "写正文…支持加粗、标题、图片链接、公式等",
     "tagsPlaceholder": "添加标签（回车确认，最多 5 个）",
     "tagsHint": "回车或逗号添加标签",
     "rewardHint": "发帖获得 +5 枚认同币奖励",
@@ -176,7 +177,11 @@
     "emptyFollow": "关注一些用户，在这里查看他们的帖子。",
     "empty": "还没有帖子，来做第一个分享的人吧。",
     "loadMore": "加载更多",
-    "loading": "加载中…"
+    "loading": "加载中…",
+    "searchPlaceholder": "搜索帖子…",
+    "searchEmpty": "没有找到与\"{q}\"相关的帖子",
+    "searchError": "搜索失败，请稍后再试。",
+    "clearSearch": "清除"
   },
   "user": {
     "notFound": "用户不存在。",

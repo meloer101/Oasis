@@ -185,7 +185,7 @@ export const posts = pgTable(
     title: varchar('title', { length: 300 }).notNull(),
     content: text('content').notNull(),
     contentType: varchar('content_type', { length: 20 }).notNull().default('markdown'),
-    // markdown | link | image
+    // markdown | link | image | rich
     linkUrl: varchar('link_url', { length: 500 }),
     imageUrl: varchar('image_url', { length: 500 }),
     status: varchar('status', { length: 20 }).notNull().default('published'),

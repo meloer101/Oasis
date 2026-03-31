@@ -14,6 +14,7 @@ import { walletRoutes } from './routes/wallet.js'
 import { circleRoutes } from './routes/circles.js'
 import { tagRoutes } from './routes/tag-routes.js'
 import { notificationRoutes } from './routes/notifications.js'
+import { uploadRoutes } from './routes/upload.js'
 import { distributeDailyCoins, scheduleDailyCoins } from './jobs/daily-coins.js'
 import { scheduleCleanupRefreshTokens } from './jobs/cleanup-tokens.js'
 
@@ -96,6 +97,7 @@ app.route('/api/wallet', walletRoutes)
 app.route('/api/circles', circleRoutes)
 app.route('/api/tags', tagRoutes)
 app.route('/api/notifications', notificationRoutes)
+app.route('/api/upload', uploadRoutes)
 
 // Protected admin endpoint: manually trigger daily coin distribution
 app.post('/api/admin/daily-coins', async (c) => {

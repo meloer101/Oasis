@@ -64,6 +64,9 @@ function clearAuthStorage() {
 }
 
 apiClient.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
   if (typeof window !== 'undefined') {
     const token =
       localStorage.getItem('oasis_access_token') ?? localStorage.getItem('oasis_token')
