@@ -1,4 +1,9 @@
 {
+  "topNav": {
+    "openMenu": "打开菜单",
+    "createPost": "发帖",
+    "profile": "个人主页"
+  },
   "sidebar": {
     "feed": "广场",
     "notifications": "通知",
@@ -9,14 +14,29 @@
     "newPost": "发布帖子",
     "coins": "币",
     "logout": "退出登录",
-    "language": "语言"
+    "language": "语言",
+    "trendingTags": "热门标签"
   },
   "mobileNav": {
     "feed": "广场",
+    "circles": "圈子",
     "notifications": "通知",
     "newPost": "发帖",
     "wallet": "钱包",
-    "settings": "设置"
+    "settings": "设置",
+    "profile": "我的"
+  },
+  "rightPanel": {
+    "communityTitle": "关于 Oasis",
+    "communityBlurb": "去中心化共识社交：用认同币表达立场，让好内容升温。",
+    "exploreCircles": "探索圈子",
+    "trendingTags": "热门标签",
+    "author": "作者",
+    "viewProfile": "查看主页",
+    "postTags": "本文标签",
+    "joined": "加入于",
+    "walletSidebarHint": "在钱包页可查看完整徽章与流水。",
+    "noTagsYet": "暂无标签"
   },
   "theme": {
     "light": "浅色",
@@ -134,6 +154,8 @@
     "capReached": "此帖作者收益已封顶，认同仍计入温度"
   },
   "post": {
+    "share": "分享",
+    "readTime": "{min} 分钟阅读",
     "notFound": "帖子不存在。",
     "goBack": "返回",
     "back": "← 返回",
@@ -203,6 +225,10 @@
     "viewPost": "查看帖子 →"
   },
   "feed": {
+    "tabDiscover": "发现",
+    "tabFollowing": "关注",
+    "subHot": "热门",
+    "subLatest": "最新",
     "tabHot": "🔥 热门",
     "tabFresh": "✨ 最新",
     "tabFollow": "👥 关注",
@@ -215,6 +241,8 @@
     "searchEmpty": "没有找到与\"{q}\"相关的帖子",
     "searchError": "搜索失败，请稍后再试。",
     "clearSearch": "清除",
+    "resultsFor": "搜索「{q}」",
+    "metaComments": "{count} 条评论",
     "followFallbackBanner": "还没有关注的人，以下是当前热门内容 — 去探索发现有趣的人吧"
   },
   "user": {
@@ -225,6 +253,12 @@
     "following": "已关注",
     "follow": "关注",
     "posts": "帖子",
-    "noPosts": "还没有帖子。"
+    "noPosts": "还没有帖子。",
+    "about": "简介",
+    "noBio": "暂无简介",
+    "tabPosts": "帖子",
+    "tabCircles": "圈子",
+    "circlesEmpty": "暂无创建的圈子。",
+    "circlesHint": "在圈子页发现更多社区。"
   }
 }

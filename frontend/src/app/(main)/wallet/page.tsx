@@ -44,7 +44,7 @@ export default function WalletPage() {
     <div className="space-y-5">
       <h1 className="text-lg font-bold text-text-primary">{t('wallet.title')}</h1>
 
-      <div className="bg-surface border border-border-subtle rounded-xl p-5">
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5 shadow-sm">
         <p className="text-sm text-text-muted mb-1">{t('wallet.balance')}</p>
         <p className="text-4xl font-bold text-emerald-400 tabular-nums">
           {formatCoins(wallet.balance)}
@@ -57,7 +57,7 @@ export default function WalletPage() {
         </p>
       </div>
 
-      <div className="bg-surface border border-border-subtle rounded-xl p-5 flex items-center justify-between gap-4">
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm">
         <div>
           <p className="text-sm text-text-muted mb-0.5">{t('wallet.streak.title')}</p>
           <p className="text-2xl font-bold text-orange-400">
@@ -69,7 +69,7 @@ export default function WalletPage() {
         </p>
       </div>
 
-      <div className="bg-surface border border-border-subtle rounded-xl p-5">
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5 shadow-sm">
         <p className="text-sm font-semibold text-text-primary mb-4">{t('wallet.badgeProgress')}</p>
         <div className="space-y-3">
           {allBadges.map(([type, meta]) => {
@@ -126,7 +126,7 @@ export default function WalletPage() {
             {txList.map((tx) => (
               <div
                 key={tx.id}
-                className="flex items-center justify-between py-2.5 px-4 bg-surface border border-border-subtle rounded-lg"
+                className="flex items-center justify-between py-2.5 px-4 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg"
               >
                 <div className="min-w-0">
                   <p className="text-sm text-text-primary">{txLabel(tx.transactionType)}</p>

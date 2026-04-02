@@ -2,11 +2,13 @@
 
 interface Props {
   temperature: string
+  /** Slim numeric display for card footers */
+  compact?: boolean
 }
 
-export function TemperatureBar({ temperature }: Props) {
+export function TemperatureBar({ temperature, compact }: Props) {
   const t = parseFloat(temperature)
-  if (t === 0) return null
+  if (t === 0 && !compact) return null
 
   const isNegative = t < 0
   const abs = Math.abs(t)
@@ -33,6 +35,27 @@ export function TemperatureBar({ temperature }: Props) {
     : abs >= 1
     ? Math.round(abs).toString()
     : abs.toFixed(1)
+
+  if (compact) {
+    if (t === 0) {
+      return (
+        <span className="inline-flex items-center gap-0.5 text-xs font-mono font-medium text-text-muted">
+          <span className="opacity-70" aria-hidden>
+            🌡
+          </span>
+          0
+        </span>
+      )
+    }
+    return (
+      <span className={`inline-flex items-center gap-0.5 text-xs font-mono font-medium ${numColor}`}>
+        <span className="opacity-70" aria-hidden>
+          🌡
+        </span>
+        {display}
+      </span>
+    )
+  }
 
   return (
     <div className="flex items-center gap-1.5 flex-1">

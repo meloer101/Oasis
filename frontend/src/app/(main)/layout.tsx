@@ -1,11 +1,22 @@
 'use client'
 
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
+import { LayoutShellProvider } from '@/providers/layout-shell-provider'
 import Sidebar from '@/components/layout/sidebar'
 import Header from '@/components/layout/header'
+import RightPanel from '@/components/layout/right-panel'
 import MobileNav from '@/components/layout/mobile-nav'
+
+function HeaderFallback() {
+  return (
+    <div
+      className="sticky top-0 z-30 h-14 shrink-0 border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-md"
+      aria-hidden
+    />
+  )
+}
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
@@ -28,22 +39,22 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (!user) return null
 
   return (
-    <div className="min-h-screen">
-      {/* Mobile header */}
-      <Header />
+    <LayoutShellProvider>
+      <div className="min-h-screen flex flex-col bg-[var(--bg)]">
+        <Suspense fallback={<HeaderFallback />}>
+          <Header />
+        </Suspense>
 
-      <div className="flex">
-        {/* Left sidebar — desktop */}
-        <Sidebar />
+        <div className="flex flex-1 min-h-0 min-w-0">
+          <Sidebar />
 
-        {/* Main content */}
-        <main className="flex-1 min-w-0 md:ml-0 max-w-3xl mx-auto px-4 py-6 pb-20 md:pb-6">
-          {children}
-        </main>
+          <main className="flex-1 min-w-0 px-4 sm:px-6 py-6 pb-[4.5rem] md:pb-6">{children}</main>
+
+          <RightPanel />
+        </div>
+
+        <MobileNav />
       </div>
-
-      {/* Mobile bottom nav */}
-      <MobileNav />
-    </div>
+    </LayoutShellProvider>
   )
 }

@@ -45,22 +45,19 @@ export default function TagPage() {
 
   return (
     <div>
-      <div className="mb-5">
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-text-muted hover:text-text-secondary transition-colors mb-4 flex items-center gap-1"
-        >
-          {t('tag.return')}
-        </button>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-bold text-text-primary">#{data.tag.name}</span>
-          <span className="text-sm text-text-muted">
-            {t('tag.postCount', { count: data.tag.postCount })}
-          </span>
-        </div>
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="text-sm text-text-muted hover:text-text-secondary transition-colors mb-4 flex items-center gap-1"
+      >
+        {t('tag.return')}
+      </button>
+      <div className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] px-5 py-4 mb-6 shadow-sm flex flex-wrap items-baseline gap-3">
+        <span className="text-2xl font-bold text-text-primary">#{data.tag.name}</span>
+        <span className="text-sm text-text-muted">{t('tag.postCount', { count: data.tag.postCount })}</span>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {data.posts.length === 0 ? (
           <p className="text-center py-12 text-text-muted text-sm">{t('tag.empty')}</p>
         ) : (

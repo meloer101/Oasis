@@ -1,4 +1,9 @@
 {
+  "topNav": {
+    "openMenu": "Open menu",
+    "createPost": "Create post",
+    "profile": "Profile"
+  },
   "sidebar": {
     "feed": "Feed",
     "notifications": "Notifications",
@@ -9,14 +14,29 @@
     "newPost": "New post",
     "coins": "coins",
     "logout": "Log out",
-    "language": "Language"
+    "language": "Language",
+    "trendingTags": "Trending tags"
   },
   "mobileNav": {
     "feed": "Feed",
+    "circles": "Circles",
     "notifications": "Notifications",
     "newPost": "Post",
     "wallet": "Wallet",
-    "settings": "Settings"
+    "settings": "Settings",
+    "profile": "Profile"
+  },
+  "rightPanel": {
+    "communityTitle": "About Oasis",
+    "communityBlurb": "Decentralized consensus social: Agreecoin votes heat up the best ideas.",
+    "exploreCircles": "Explore circles",
+    "trendingTags": "Trending tags",
+    "author": "Author",
+    "viewProfile": "View profile",
+    "postTags": "Tags",
+    "joined": "Joined",
+    "walletSidebarHint": "Open Wallet for full badge progress and transactions.",
+    "noTagsYet": "No tags yet"
   },
   "theme": {
     "light": "Light",
@@ -134,6 +154,8 @@
     "capReached": "Author earnings capped — your agreement still counts toward temperature"
   },
   "post": {
+    "share": "Share",
+    "readTime": "{min} min read",
     "notFound": "Post not found.",
     "goBack": "Go back",
     "back": "← Back",
@@ -203,6 +225,10 @@
     "viewPost": "View post →"
   },
   "feed": {
+    "tabDiscover": "Discover",
+    "tabFollowing": "Following",
+    "subHot": "Hot",
+    "subLatest": "Latest",
     "tabHot": "🔥 Hot",
     "tabFresh": "✨ Fresh",
     "tabFollow": "👥 Following",
@@ -215,6 +241,8 @@
     "searchEmpty": "No posts found for \"{q}\"",
     "searchError": "Search failed. Please try again.",
     "clearSearch": "Clear",
+    "resultsFor": "Results for “{q}”",
+    "metaComments": "{count} comments",
     "followFallbackBanner": "You're not following anyone yet — here are the current hot posts to get you started"
   },
   "user": {
@@ -225,6 +253,12 @@
     "following": "Following",
     "follow": "Follow",
     "posts": "Posts",
-    "noPosts": "No posts yet."
+    "noPosts": "No posts yet.",
+    "about": "About",
+    "noBio": "No bio yet",
+    "tabPosts": "Posts",
+    "tabCircles": "Circles",
+    "circlesEmpty": "No circles created yet.",
+    "circlesHint": "Explore circles to find communities."
   }
 }

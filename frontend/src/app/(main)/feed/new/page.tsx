@@ -129,7 +129,7 @@ export default function NewPostPage() {
     'w-full bg-surface border border-border-subtle rounded-lg px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-emerald-700 transition-colors text-sm'
 
   return (
-    <div className="max-w-xl">
+    <div className="w-full max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-lg font-semibold text-text-primary">{t('feedNew.title')}</h1>
         <button

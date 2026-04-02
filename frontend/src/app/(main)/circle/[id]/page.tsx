@@ -38,7 +38,7 @@ export default function CirclePage() {
 
   return (
     <div>
-      <div className="bg-surface border border-border-subtle rounded-xl p-5 mb-5">
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 mb-6 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-text-primary mb-1">{circle.name}</h1>
@@ -96,7 +96,7 @@ export default function CirclePage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {postsLoading ? (
           <div className="flex justify-center py-8">
             <div className="w-5 h-5 border-2 border-zinc-400 dark:border-zinc-700 border-t-transparent rounded-full animate-spin" />

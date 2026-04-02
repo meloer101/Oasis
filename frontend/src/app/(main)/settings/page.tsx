@@ -109,10 +109,10 @@ export default function SettingsPage() {
   const queryClient = useQueryClient()
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-lg font-bold text-text-primary mb-6">{t('settings.title')}</h1>
+    <div className="max-w-lg mx-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 sm:p-8 shadow-sm">
+      <h1 className="text-xl font-bold text-text-primary mb-6">{t('settings.title')}</h1>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
           <label className="text-sm text-text-secondary block mb-1.5">{t('theme.appearance')}</label>
           <ThemeSelect />

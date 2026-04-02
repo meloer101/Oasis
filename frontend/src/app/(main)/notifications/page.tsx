@@ -41,12 +41,13 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-lg font-bold text-text-primary">{t('notifications.title')}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-text-primary">{t('notifications.title')}</h1>
         {(data?.unreadCount ?? 0) > 0 && (
           <button
+            type="button"
             onClick={() => markAllRead.mutate()}
-            className="text-xs text-text-muted hover:text-text-secondary transition-colors"
+            className="text-sm text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
           >
             {t('notifications.markAllRead')}
           </button>
@@ -59,41 +60,47 @@ export default function NotificationsPage() {
           <p className="text-sm">{t('notifications.empty')}</p>
         </div>
       ) : (
-        <div className="space-y-px">
+        <div className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] overflow-hidden divide-y divide-[var(--card-border)]">
           {notifications.map((n) => (
             <div
               key={n.id}
-              className={`flex items-start gap-3 p-4 rounded-xl border transition-colors ${
-                n.isRead
-                  ? 'bg-surface border-border-subtle'
-                  : 'bg-emerald-50/80 dark:bg-zinc-900/80 border-emerald-200/60 dark:border-zinc-700/60 ring-1 ring-emerald-200/50 dark:ring-emerald-900/30'
+              className={`flex items-start gap-4 p-4 transition-colors ${
+                n.isRead ? 'bg-transparent' : 'bg-emerald-500/[0.06] dark:bg-emerald-500/[0.08]'
               }`}
             >
-              <span className="text-lg shrink-0 mt-0.5">{TYPE_ICONS[n.type] ?? '📢'}</span>
+              <div
+                className={`mt-0.5 w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 ${
+                  n.isRead ? 'bg-nav-hover' : 'bg-emerald-500/15 ring-2 ring-emerald-500/25'
+                }`}
+              >
+                {TYPE_ICONS[n.type] ?? '📢'}
+              </div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-text-primary">
+                <p className="text-sm text-text-primary leading-snug">
                   {n.actor && (
                     <Link
                       href={`/user/${n.actor.username}`}
-                      className="font-medium text-text-primary hover:text-emerald-400 transition-colors"
+                      className="font-semibold text-text-primary hover:text-emerald-500 transition-colors"
                     >
                       {n.actor.displayName ?? n.actor.username}
                     </Link>
                   )}{' '}
-                  {n.content}
+                  <span className="text-text-secondary">{n.content}</span>
                 </p>
-                <p className="text-xs text-text-muted mt-0.5">{timeAgo(n.createdAt)}</p>
+                <p className="text-xs text-text-muted mt-1.5 tabular-nums">{timeAgo(n.createdAt)}</p>
                 {n.relatedPostId && (
                   <Link
                     href={`/post/${n.relatedPostId}`}
-                    className="text-xs text-emerald-600 dark:text-emerald-500 hover:text-emerald-400 transition-colors mt-1 block"
+                    className="text-xs text-emerald-600 dark:text-emerald-400 font-medium hover:underline mt-2 inline-block"
                   >
                     {t('notifications.viewPost')}
                   </Link>
                 )}
               </div>
-              {!n.isRead && (
-                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+              {!n.isRead ? (
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 mt-2 shadow-[0_0_0_4px_rgba(16,185,129,0.15)]" />
+              ) : (
+                <span className="w-2.5 shrink-0" aria-hidden />
               )}
             </div>
           ))}
