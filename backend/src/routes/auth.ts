@@ -13,9 +13,9 @@ import {
 } from '../lib/jwt.js'
 import { extractConflictField, isUniqueViolation } from '../lib/db-errors.js'
 import { rateLimiter } from '../middleware/rate-limit.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 
-export const authRoutes = new Hono()
+export const authRoutes = new Hono<{ Variables: AuthVariables }>()
 
 /** Welcome bonus on registration (must match user_balances + coin_transactions). */
 const WELCOME_BONUS = 100
@@ -185,6 +185,8 @@ authRoutes.post(
             username: users.username,
             email: users.email,
             displayName: users.displayName,
+            bio: users.bio,
+            avatarUrl: users.avatarUrl,
             founderNumber: users.founderNumber,
             createdAt: users.createdAt,
           })
@@ -232,6 +234,8 @@ authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (
       username: users.username,
       email: users.email,
       displayName: users.displayName,
+      bio: users.bio,
+      avatarUrl: users.avatarUrl,
       passwordHash: users.passwordHash,
       isActive: users.isActive,
       tokenVersion: users.tokenVersion,

@@ -57,7 +57,9 @@
     "saveError": "Save failed. Please try again.",
     "saving": "Saving…",
     "saved": "Saved",
-    "save": "Save changes"
+    "save": "Save changes",
+    "loadingProfile": "Loading…",
+    "mustLogin": "Sign in to edit your profile"
   },
   "wallet": {
     "title": "Wallet",
@@ -112,6 +114,11 @@
     "publishError": "Failed to publish. Please try again.",
     "titleRequired": "Title is required",
     "contentRequired": "Content is required"
+  },
+  "editor": {
+    "uploadFailed": "Image upload failed: {detail}",
+    "uploadFailedUnknown": "Unknown error",
+    "pasteImageUrl": "Paste an image HTTPS URL:"
   },
   "vote": {
     "agreed": "Agreed",

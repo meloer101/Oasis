@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 
-export const uploadRoutes = new Hono()
+export const uploadRoutes = new Hono<{ Variables: AuthVariables }>()
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -14,7 +14,12 @@ uploadRoutes.post('/image', authenticate, async (c) => {
     return c.json({ error: 'Image upload is not configured on this server.' }, 503)
   }
 
-  const body = await c.req.parseBody()
+  let body: Record<string, unknown>
+  try {
+    body = (await c.req.parseBody()) as Record<string, unknown>
+  } catch {
+    return c.json({ error: 'Invalid multipart body.' }, 400)
+  }
   const file = body['file']
 
   if (!file || !(file instanceof File)) {

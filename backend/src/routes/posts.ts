@@ -16,11 +16,11 @@ import {
   notifications,
   circles,
 } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
 import { sanitizePostRichHtml } from '../lib/sanitize-post-html.js'
 
-export const postRoutes = new Hono()
+export const postRoutes = new Hono<{ Variables: AuthVariables }>()
 
 // --- Cursor helpers ---
 function encodeCursor(data: object): string {
@@ -74,10 +74,12 @@ const postSelect = {
   imageUrl: posts.imageUrl,
   circleId: posts.circleId,
   circleName: circles.name,
+  visibility: posts.visibility,
   viewCount: posts.viewCount,
   commentCount: posts.commentCount,
   voterCount: posts.voterCount,
   totalVoteAmount: posts.totalVoteAmount,
+  disagreeVoteAmount: posts.disagreeVoteAmount,
   temperature: posts.temperature,
   createdAt: posts.createdAt,
   author: {
@@ -371,6 +373,7 @@ postRoutes.get('/:id', async (c) => {
       commentCount: posts.commentCount,
       voterCount: posts.voterCount,
       totalVoteAmount: posts.totalVoteAmount,
+      disagreeVoteAmount: posts.disagreeVoteAmount,
       temperature: posts.temperature,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,

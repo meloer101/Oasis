@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { assertJwtSecretConfigured } from './lib/jwt.js'
 import { serve } from '@hono/node-server'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
@@ -17,6 +18,8 @@ import { notificationRoutes } from './routes/notifications.js'
 import { uploadRoutes } from './routes/upload.js'
 import { distributeDailyCoins, scheduleDailyCoins } from './jobs/daily-coins.js'
 import { scheduleCleanupRefreshTokens } from './jobs/cleanup-tokens.js'
+
+assertJwtSecretConfigured()
 
 /** Trim and strip trailing slash; empty string counts as unset. */
 function normalizeFrontendUrl(raw: string | undefined): string | undefined {
@@ -101,8 +104,12 @@ app.route('/api/upload', uploadRoutes)
 
 // Protected admin endpoint: manually trigger daily coin distribution
 app.post('/api/admin/daily-coins', async (c) => {
+  const configured = process.env.ADMIN_SECRET
+  if (typeof configured !== 'string' || configured.trim() === '') {
+    return c.json({ error: 'Admin endpoint is not configured' }, 503)
+  }
   const secret = c.req.header('X-Admin-Secret')
-  if (secret !== process.env.ADMIN_SECRET) {
+  if (!secret || secret !== configured) {
     return c.json({ error: 'Forbidden' }, 403)
   }
   const result = await distributeDailyCoins()

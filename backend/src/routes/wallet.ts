@@ -4,10 +4,10 @@ import { z } from 'zod'
 import { eq, desc, or } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { userBalances, userBadges, coinTransactions, users } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { getBadgeFromBalance, getNextBadgeThreshold } from '../lib/badges.js'
 
-export const walletRoutes = new Hono()
+export const walletRoutes = new Hono<{ Variables: AuthVariables }>()
 
 // GET /api/wallet — current user's wallet summary
 walletRoutes.get('/', authenticate, async (c) => {

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
 import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import TextAlign from '@tiptap/extension-text-align'
@@ -13,7 +14,9 @@ import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import { useTheme } from 'next-themes'
 
+import { isAxiosError } from 'axios'
 import { apiClient } from '@/lib/api-client'
+import { useLocale } from '@/hooks/use-locale'
 import './rich-editor.css'
 
 export type RichEditorProps = {
@@ -170,6 +173,7 @@ function ToolbarButton({
 
 export function RichEditor({ value, onChange, placeholder = '', className = '' }: RichEditorProps) {
   const { resolvedTheme } = useTheme()
+  const { t } = useLocale()
   const [emojiOpen, setEmojiOpen] = useState(false)
 
   const editor = useEditor({
@@ -195,6 +199,7 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
       Mathematics.configure({
         katexOptions: { throwOnError: false },
       }),
+      Underline,
     ],
     content: value || '',
     editorProps: {
@@ -242,13 +247,18 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
         const res = await apiClient.post<{ url?: string }>('/api/upload/image', fd)
         const url = res.data?.url
         if (url) editor.chain().focus().setImage({ src: url }).run()
-      } catch {
-        const url = window.prompt('上传未就绪，请粘贴图片 HTTPS 地址：')
+      } catch (e) {
+        const detail =
+          isAxiosError(e) && (e.response?.data as { error?: string } | undefined)?.error
+            ? String((e.response!.data as { error: string }).error)
+            : t('editor.uploadFailedUnknown')
+        window.alert(t('editor.uploadFailed', { detail }))
+        const url = window.prompt(t('editor.pasteImageUrl'))
         if (url?.trim()) editor.chain().focus().setImage({ src: url.trim() }).run()
       }
     }
     input.click()
-  }, [editor])
+  }, [editor, t])
 
   const insertBlockMath = useCallback(() => {
     if (!editor) return

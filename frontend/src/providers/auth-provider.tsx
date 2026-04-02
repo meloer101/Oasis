@@ -8,6 +8,7 @@ interface User {
   username: string
   email: string
   displayName: string | null
+  bio: string | null
   avatarUrl: string | null
 }
 

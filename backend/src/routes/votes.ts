@@ -4,10 +4,10 @@ import { z } from 'zod'
 import { eq, sql, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { userBalances, votes, coinTransactions, posts, notifications } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
 
-export const voteRoutes = new Hono()
+export const voteRoutes = new Hono<{ Variables: AuthVariables }>()
 
 const castVoteSchema = z.object({
   postId: z.string().uuid(),

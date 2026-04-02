@@ -29,6 +29,13 @@
       "when": 1775123408353,
       "tag": "0003_unique_ares",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775139695386,
+      "tag": "0004_schema_cleanup",
+      "breakpoints": true
     }
   ]
 }

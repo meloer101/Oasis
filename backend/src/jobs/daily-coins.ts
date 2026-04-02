@@ -4,53 +4,61 @@ import { userBalances, coinTransactions, users } from '../db/schema.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
 
 const DAILY_AMOUNT = 20
+/** Stable advisory lock key for daily distribution (arbitrary but fixed). */
+const ADVISORY_LOCK_KEY = 902106531
+
+type TxResult =
+  | { kind: 'skipped' }
+  | { kind: 'empty' }
+  | { kind: 'distributed'; activeUsers: { userId: string }[] }
 
 /**
  * Distribute daily coins to all active users.
  * Idempotent: skips if today's distribution has already run.
- * Called once per day at midnight, and once on server startup (to catch missed runs).
+ * Uses pg_advisory_xact_lock so only one instance runs the payout per UTC day.
  */
 export async function distributeDailyCoins(): Promise<{
   usersAffected: number
   totalCoins: number
   skipped?: boolean
 }> {
-  // Idempotency check: skip if we already distributed today (UTC)
   const todayStart = new Date()
   todayStart.setUTCHours(0, 0, 0, 0)
   const todayEnd = new Date(todayStart)
   todayEnd.setUTCDate(todayEnd.getUTCDate() + 1)
 
-  const [existing] = await db
-    .select({ id: coinTransactions.id })
-    .from(coinTransactions)
-    .where(
-      and(
-        eq(coinTransactions.transactionType, 'daily_distribution'),
-        gte(coinTransactions.createdAt, todayStart),
-        lt(coinTransactions.createdAt, todayEnd),
+  const txResult = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(${ADVISORY_LOCK_KEY})`)
+
+    const [existing] = await tx
+      .select({ id: coinTransactions.id })
+      .from(coinTransactions)
+      .where(
+        and(
+          eq(coinTransactions.transactionType, 'daily_distribution'),
+          gte(coinTransactions.createdAt, todayStart),
+          lt(coinTransactions.createdAt, todayEnd),
+        )
       )
-    )
-    .limit(1)
+      .limit(1)
 
-  if (existing) {
-    console.log('[daily-coins] Already distributed today, skipping')
-    return { usersAffected: 0, totalCoins: 0, skipped: true }
-  }
+    if (existing) {
+      console.log('[daily-coins] Already distributed today, skipping')
+      return { kind: 'skipped' } satisfies TxResult
+    }
 
-  // Get all active users with balance accounts
-  const activeUsers = await db
-    .select({ userId: userBalances.userId })
-    .from(userBalances)
-    .innerJoin(users, eq(userBalances.userId, users.id))
-    .where(eq(users.isActive, true))
+    const activeUsers = await tx
+      .select({ userId: userBalances.userId })
+      .from(userBalances)
+      .innerJoin(users, eq(userBalances.userId, users.id))
+      .where(eq(users.isActive, true))
 
-  if (activeUsers.length === 0) return { usersAffected: 0, totalCoins: 0 }
+    if (activeUsers.length === 0) {
+      return { kind: 'empty' } satisfies TxResult
+    }
 
-  const activeUserIds = activeUsers.map((u) => u.userId)
+    const activeUserIds = activeUsers.map((u) => u.userId)
 
-  await db.transaction(async (tx) => {
-    // Bulk update only active users' balances
     await tx
       .update(userBalances)
       .set({
@@ -60,7 +68,6 @@ export async function distributeDailyCoins(): Promise<{
       })
       .where(inArray(userBalances.userId, activeUserIds))
 
-    // Insert transaction records for all active users
     await tx.insert(coinTransactions).values(
       activeUsers.map(({ userId }) => ({
         fromUserId: null as null,
@@ -70,20 +77,31 @@ export async function distributeDailyCoins(): Promise<{
         note: `每日签到奖励 ${DAILY_AMOUNT} 枚认同币`,
       }))
     )
+
+    return { kind: 'distributed', activeUsers } satisfies TxResult
   })
 
-  // Update badges for all users (fire-and-forget)
-  for (const { userId } of activeUsers) {
+  if (txResult.kind === 'skipped') {
+    return { usersAffected: 0, totalCoins: 0, skipped: true }
+  }
+  if (txResult.kind === 'empty') {
+    return { usersAffected: 0, totalCoins: 0 }
+  }
+
+  for (const { userId } of txResult.activeUsers) {
     checkAndUpdateBadge(userId).catch(() => {})
   }
 
-  return { usersAffected: activeUsers.length, totalCoins: activeUsers.length * DAILY_AMOUNT }
+  return {
+    usersAffected: txResult.activeUsers.length,
+    totalCoins: txResult.activeUsers.length * DAILY_AMOUNT,
+  }
 }
 
 /**
  * Schedule daily coin distribution.
  * On startup: runs immediately (idempotent, skips if already done today).
- * Then schedules the next run at midnight, repeating every 24h.
+ * Then schedules the next run at UTC midnight, recomputing delay each time.
  */
 export function scheduleDailyCoins(): void {
   function msUntilMidnight(): number {
@@ -101,11 +119,9 @@ export function scheduleDailyCoins(): void {
       })
       .catch((err) => console.error('[daily-coins] Error:', err))
 
-    // Schedule next run at next UTC midnight
     setTimeout(runAndReschedule, msUntilMidnight())
   }
 
-  // Run immediately on startup (idempotent — skips if today's already done)
   distributeDailyCoins()
     .then(({ usersAffected, totalCoins, skipped }) => {
       if (skipped) {
@@ -116,7 +132,6 @@ export function scheduleDailyCoins(): void {
     })
     .catch((err) => console.error('[daily-coins] Startup run error:', err))
 
-  // Schedule nightly runs
   setTimeout(runAndReschedule, msUntilMidnight())
   console.log(`[daily-coins] Next scheduled distribution in ${Math.round(msUntilMidnight() / 60000)} minutes`)
 }

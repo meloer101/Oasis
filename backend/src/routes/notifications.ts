@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { notifications, users } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 
-export const notificationRoutes = new Hono()
+export const notificationRoutes = new Hono<{ Variables: AuthVariables }>()
 
 const listQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),

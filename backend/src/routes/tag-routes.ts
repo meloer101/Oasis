@@ -2,8 +2,9 @@ import { Hono } from 'hono'
 import { eq, desc, and, inArray } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { tags, postTags, posts, users } from '../db/schema.js'
+import type { AuthVariables } from '../middleware/auth.js'
 
-export const tagRoutes = new Hono()
+export const tagRoutes = new Hono<{ Variables: AuthVariables }>()
 
 // GET /api/tags — list popular tags
 tagRoutes.get('/', async (c) => {

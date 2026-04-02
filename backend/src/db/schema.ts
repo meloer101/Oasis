@@ -12,6 +12,7 @@ import {
   index,
   uniqueIndex,
   check,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
@@ -39,8 +40,7 @@ export const users = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index('idx_users_username').on(t.username),
-    index('idx_users_email').on(t.email),
+    // username/email already indexed by .unique()
     index('idx_users_last_active').on(t.lastActiveAt),
   ]
 )
@@ -172,7 +172,7 @@ export const tags = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index('idx_tags_name').on(t.name),
+    // name already indexed by .unique()
     index('idx_tags_post_count').on(t.postCount),
   ]
 )
@@ -240,7 +240,9 @@ export const comments = pgTable(
     authorId: uuid('author_id')
       .notNull()
       .references(() => users.id),
-    parentId: uuid('parent_id'), // self-reference for nested comments
+    parentId: uuid('parent_id').references((): AnyPgColumn => comments.id, {
+      onDelete: 'cascade',
+    }),
     content: text('content').notNull(),
     status: varchar('status', { length: 20 }).notNull().default('published'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

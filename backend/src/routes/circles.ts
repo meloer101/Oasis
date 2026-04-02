@@ -11,11 +11,11 @@ import {
   userBalances,
   coinTransactions,
 } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
 
-export const circleRoutes = new Hono()
+export const circleRoutes = new Hono<{ Variables: AuthVariables }>()
 
 const createCircleSchema = z.object({
   name: z.string().min(2).max(100),
@@ -201,40 +201,47 @@ circleRoutes.post('/:id/join', authenticate, async (c) => {
   if (existing) return c.json({ error: 'Already a member' }, 409)
 
   if (circle.joinFee > 0) {
-    await db.transaction(async (tx) => {
-      const [balance] = await tx
-        .select({ balance: userBalances.balance })
-        .from(userBalances)
-        .where(eq(userBalances.userId, userId))
-        .for('update')
+    try {
+      await db.transaction(async (tx) => {
+        const [balance] = await tx
+          .select({ balance: userBalances.balance })
+          .from(userBalances)
+          .where(eq(userBalances.userId, userId))
+          .for('update')
 
-      if (!balance || balance.balance < circle.joinFee) {
-        throw new Error('INSUFFICIENT_BALANCE')
-      }
+        if (!balance || balance.balance < circle.joinFee) {
+          throw new Error('INSUFFICIENT_BALANCE')
+        }
 
-      await tx
-        .update(userBalances)
-        .set({
-          balance: sql`${userBalances.balance} - ${circle.joinFee}`,
-          totalSpent: sql`${userBalances.totalSpent} + ${circle.joinFee}`,
-          updatedAt: new Date(),
+        await tx
+          .update(userBalances)
+          .set({
+            balance: sql`${userBalances.balance} - ${circle.joinFee}`,
+            totalSpent: sql`${userBalances.totalSpent} + ${circle.joinFee}`,
+            updatedAt: new Date(),
+          })
+          .where(eq(userBalances.userId, userId))
+
+        await tx.insert(coinTransactions).values({
+          fromUserId: userId,
+          toUserId: circle.creatorId,
+          amount: circle.joinFee,
+          transactionType: 'circle_join_fee',
+          relatedCircleId: circleId,
         })
-        .where(eq(userBalances.userId, userId))
 
-      await tx.insert(coinTransactions).values({
-        fromUserId: userId,
-        toUserId: circle.creatorId,
-        amount: circle.joinFee,
-        transactionType: 'circle_join_fee',
-        relatedCircleId: circleId,
+        await tx.insert(circleMembers).values({ circleId, userId, role: 'member' })
+        await tx
+          .update(circles)
+          .set({ memberCount: sql`${circles.memberCount} + 1` })
+          .where(eq(circles.id, circleId))
       })
-
-      await tx.insert(circleMembers).values({ circleId, userId, role: 'member' })
-      await tx
-        .update(circles)
-        .set({ memberCount: sql`${circles.memberCount} + 1` })
-        .where(eq(circles.id, circleId))
-    })
+    } catch (e) {
+      if (e instanceof Error && e.message === 'INSUFFICIENT_BALANCE') {
+        return c.json({ error: 'Insufficient balance' }, 402)
+      }
+      throw e
+    }
     // Fire-and-forget: check if join fee triggered a badge downgrade
     checkAndUpdateBadge(userId).catch(() => {})
   } else {

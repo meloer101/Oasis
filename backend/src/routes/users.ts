@@ -4,15 +4,15 @@ import { z } from 'zod'
 import { eq, desc, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userBalances, userBadges, userFollows, posts } from '../db/schema.js'
-import { authenticate } from '../middleware/auth.js'
+import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
 
-export const userRoutes = new Hono()
+export const userRoutes = new Hono<{ Variables: AuthVariables }>()
 
 const updateProfileSchema = z.object({
-  displayName: z.string().min(1).max(100).optional(),
-  bio: z.string().max(500).optional(),
-  avatarUrl: z.string().url().optional(),
+  displayName: z.union([z.string().min(1).max(100), z.null()]).optional(),
+  bio: z.union([z.string().max(500), z.null()]).optional(),
+  avatarUrl: z.union([z.string().url(), z.null()]).optional(),
 })
 
 // GET /api/users/me — current user profile + balance
@@ -51,7 +51,11 @@ userRoutes.get('/me', authenticate, async (c) => {
 // PATCH /api/users/me — update own profile
 userRoutes.patch('/me', authenticate, zValidator('json', updateProfileSchema), async (c) => {
   const userId = c.get('userId')
-  const data = c.req.valid('json')
+  const raw = c.req.valid('json')
+  const data: Record<string, string | null> = {}
+  if (raw.displayName !== undefined) data.displayName = raw.displayName
+  if (raw.bio !== undefined) data.bio = raw.bio
+  if (raw.avatarUrl !== undefined) data.avatarUrl = raw.avatarUrl
 
   if (Object.keys(data).length === 0) {
     return c.json({ error: 'No fields to update' }, 400)

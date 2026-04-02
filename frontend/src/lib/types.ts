@@ -44,7 +44,7 @@ export interface Post {
   imageUrl: string | null
   circleId: string | null
   circle?: { id: string; name: string } | null
-  visibility: string
+  visibility: 'public' | 'circle_only'
   viewCount: number
   commentCount: number
   voterCount: number

@@ -57,7 +57,9 @@
     "saveError": "保存失败，请重试",
     "saving": "保存中…",
     "saved": "已保存",
-    "save": "保存更改"
+    "save": "保存更改",
+    "loadingProfile": "加载中…",
+    "mustLogin": "请先登录以编辑资料"
   },
   "wallet": {
     "title": "钱包",
@@ -112,6 +114,11 @@
     "publishError": "发布失败，请重试",
     "titleRequired": "标题不能为空",
     "contentRequired": "内容不能为空"
+  },
+  "editor": {
+    "uploadFailed": "图片上传失败：{detail}",
+    "uploadFailedUnknown": "未知错误",
+    "pasteImageUrl": "可粘贴图片 HTTPS 地址："
   },
   "vote": {
     "agreed": "已认同",

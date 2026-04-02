@@ -1,7 +1,7 @@
 import { createMiddleware } from 'hono/factory'
 import { verifyAccessToken } from '../lib/jwt.js'
 
-type AuthVariables = {
+export type AuthVariables = {
   userId: string
   username: string
 }
