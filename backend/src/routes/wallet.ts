@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { eq, desc, or } from 'drizzle-orm'
 import { db } from '../db/index.js'
-import { userBalances, userBadges, coinTransactions } from '../db/schema.js'
+import { userBalances, userBadges, coinTransactions, users } from '../db/schema.js'
 import { authenticate } from '../middleware/auth.js'
 import { getBadgeFromBalance, getNextBadgeThreshold } from '../lib/badges.js'
 
@@ -21,10 +21,10 @@ walletRoutes.get('/', authenticate, async (c) => {
 
   if (!balance) return c.json({ error: 'Balance not found' }, 404)
 
-  const activeBadges = await db
-    .select({ badgeType: userBadges.badgeType })
-    .from(userBadges)
-    .where(eq(userBadges.userId, userId))
+  const [activeBadges, userRow] = await Promise.all([
+    db.select({ badgeType: userBadges.badgeType }).from(userBadges).where(eq(userBadges.userId, userId)),
+    db.select({ loginStreak: users.loginStreak }).from(users).where(eq(users.id, userId)).limit(1),
+  ])
 
   const currentBalance = balance.balance
   const currentBadge = getBadgeFromBalance(currentBalance)
@@ -37,6 +37,7 @@ walletRoutes.get('/', authenticate, async (c) => {
     currentBadge,
     nextBadgeThreshold,
     badges: activeBadges.map((b) => b.badgeType),
+    loginStreak: userRow[0]?.loginStreak ?? 1,
   })
 })
 

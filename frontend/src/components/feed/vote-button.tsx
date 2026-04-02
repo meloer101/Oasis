@@ -14,6 +14,7 @@ interface Props {
   disagreeVoteAmount: number
   userVoteType: 'agree' | 'disagree' | null
   queryKey: string[]
+  isAuthorCapReached?: boolean
 }
 
 type UIState = 'idle' | 'selecting-agree' | 'selecting-disagree'
@@ -27,6 +28,7 @@ export default function VoteButton({
   disagreeVoteAmount,
   userVoteType: initialVoteType,
   queryKey,
+  isAuthorCapReached = false,
 }: Props) {
   const [uiState, setUIState] = useState<UIState>('idle')
   const [amount, setAmount] = useState(10)
@@ -77,6 +79,11 @@ export default function VoteButton({
     const isAgree = uiState === 'selecting-agree'
     return (
       <div className="inline-flex items-center gap-1.5 flex-wrap">
+        {isAgree && isAuthorCapReached && (
+          <span className="w-full text-xs text-amber-500/80 mb-0.5">
+            ℹ️ {t('vote.capReached')}
+          </span>
+        )}
         <div className="flex items-center gap-1">
           {QUICK_AMOUNTS.map((q) => (
             <button

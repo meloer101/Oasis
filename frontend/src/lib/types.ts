@@ -79,6 +79,7 @@ export interface WalletInfo {
   currentBadge: BadgeType | null
   nextBadgeThreshold: number | null
   badges: string[]
+  loginStreak: number
 }
 
 export interface Transaction {

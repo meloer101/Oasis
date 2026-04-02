@@ -22,6 +22,13 @@
       "when": 1774942503147,
       "tag": "0002_ambitious_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775123408353,
+      "tag": "0003_unique_ares",
+      "breakpoints": true
     }
   ]
 }

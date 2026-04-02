@@ -23,3 +23,10 @@ export function formatCoins(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
   return String(n)
 }
+
+export function getBadgeEmoji(balance: number): string | null {
+  if (balance >= 2000) return '🔥'
+  if (balance >= 500) return '⚡'
+  if (balance >= 100) return '🌱'
+  return null
+}

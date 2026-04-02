@@ -10,6 +10,12 @@ import { useAuth } from '@/providers/auth-provider'
 import type { Post } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 
+const BADGE_META: Record<string, { emoji: string; color: string; bg: string }> = {
+  newcomer:    { emoji: '🌱', color: 'text-emerald-400', bg: 'bg-emerald-900/30 border-emerald-800/50' },
+  resonator:   { emoji: '⚡', color: 'text-blue-400',    bg: 'bg-blue-900/30 border-blue-800/50' },
+  vibe_master: { emoji: '🔥', color: 'text-orange-400',  bg: 'bg-orange-900/30 border-orange-800/50' },
+}
+
 interface UserProfile {
   id: string
   username: string
@@ -19,7 +25,7 @@ interface UserProfile {
   founderNumber: number | null
   createdAt: string
   isFollowing: boolean
-  badges: { badgeType: string }[]
+  badges: { badgeType: string; isActive: boolean }[]
 }
 
 interface UserPost {
@@ -140,6 +146,19 @@ export default function UserProfilePage() {
                   Founder #{profile.founderNumber}
                 </span>
               )}
+              {profile.badges
+                .filter((b) => b.isActive && b.badgeType !== 'founder' && BADGE_META[b.badgeType])
+                .map((b) => {
+                  const meta = BADGE_META[b.badgeType]
+                  return (
+                    <span
+                      key={b.badgeType}
+                      className={`text-xs border rounded px-1.5 py-0.5 ${meta.bg} ${meta.color}`}
+                    >
+                      {meta.emoji} {t(`wallet.badges.${b.badgeType}` as Parameters<typeof t>[0])}
+                    </span>
+                  )
+                })}
             </div>
             <p className="text-sm text-text-muted mt-0.5">@{profile.username}</p>
             {profile.bio && (

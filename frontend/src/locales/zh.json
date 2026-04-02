@@ -76,6 +76,11 @@
       "vibe_master": "Vibe Master",
       "founder": "创始人"
     },
+    "streak": {
+      "title": "连续登录",
+      "days": "第 {days} 天",
+      "hint": "每天首次登录 +5 枚认同币"
+    },
     "tx": {
       "daily_distribution": "每日签到奖励",
       "post_reward": "发帖奖励",
@@ -84,7 +89,8 @@
       "transaction_fee_burned": "平台手续费",
       "circle_join_fee": "加入圈子",
       "system_mint": "系统发放",
-      "disagree_burned": "质疑销毁"
+      "disagree_burned": "质疑销毁",
+      "login_streak_bonus": "连续登录奖励"
     }
   },
   "feedNew": {
@@ -117,7 +123,8 @@
     "disagree": "质疑",
     "disagreeConfirm": "确认质疑",
     "disagreeStats": "· {amount} 币质疑",
-    "disagreeLabel": "币质疑"
+    "disagreeLabel": "币质疑",
+    "capReached": "此帖作者收益已封顶，认同仍计入温度"
   },
   "post": {
     "notFound": "帖子不存在。",

@@ -68,40 +68,68 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
         .values({ voterId: userId, postId, amount, voteType })
         .returning()
 
+      const AUTHOR_EARN_CAP = 200
+
       let authorAmount = 0
 
       if (voteType === 'agree') {
-        // Agree: 80% to author, 20% burned
-        authorAmount = Math.floor(amount * 0.8)
+        // Check how much the author has already earned from this post (cap enforcement)
+        const [earnedRow] = await tx
+          .select({ earned: sql<string>`COALESCE(SUM(${coinTransactions.amount}), 0)` })
+          .from(coinTransactions)
+          .where(
+            and(
+              eq(coinTransactions.toUserId, post.authorId),
+              eq(coinTransactions.relatedPostId, postId),
+              eq(coinTransactions.transactionType, 'vote_received'),
+            )
+          )
+
+        const alreadyEarned = Number(earnedRow?.earned ?? 0)
+        const remainingCap = Math.max(0, AUTHOR_EARN_CAP - alreadyEarned)
+
+        // Agree: 80% to author (capped), remainder burned
+        authorAmount = Math.min(Math.floor(amount * 0.8), remainingCap)
         const burnAmount = amount - authorAmount
 
-        await tx
-          .update(userBalances)
-          .set({
-            balance: sql`${userBalances.balance} + ${authorAmount}`,
-            totalEarned: sql`${userBalances.totalEarned} + ${authorAmount}`,
-            updatedAt: new Date(),
-          })
-          .where(eq(userBalances.userId, post.authorId))
+        if (authorAmount > 0) {
+          await tx
+            .update(userBalances)
+            .set({
+              balance: sql`${userBalances.balance} + ${authorAmount}`,
+              totalEarned: sql`${userBalances.totalEarned} + ${authorAmount}`,
+              updatedAt: new Date(),
+            })
+            .where(eq(userBalances.userId, post.authorId))
 
-        await tx.insert(coinTransactions).values([
-          {
+          await tx.insert(coinTransactions).values({
             fromUserId: userId,
             toUserId: post.authorId,
             amount: authorAmount,
             transactionType: 'vote_received',
             relatedPostId: postId,
             relatedVoteId: vote.id,
-          },
-          {
-            fromUserId: userId,
-            toUserId: null, // burned
-            amount: burnAmount,
-            transactionType: 'transaction_fee_burned',
+          })
+
+          // Notify author only while cap is not reached
+          await tx.insert(notifications).values({
+            userId: post.authorId,
+            type: 'vote_received',
+            actorId: userId,
             relatedPostId: postId,
-            relatedVoteId: vote.id,
-          },
-        ])
+            content: `有人给你的帖子投了 ${amount} 枚认同币`,
+          })
+        }
+
+        // Record burn (may be 20% standard fee, or more if cap was hit)
+        await tx.insert(coinTransactions).values({
+          fromUserId: userId,
+          toUserId: null, // burned
+          amount: burnAmount,
+          transactionType: 'transaction_fee_burned',
+          relatedPostId: postId,
+          relatedVoteId: vote.id,
+        })
 
         // Update post stats: agree path
         // temperature = (totalVoteAmount + amount - disagreeVoteAmount) / GREATEST(viewCount, 1) * 1000
@@ -114,15 +142,6 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
             updatedAt: new Date(),
           })
           .where(eq(posts.id, postId))
-
-        // Notify author only for agree
-        await tx.insert(notifications).values({
-          userId: post.authorId,
-          type: 'vote_received',
-          actorId: userId,
-          relatedPostId: postId,
-          content: `有人给你的帖子投了 ${amount} 枚认同币`,
-        })
       } else {
         // Disagree: 100% burned, no author reward
         await tx.insert(coinTransactions).values({

@@ -106,6 +106,7 @@ export default function PostCard({ post, feedQueryKey }: Props) {
           disagreeVoteAmount={post.disagreeVoteAmount}
           userVoteType={post.userVoteType}
           queryKey={feedQueryKey}
+          isAuthorCapReached={Math.floor(post.totalVoteAmount * 0.8) >= 200}
         />
         <Link
           href={`/post/${post.id}`}

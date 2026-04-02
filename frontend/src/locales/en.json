@@ -76,6 +76,11 @@
       "vibe_master": "Vibe Master",
       "founder": "Founder"
     },
+    "streak": {
+      "title": "Login streak",
+      "days": "Day {days}",
+      "hint": "+5 Agreecoins on your first login each day"
+    },
     "tx": {
       "daily_distribution": "Daily check-in reward",
       "post_reward": "Post reward",
@@ -84,7 +89,8 @@
       "transaction_fee_burned": "Platform fee",
       "circle_join_fee": "Join circle",
       "system_mint": "System grant",
-      "disagree_burned": "Doubt burned"
+      "disagree_burned": "Doubt burned",
+      "login_streak_bonus": "Login streak bonus"
     }
   },
   "feedNew": {
@@ -117,7 +123,8 @@
     "disagree": "Doubt",
     "disagreeConfirm": "Confirm doubt",
     "disagreeStats": "· {amount} coins doubted",
-    "disagreeLabel": "coins doubted"
+    "disagreeLabel": "coins doubted",
+    "capReached": "Author earnings capped — your agreement still counts toward temperature"
   },
   "post": {
     "notFound": "Post not found.",

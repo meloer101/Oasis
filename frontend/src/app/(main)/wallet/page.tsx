@@ -57,6 +57,18 @@ export default function WalletPage() {
         </p>
       </div>
 
+      <div className="bg-surface border border-border-subtle rounded-xl p-5 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-sm text-text-muted mb-0.5">{t('wallet.streak.title')}</p>
+          <p className="text-2xl font-bold text-orange-400">
+            🔥 {t('wallet.streak.days', { days: wallet.loginStreak })}
+          </p>
+        </div>
+        <p className="text-xs text-text-muted text-right max-w-[140px] leading-relaxed">
+          {t('wallet.streak.hint')}
+        </p>
+      </div>
+
       <div className="bg-surface border border-border-subtle rounded-xl p-5">
         <p className="text-sm font-semibold text-text-primary mb-4">{t('wallet.badgeProgress')}</p>
         <div className="space-y-3">

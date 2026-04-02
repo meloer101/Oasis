@@ -7,6 +7,7 @@ import {
   bigint,
   boolean,
   timestamp,
+  date,
   decimal,
   index,
   uniqueIndex,
@@ -31,6 +32,8 @@ export const users = pgTable(
     isActive: boolean('is_active').notNull().default(true),
     lastActiveAt: timestamp('last_active_at', { withTimezone: true }),
     founderNumber: integer('founder_number').unique(), // first 100 users only
+    loginStreak: integer('login_streak').notNull().default(1),
+    lastLoginDate: date('last_login_date'), // UTC date of last login (for streak tracking)
     tokenVersion: integer('token_version').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -301,7 +304,8 @@ export const coinTransactions = pgTable(
     amount: bigint('amount', { mode: 'number' }).notNull(),
     transactionType: varchar('transaction_type', { length: 50 }).notNull(),
     // daily_distribution | post_reward | comment_reward | vote_received
-    // transaction_fee_burned | circle_join_fee | system_mint
+    // transaction_fee_burned | disagree_burned | circle_join_fee | system_mint
+    // login_streak_bonus
     relatedPostId: uuid('related_post_id').references(() => posts.id),
     relatedCommentId: uuid('related_comment_id').references(() => comments.id),
     relatedVoteId: uuid('related_vote_id').references(() => votes.id),

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/providers/auth-provider'
 import { useNotifications } from '@/hooks/use-notifications'
-import { formatCoins } from '@/lib/utils'
+import { formatCoins, getBadgeEmoji } from '@/lib/utils'
 import { useLocale } from '@/hooks/use-locale'
 import { ThemeCycleButton } from '@/components/theme/theme-cycle-button'
 import { LangSwitch } from '@/components/i18n/lang-switch'
@@ -115,7 +115,7 @@ export default function Sidebar() {
               {user?.displayName ?? user?.username}
             </p>
             <p className="text-xs text-text-muted">
-              ⚡ {formatCoins(balance)} {t('sidebar.coins')}
+              {getBadgeEmoji(balance) ?? '⚡'} {formatCoins(balance)} {t('sidebar.coins')}
             </p>
           </div>
         </Link>

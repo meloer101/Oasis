@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { count, eq, sql } from 'drizzle-orm'
+import { count, eq, sql, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userBalances, refreshTokens, coinTransactions } from '../db/schema.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
@@ -220,6 +220,8 @@ authRoutes.post(
   }
 )
 
+const STREAK_BONUS = 5
+
 // POST /api/auth/login
 authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (c) => {
   const { email, password } = c.req.valid('json')
@@ -233,6 +235,8 @@ authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (
       passwordHash: users.passwordHash,
       isActive: users.isActive,
       tokenVersion: users.tokenVersion,
+      loginStreak: users.loginStreak,
+      lastLoginDate: users.lastLoginDate,
     })
     .from(users)
     .where(eq(users.email, email))
@@ -247,13 +251,54 @@ authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (
     return c.json({ error: 'Invalid credentials' }, 401)
   }
 
+  // Streak logic: fire-and-forget (non-critical, don't block login)
+  const todayUTC = new Date().toISOString().slice(0, 10) // 'YYYY-MM-DD'
+  const lastDate = user.lastLoginDate // date string or null
+
+  if (lastDate !== todayUTC) {
+    // Determine new streak value
+    const yesterday = new Date()
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+    const yesterdayUTC = yesterday.toISOString().slice(0, 10)
+    const newStreak = lastDate === yesterdayUTC ? user.loginStreak + 1 : 1
+
+    db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
+          loginStreak: newStreak,
+          lastLoginDate: todayUTC,
+          lastActiveAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id))
+
+      await tx
+        .update(userBalances)
+        .set({
+          balance: sql`${userBalances.balance} + ${STREAK_BONUS}`,
+          totalEarned: sql`${userBalances.totalEarned} + ${STREAK_BONUS}`,
+          updatedAt: new Date(),
+        })
+        .where(eq(userBalances.userId, user.id))
+
+      await tx.insert(coinTransactions).values({
+        fromUserId: null,
+        toUserId: user.id,
+        amount: STREAK_BONUS,
+        transactionType: 'login_streak_bonus',
+        note: `连续登录第 ${newStreak} 天，奖励 ${STREAK_BONUS} 枚认同币`,
+      })
+    }).catch((err) => console.error('[streak] Error updating streak:', err))
+  }
+
   const { accessToken, refreshToken } = await issueSession(
     user.id,
     user.username,
     user.tokenVersion
   )
 
-  const { passwordHash: _, tokenVersion: __, ...safeUser } = user
+  const { passwordHash: _, tokenVersion: __, loginStreak: _s, lastLoginDate: _d, ...safeUser } = user
   return c.json({ user: safeUser, accessToken, refreshToken })
 })
 
