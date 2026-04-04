@@ -24,6 +24,9 @@ type UIState = 'idle' | 'selecting-agree' | 'selecting-disagree'
 
 const QUICK_AMOUNTS = [1, 5, 10, 20, 50]
 
+const fillPrimary = 'bg-text-primary text-[var(--card-bg)]'
+const fillMuted = 'bg-[var(--surface)] text-text-primary border border-[var(--card-border)]'
+
 export default function VoteButton({
   postId,
   voterCount,
@@ -64,13 +67,11 @@ export default function VoteButton({
       return (
         <span
           className={`inline-flex items-center gap-1 text-xs font-medium ${
-            isAgree ? 'text-sage' : 'text-orange-400'
+            isAgree ? 'text-text-primary' : 'text-text-muted'
           }`}
         >
-          {isAgree ? '✓' : '✗'} {isAgree ? '⚡' : ''}{' '}
-          {isAgree
-            ? formatCoins(totalVoteAmount)
-            : formatCoins(disagreeVoteAmount)}
+          {isAgree ? '✓' : '✗'} {isAgree ? '·' : ''}{' '}
+          {isAgree ? formatCoins(totalVoteAmount) : formatCoins(disagreeVoteAmount)}
         </span>
       )
     }
@@ -78,18 +79,18 @@ export default function VoteButton({
       return (
         <div
           className={`flex flex-col items-center gap-1 text-xs font-semibold ${
-            isAgree ? 'text-sage' : 'text-orange-400'
+            isAgree ? 'text-text-primary' : 'text-text-muted'
           }`}
         >
           <span className="text-lg">{isAgree ? '✓' : '✗'}</span>
-          <span>{isAgree ? '⚡' : '💧'}</span>
+          <span className="text-text-muted">{isAgree ? '·' : '·'}</span>
         </div>
       )
     }
     return (
       <span
         className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-          isAgree ? 'text-sage' : 'text-orange-400'
+          isAgree ? 'text-text-primary' : 'text-text-muted'
         }`}
       >
         {isAgree ? '✓' : '✗'} {isAgree ? t('vote.agreed') : t('vote.disagreed')}
@@ -109,7 +110,7 @@ export default function VoteButton({
     const panel = (
       <>
         {isAgree && isAuthorCapReached && (
-          <span className="w-full text-[10px] text-amber-500/80 mb-1 block">{t('vote.capReached')}</span>
+          <span className="w-full text-[10px] text-text-muted mb-1 block">{t('vote.capReached')}</span>
         )}
         <div className="flex flex-wrap items-center gap-1">
           {QUICK_AMOUNTS.map((q) => (
@@ -120,8 +121,8 @@ export default function VoteButton({
               className={`px-1.5 py-0.5 rounded text-[10px] transition-colors ${
                 amount === q
                   ? isAgree
-                    ? 'bg-sage text-text-primary'
-                    : 'bg-orange-600 text-white'
+                    ? `${fillPrimary}`
+                    : `${fillMuted} border-[var(--text-muted)]`
                   : 'bg-brand-muted dark:bg-input text-text-secondary hover:bg-input'
               }`}
             >
@@ -136,14 +137,16 @@ export default function VoteButton({
             max={10000}
             value={amount}
             onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-12 bg-brand-muted dark:bg-input border border-border-subtle rounded px-1 py-0.5 text-center text-xs text-text-primary focus:outline-none focus:border-brand"
+            className="w-12 bg-brand-muted dark:bg-input border border-border-subtle rounded px-1 py-0.5 text-center text-xs text-text-primary focus:outline-none focus:border-[var(--text-muted)]"
           />
           <button
             type="button"
             onClick={() => mutation.mutate({ amt: amount, voteType: isAgree ? 'agree' : 'disagree' })}
             disabled={mutation.isPending}
-            className={`px-2 py-0.5 rounded disabled:opacity-50 text-white text-[10px] font-medium transition-colors ${
-              isAgree ? 'bg-sage hover:bg-sage-hover text-text-primary' : 'bg-orange-600 hover:bg-orange-500'
+            className={`px-2 py-0.5 rounded disabled:opacity-50 text-[10px] font-medium transition-colors ${
+              isAgree
+                ? `${fillPrimary} hover:opacity-90`
+                : `${fillMuted} hover:bg-nav-hover border-[var(--card-border)]`
             }`}
           >
             {mutation.isPending ? '…' : isAgree ? t('vote.confirm') : t('vote.disagreeConfirm')}
@@ -162,7 +165,7 @@ export default function VoteButton({
     if (variant === 'rail') {
       return (
         <div className="relative flex flex-col items-center gap-1">
-          <div className="absolute left-full ml-3 top-0 z-30 w-52 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-3 shadow-xl">
+          <div className="absolute left-full ml-3 top-0 z-30 w-52 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-3 shadow-xl animate-fade-in-scale origin-top-left">
             {panel}
           </div>
           <button
@@ -177,10 +180,10 @@ export default function VoteButton({
     }
 
     if (variant === 'compact') {
-      return <div className="inline-flex flex-col gap-1 max-w-[200px]">{panel}</div>
+      return <div className="inline-flex flex-col gap-1 max-w-[200px] animate-fade-in-up">{panel}</div>
     }
 
-    return <div className="inline-flex items-center gap-1.5 flex-wrap">{panel}</div>
+    return <div className="inline-flex items-center gap-1.5 flex-wrap animate-fade-in-up">{panel}</div>
   }
 
   if (variant === 'compact') {
@@ -189,17 +192,21 @@ export default function VoteButton({
         <button
           type="button"
           onClick={() => setUIState('selecting-agree')}
-          className="inline-flex items-center gap-0.5 text-xs text-text-secondary hover:text-sage font-medium"
+          className="inline-flex items-center gap-0.5 text-xs text-text-secondary hover:text-text-primary font-medium transition-colors duration-200 ease-[var(--ease-out-expo)]"
         >
-          <span>⚡</span>
+          <span className="text-text-muted" aria-hidden>
+            ·
+          </span>
           <span>{voterCount || totalVoteAmount > 0 ? formatCoins(totalVoteAmount) : ''}</span>
         </button>
         <button
           type="button"
           onClick={() => setUIState('selecting-disagree')}
-          className="inline-flex items-center gap-0.5 text-xs text-text-secondary hover:text-orange-400 font-medium"
+          className="inline-flex items-center gap-0.5 text-xs text-text-secondary hover:text-text-muted font-medium transition-colors duration-200 ease-[var(--ease-out-expo)]"
         >
-          <span>💧</span>
+          <span className="text-text-muted" aria-hidden>
+            ·
+          </span>
           {disagreeVoteAmount > 0 ? <span>{formatCoins(disagreeVoteAmount)}</span> : null}
         </button>
       </div>
@@ -212,10 +219,10 @@ export default function VoteButton({
         <button
           type="button"
           onClick={() => setUIState('selecting-agree')}
-          className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col items-center justify-center text-sm hover:border-sage/60 transition-colors"
+          className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col items-center justify-center text-sm hover:border-[color-mix(in_srgb,var(--text-primary)_35%,var(--card-border))] transition-colors"
           title={t('vote.agree')}
         >
-          <span>⚡</span>
+          <span className="text-text-muted">·</span>
           {totalVoteAmount > 0 && (
             <span className="text-[9px] text-text-muted leading-none">{formatCoins(totalVoteAmount)}</span>
           )}
@@ -223,10 +230,10 @@ export default function VoteButton({
         <button
           type="button"
           onClick={() => setUIState('selecting-disagree')}
-          className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col items-center justify-center text-sm hover:border-orange-500/50 transition-colors"
+          className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex flex-col items-center justify-center text-sm hover:border-[color-mix(in_srgb,var(--text-muted)_50%,var(--card-border))] transition-colors"
           title={t('vote.disagree')}
         >
-          <span>💧</span>
+          <span className="text-text-muted">·</span>
           {disagreeVoteAmount > 0 && (
             <span className="text-[9px] text-text-muted leading-none">{formatCoins(disagreeVoteAmount)}</span>
           )}
@@ -236,16 +243,18 @@ export default function VoteButton({
   }
 
   const agreeBtnClass = stackedActions
-    ? 'flex flex-col items-center justify-center gap-0.5 w-full py-3 rounded-xl bg-brand text-brand-foreground text-sm font-semibold hover:opacity-90 transition-opacity'
-    : 'inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-sage transition-colors font-medium'
+    ? `flex flex-col items-center justify-center gap-0.5 w-full py-3 rounded-xl ${fillPrimary} text-sm font-semibold hover:opacity-90 transition-opacity`
+    : 'inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors font-medium'
   const disagreeBtnClass = stackedActions
-    ? 'flex flex-col items-center justify-center gap-0.5 w-full py-3 rounded-xl border-2 border-brand/50 bg-transparent text-text-primary text-sm font-semibold hover:bg-nav-hover transition-colors'
-    : 'inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-orange-400 transition-colors font-medium'
+    ? 'flex flex-col items-center justify-center gap-0.5 w-full py-3 rounded-xl border-2 border-[var(--card-border)] bg-transparent text-text-primary text-sm font-semibold hover:bg-nav-hover transition-colors'
+    : 'inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-muted transition-colors font-medium'
 
   return (
     <div className={stackedActions ? 'grid grid-cols-2 gap-2 w-full' : 'inline-flex items-center gap-3'}>
       <button type="button" onClick={() => setUIState('selecting-agree')} className={agreeBtnClass}>
-        <span>⚡</span>
+        <span className="text-text-muted" aria-hidden>
+          ·
+        </span>
         <span>{stackedActions ? t('vote.verifyAgreement') : t('vote.agree')}</span>
         {!stackedActions && totalVoteAmount > 0 && (
           <span className="text-text-muted">
@@ -254,7 +263,9 @@ export default function VoteButton({
         )}
       </button>
       <button type="button" onClick={() => setUIState('selecting-disagree')} className={disagreeBtnClass}>
-        <span>💧</span>
+        <span className="text-text-muted" aria-hidden>
+          ·
+        </span>
         <span>{stackedActions ? t('vote.challengeInsight') : t('vote.disagree')}</span>
         {!stackedActions && disagreeVoteAmount > 0 && (
           <span className="text-text-muted">{formatCoins(disagreeVoteAmount)}</span>

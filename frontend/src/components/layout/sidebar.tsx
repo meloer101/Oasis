@@ -27,7 +27,7 @@ function NavItem({
       onClick={onNavigate}
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors border-l-[3px] ${
         active
-          ? 'bg-nav-active text-text-primary font-medium border-brand shadow-[inset_0_0_0_1px_rgb(0_113_227/0.12)] dark:shadow-[inset_0_0_0_1px_rgb(41_151_255/0.2)]'
+          ? 'bg-nav-active text-text-primary font-medium border-text-primary shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)]'
           : 'text-text-secondary hover:text-text-primary hover:bg-nav-hover border-transparent'
       }`}
     >
@@ -57,21 +57,21 @@ function SidebarInner({
             <Avatar
               src={user.avatarUrl}
               name={user.displayName ?? user.username}
-              className="size-8 rounded-lg bg-brand shrink-0 text-sm font-bold"
-              textClassName="text-brand-foreground"
+              className="size-8 rounded-lg bg-[var(--text-primary)] shrink-0 text-sm font-bold"
+              textClassName="text-[var(--card-bg)]"
             />
             <div className="min-w-0">
               <p className="text-sm font-bold text-text-primary leading-tight truncate">
                 {user.displayName ?? user.username}
               </p>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-brand truncate">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-text-muted truncate">
                 {t('sidebar.verifiedMember')}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-2.5 px-2">
-            <span className="inline-flex size-8 rounded-md bg-brand shrink-0 shadow-sm" aria-hidden />
+            <span className="inline-flex size-8 rounded-md bg-[var(--text-primary)] shrink-0 shadow-sm" aria-hidden />
             <div className="min-w-0">
               <p className="text-sm font-bold text-text-primary leading-tight truncate">Oasis</p>
               <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted truncate">
@@ -149,10 +149,10 @@ function SidebarInner({
           {t('sidebar.viewTreasury')}
         </Link>
         <div className="flex justify-center gap-4 px-2 pt-1">
-          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-brand transition-colors">
+          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-text-primary transition-colors">
             {t('sidebar.support')}
           </a>
-          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-brand transition-colors">
+          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-text-primary transition-colors">
             {t('sidebar.about')}
           </a>
         </div>
@@ -171,21 +171,23 @@ export default function Sidebar() {
         <SidebarInner user={user} />
       </aside>
 
-      {mobileSidebarOpen ? (
-        <>
-          <button
-            type="button"
-            aria-label="Close menu"
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <aside className="fixed z-50 left-0 top-12 bottom-0 w-[min(18rem,88vw)] flex flex-col border-r border-border-subtle bg-[var(--sidebar-bg)] backdrop-blur-xl backdrop-saturate-[180%] shadow-xl md:hidden overflow-hidden">
-            <div className="flex flex-col flex-1 min-h-0 px-2 overflow-y-auto">
-              <SidebarInner user={user} onNavigate={() => setMobileSidebarOpen(false)} />
-            </div>
-          </aside>
-        </>
-      ) : null}
+      <div
+        aria-hidden={!mobileSidebarOpen}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] md:hidden transition-opacity duration-300 ${
+          mobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setMobileSidebarOpen(false)}
+      />
+      <aside
+        aria-hidden={!mobileSidebarOpen}
+        className={`fixed z-50 left-0 top-12 bottom-0 w-[min(18rem,88vw)] flex flex-col border-r border-border-subtle bg-[var(--sidebar-bg)] backdrop-blur-xl backdrop-saturate-[180%] shadow-xl md:hidden overflow-hidden transition-transform duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] ${
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col flex-1 min-h-0 px-2 overflow-y-auto">
+          <SidebarInner user={user} onNavigate={() => setMobileSidebarOpen(false)} />
+        </div>
+      </aside>
     </>
   )
 }

@@ -31,7 +31,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-7 h-7 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

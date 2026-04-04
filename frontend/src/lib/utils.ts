@@ -13,9 +13,9 @@ export function timeAgo(date: string | Date): string {
 
 export function heatBadge(temperature: string): { emoji: string; color: string } | null {
   const t = parseFloat(temperature)
-  if (t > 100) return { emoji: '🔥', color: 'text-red-400' }
-  if (t > 20) return { emoji: '⚡', color: 'text-amber-400' }
-  if (t > 5) return { emoji: '↑', color: 'text-sage' }
+  if (t > 100) return { emoji: '↑', color: 'text-text-primary' }
+  if (t > 20) return { emoji: '↑', color: 'text-text-secondary' }
+  if (t > 5) return { emoji: '↑', color: 'text-text-muted' }
   return null
 }
 
@@ -60,11 +60,3 @@ export function estimateReadingMinutes(text: string): number {
   return Math.max(1, Math.ceil(t.length / 500))
 }
 
-/** Stable hue 0–359 for tag styling from tag name. */
-export function tagHue(name: string): number {
-  let h = 0
-  for (let i = 0; i < name.length; i++) {
-    h = name.charCodeAt(i) + ((h << 5) - h)
-  }
-  return Math.abs(h) % 360
-}

@@ -5,6 +5,10 @@
 @theme {
   --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-in-scale: fade-in-scale 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in-up: fade-in-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --color-background: var(--bg);
   --color-foreground: var(--text-primary);
   --color-surface: var(--surface);
@@ -12,7 +16,7 @@
   /* Apple DESIGN.md: Link Blue (light) / Bright Blue (dark) for inline links */
   --color-link: var(--link);
   --color-focus: var(--focus-ring);
-  /* Brand = Apple Blue interactive; sage / rose = product semantics (consensus / accent) */
+  /* Monochrome UI tokens (--brand = primary ink); legacy names sage/rose = neutral vote grays */
   --color-accent: var(--sage);
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
@@ -43,33 +47,35 @@
   --radius-input: 11px;
   --radius-pill: 980px;
   --shadow-elevated: 3px 5px 30px 0 rgb(0 0 0 / 0.22);
-  --focus-ring: #0071e3;
-  --link: #0066cc;
+  /* Monochrome chrome: black / white / gray only */
+  --focus-ring: rgb(0 0 0 / 0.35);
+  --link: rgb(0 0 0 / 0.72);
   --cream: #f5f5f7;
   --bg: #f5f5f7;
   --surface: #fafafc;
   --input-bg: #fafafc;
   /* Filter / search button: 3px solid rgba(0,0,0,0.04) — token as single border color */
   --input-border: rgb(0 0 0 / 0.04);
-  --border: rgb(0 0 0 / 0.06);
-  --text-primary: #1d1d1f;
-  --text-secondary: rgb(0 0 0 / 0.8);
-  --text-muted: rgb(0 0 0 / 0.48);
-  --brand: #0071e3;
-  --brand-hover: #0077ed;
-  --brand-foreground: #ffffff;
-  --brand-muted: rgb(0 113 227 / 0.14);
-  --brand-soft: #e8f4ff;
-  --cta-text: #0066cc;
-  --sage: #2f9d6c;
-  --sage-hover: #268055;
-  --rose: #c45c6a;
-  --rose-hover: #a84d5a;
-  --nav-active-bg: rgb(0 113 227 / 0.1);
-  --nav-hover-bg: rgb(0 113 227 / 0.06);
+  --border: rgb(0 0 0 / 0.08);
+  --text-primary: #0a0a0a;
+  --text-secondary: rgb(0 0 0 / 0.72);
+  --text-muted: rgb(0 0 0 / 0.45);
+  --brand: #0a0a0a;
+  --brand-hover: #000000;
+  --brand-foreground: #fafafa;
+  --brand-muted: rgb(0 0 0 / 0.06);
+  --brand-soft: rgb(0 0 0 / 0.03);
+  --cta-text: rgb(0 0 0 / 0.72);
+  /* Vote / stance: two neutral grays (not green/red) */
+  --sage: #262626;
+  --sage-hover: #171717;
+  --rose: #525252;
+  --rose-hover: #404040;
+  --nav-active-bg: rgb(0 0 0 / 0.06);
+  --nav-hover-bg: rgb(0 0 0 / 0.04);
   --mobile-bar-bg: rgb(255 255 255 / 0.72);
   --card-bg: #ffffff;
-  --card-border: rgb(0 0 0 / 0.06);
+  --card-border: rgb(0 0 0 / 0.1);
   --topnav-bg: rgb(255 255 255 / 0.72);
   --sidebar-bg: rgb(255 255 255 / 0.72);
   color-scheme: light;
@@ -78,29 +84,29 @@
 .dark {
   /* DESIGN.md: page #000, surfaces #272729–#2a2a2d, nav glass rgba(0,0,0,0.8) */
   --shadow-elevated: none;
-  --focus-ring: #0071e3;
-  --link: #2997ff;
+  --focus-ring: rgb(255 255 255 / 0.45);
+  --link: rgb(255 255 255 / 0.78);
   --cream: #000000;
   --bg: #000000;
   --surface: #2a2a2d;
   --input-bg: #323236;
   --input-border: rgb(255 255 255 / 0.08);
-  --border: rgb(255 255 255 / 0.1);
-  --text-primary: #ffffff;
-  --text-secondary: rgb(255 255 255 / 0.8);
+  --border: rgb(255 255 255 / 0.12);
+  --text-primary: #fafafa;
+  --text-secondary: rgb(255 255 255 / 0.78);
   --text-muted: rgb(255 255 255 / 0.48);
-  --brand: #2997ff;
-  --brand-hover: #5eb0ff;
-  --brand-foreground: #ffffff;
-  --brand-muted: rgb(41 151 255 / 0.18);
-  --brand-soft: rgb(30 55 90 / 0.95);
-  --cta-text: #2997ff;
-  --sage: #5ecf8a;
-  --sage-hover: #3cb870;
-  --rose: #ff8a98;
-  --rose-hover: #ff6678;
-  --nav-active-bg: rgb(41 151 255 / 0.16);
-  --nav-hover-bg: rgb(41 151 255 / 0.08);
+  --brand: #f5f5f5;
+  --brand-hover: #ffffff;
+  --brand-foreground: #0a0a0a;
+  --brand-muted: rgb(255 255 255 / 0.08);
+  --brand-soft: rgb(255 255 255 / 0.04);
+  --cta-text: rgb(255 255 255 / 0.78);
+  --sage: #d4d4d4;
+  --sage-hover: #e5e5e5;
+  --rose: #a3a3a3;
+  --rose-hover: #b5b5b5;
+  --nav-active-bg: rgb(255 255 255 / 0.08);
+  --nav-hover-bg: rgb(255 255 255 / 0.05);
   --mobile-bar-bg: rgb(0 0 0 / 0.8);
   --card-bg: #272729;
   --card-border: rgb(255 255 255 / 0.08);
@@ -152,7 +158,57 @@ body {
   font-family: var(--font-source-serif), ui-serif, Georgia, "Times New Roman", serif;
 }
 
+/* Feed home: pure surface, no chroma */
+.feed-hero {
+  border-radius: 1rem;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark .feed-hero {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+
+.feed-panel {
+  border-radius: 0.75rem;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

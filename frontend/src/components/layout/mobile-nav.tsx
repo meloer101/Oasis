@@ -50,14 +50,14 @@ export default function MobileNav() {
             href={item.href}
             className={`relative flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors min-w-0 flex-1 ${
               active
-                ? 'text-brand before:absolute before:top-0 before:left-2 before:right-2 before:h-0.5 before:rounded-full before:bg-brand'
+                ? 'text-text-primary before:absolute before:top-0 before:left-2 before:right-2 before:h-0.5 before:rounded-full before:bg-text-primary'
                 : 'text-text-muted hover:text-text-secondary'
             }`}
           >
             <span className="text-base leading-none">{item.icon}</span>
             <span className="text-[9px] truncate max-w-full text-center">{t(item.key)}</span>
             {isNotif && unread > 0 && (
-              <span className="absolute top-0 right-2 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute top-0 right-2 w-4 h-4 bg-text-primary text-[var(--card-bg)] text-[9px] font-bold rounded-full flex items-center justify-center">
                 {unread > 9 ? '9+' : unread}
               </span>
             )}

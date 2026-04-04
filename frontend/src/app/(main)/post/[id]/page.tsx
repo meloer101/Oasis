@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { usePost, useComments } from '@/hooks/use-post'
 import { apiClient } from '@/lib/api-client'
-import { timeAgo, formatCoins, tagHue, estimateReadingMinutes } from '@/lib/utils'
+import { timeAgo, formatCoins, estimateReadingMinutes } from '@/lib/utils'
 import { stripHtmlToText } from '@/lib/html'
 import VoteButton from '@/components/feed/vote-button'
 import { TemperatureBar } from '@/components/feed/temperature-bar'
@@ -50,7 +50,7 @@ export default function PostPage() {
   if (postLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -59,7 +59,7 @@ export default function PostPage() {
     return (
       <div className="text-center py-16 text-text-muted text-sm">
         {t('post.notFound')}{' '}
-        <button type="button" onClick={() => router.back()} className="text-brand hover:text-brand-hover">
+        <button type="button" onClick={() => router.back()} className="text-text-primary underline underline-offset-2 hover:opacity-80">
           {t('post.goBack')}
         </button>
       </div>
@@ -91,7 +91,7 @@ export default function PostPage() {
           />
           <a
             href="#comments"
-            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-brand/40 transition-colors"
+            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-[color-mix(in_srgb,var(--text-primary)_28%,var(--card-border))] transition-colors"
             title={t('post.commentsHeading')}
           >
             💬
@@ -99,7 +99,7 @@ export default function PostPage() {
           <button
             type="button"
             onClick={sharePost}
-            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-brand/40 transition-colors"
+            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-[color-mix(in_srgb,var(--text-primary)_28%,var(--card-border))] transition-colors"
             title={t('post.share')}
           >
             ↗
@@ -108,7 +108,7 @@ export default function PostPage() {
 
         <article className="flex-1 min-w-0 max-w-3xl">
           {post.imageUrl ? (
-            <div className="rounded-xl overflow-hidden border border-[var(--card-border)] mb-6 max-h-[420px] bg-brand-muted/35 dark:bg-[#0f172a]">
+            <div className="rounded-xl overflow-hidden border border-[var(--card-border)] mb-6 max-h-[420px] bg-[color-mix(in_srgb,var(--text-primary)_5%,var(--card-bg))]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.imageUrl} alt="" className="w-full max-h-[420px] object-cover" />
             </div>
@@ -116,7 +116,7 @@ export default function PostPage() {
 
           <div className="flex flex-wrap items-center gap-3 mb-3">
             {post.tags && post.tags.length > 0 ? (
-              <span className="text-[10px] font-bold uppercase tracking-[0.14em] px-2.5 py-1 rounded-full bg-brand-muted text-brand border border-brand/15">
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] px-2.5 py-1 rounded-full border border-[var(--card-border)] text-text-secondary bg-[color-mix(in_srgb,var(--text-primary)_5%,var(--card-bg))]">
                 {post.tags[0]}
               </span>
             ) : null}
@@ -143,13 +143,13 @@ export default function PostPage() {
               <Avatar
                 src={post.author.avatarUrl}
                 name={post.author.displayName ?? post.author.username}
-                className="w-10 h-10 rounded-full bg-brand-muted dark:bg-surface shrink-0 text-sm"
+                className="w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_8%,var(--card-bg))] dark:bg-surface shrink-0 text-sm"
                 textClassName="text-text-secondary"
               />
               <div className="min-w-0">
                 <Link
                   href={`/user/${post.author.username}`}
-                  className="font-semibold text-text-primary hover:text-brand transition-colors block truncate"
+                  className="font-semibold text-text-primary hover:underline underline-offset-2 block truncate"
                 >
                   {post.author.displayName ?? post.author.username}
                 </Link>
@@ -160,7 +160,7 @@ export default function PostPage() {
               <button
                 type="button"
                 onClick={sharePost}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand border border-brand/35 rounded-lg px-3 py-1.5 hover:bg-nav-hover transition-colors"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-text-primary border border-[var(--card-border)] rounded-lg px-3 py-1.5 hover:bg-nav-hover transition-colors"
               >
                 ↗ {t('post.distribute')}
               </button>
@@ -173,7 +173,7 @@ export default function PostPage() {
                     }
                   }}
                   disabled={deleteMutation.isPending}
-                  className="text-xs text-red-400 hover:text-red-300 disabled:opacity-40 transition-colors"
+                  className="text-xs text-text-muted hover:text-text-primary disabled:opacity-40 transition-colors"
                 >
                   {t('post.delete')}
                 </button>
@@ -183,24 +183,20 @@ export default function PostPage() {
 
           {post.tags && post.tags.length > 0 ? (
             <div className="flex flex-wrap gap-x-3 gap-y-1 mb-6">
-              {post.tags.map((tag) => {
-                const hue = tagHue(tag)
-                return (
-                  <Link
-                    key={tag}
-                    href={`/tag/${encodeURIComponent(tag)}`}
-                    className="text-sm font-medium rounded px-1 -mx-1 hover:bg-nav-hover"
-                    style={{ color: `hsl(${hue}, 45%, 42%)` }}
-                  >
-                    #{tag}
-                  </Link>
-                )
-              })}
+              {post.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/tag/${encodeURIComponent(tag)}`}
+                  className="text-sm font-medium text-text-secondary rounded px-1 -mx-1 hover:bg-nav-hover hover:text-text-primary"
+                >
+                  #{tag}
+                </Link>
+              ))}
             </div>
           ) : null}
 
           {/* Mobile / tablet stake consensus */}
-          <div className="lg:hidden mb-6 rounded-2xl border border-brand/20 bg-[var(--card-bg)] shadow-md ring-1 ring-brand/5 overflow-hidden">
+          <div className="lg:hidden mb-6 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-md ring-1 ring-[color-mix(in_srgb,var(--text-primary)_6%,transparent)] overflow-hidden">
             <div className="p-4 border-b border-[var(--card-border)] flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">
@@ -208,7 +204,7 @@ export default function PostPage() {
                 </p>
                 <p className="text-xs text-text-secondary mt-1">{t('post.stakeConsensusSubtitle')}</p>
               </div>
-              <p className="text-xl font-bold text-amber-500 dark:text-amber-400 tabular-nums text-right">
+              <p className="text-xl font-bold text-text-primary tabular-nums text-right">
                 {formatCoins(post.totalVoteAmount)}{' '}
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">AG</span>
               </p>
@@ -235,9 +231,9 @@ export default function PostPage() {
                   href={post.linkUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-brand hover:underline break-all text-lg font-medium"
+                  className="text-text-secondary hover:text-text-primary hover:underline break-all text-lg font-medium"
                 >
-                  🔗 {post.linkUrl}
+                  ↗ {post.linkUrl}
                 </a>
                 {post.content ? (
                   <p className="text-text-secondary text-base leading-relaxed mt-4 whitespace-pre-wrap">{post.content}</p>
@@ -286,7 +282,7 @@ export default function PostPage() {
               <button
                 type="button"
                 onClick={sharePost}
-                className="sm:hidden text-brand text-sm font-medium"
+                className="sm:hidden text-text-primary text-sm font-medium"
               >
                 {t('post.share')}
               </button>
@@ -304,7 +300,7 @@ export default function PostPage() {
 
         {commentsLoading && (
           <div className="flex justify-center py-6">
-            <div className="w-5 h-5 border-2 border-border-subtle border-t-brand rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-border-subtle border-t-[var(--text-primary)] rounded-full animate-spin" />
           </div>
         )}
 
@@ -366,13 +362,13 @@ function CommentForm({
         onChange={(e) => setContent(e.target.value)}
         placeholder={parentId ? t('post.replyPlaceholder') : t('post.commentPlaceholder')}
         rows={parentId ? 2 : 3}
-        className="flex-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/25 resize-none"
+        className="flex-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--text-primary)_18%,transparent)] resize-none"
       />
       <button
         type="button"
         onClick={() => mutation.mutate()}
         disabled={!content.trim() || mutation.isPending}
-        className="self-end sm:self-stretch px-5 py-2 bg-brand hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-brand-foreground text-sm rounded-xl transition-opacity shrink-0 h-fit sm:h-auto"
+        className="self-end sm:self-stretch px-5 py-2 bg-[var(--text-primary)] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-[var(--card-bg)] text-sm rounded-xl transition-opacity shrink-0 h-fit sm:h-auto"
       >
         {mutation.isPending ? '…' : t('post.post')}
       </button>
@@ -398,7 +394,7 @@ function CommentThread({
         <Avatar
           src={comment.author.avatarUrl}
           name={comment.author.displayName ?? comment.author.username}
-          className="w-8 h-8 rounded-full bg-brand-muted dark:bg-surface text-xs"
+          className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_8%,var(--card-bg))] dark:bg-surface text-xs"
           textClassName="text-text-secondary"
         />
         <span className="text-sm font-medium text-text-primary">
