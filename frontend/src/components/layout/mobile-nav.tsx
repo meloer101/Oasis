@@ -40,7 +40,7 @@ export default function MobileNav() {
   ]
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-mobile-bar backdrop-blur-sm border-t border-border-subtle flex items-center justify-around h-14 px-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-mobile-bar backdrop-blur-xl backdrop-saturate-[180%] border-t border-border-subtle flex items-center justify-around h-14 px-1">
       {NAV_ITEMS.map((item) => {
         const active = item.match(pathname)
         const isNotif = item.href === '/notifications'
@@ -49,7 +49,9 @@ export default function MobileNav() {
             key={item.href + item.key}
             href={item.href}
             className={`relative flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg transition-colors min-w-0 flex-1 ${
-              active ? 'text-emerald-500' : 'text-text-muted hover:text-text-secondary'
+              active
+                ? 'text-brand before:absolute before:top-0 before:left-2 before:right-2 before:h-0.5 before:rounded-full before:bg-brand'
+                : 'text-text-muted hover:text-text-secondary'
             }`}
           >
             <span className="text-base leading-none">{item.icon}</span>

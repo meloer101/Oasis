@@ -23,7 +23,7 @@ export default function CreateCirclePage() {
   })
 
   const inputClass =
-    'w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-emerald-700 transition-colors'
+    'w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors'
 
   return (
     <div className="max-w-lg mx-auto">
@@ -73,8 +73,8 @@ export default function CreateCirclePage() {
                 onClick={() => setVisibility(v)}
                 className={`px-4 py-2 rounded-lg text-sm transition-colors ${
                   visibility === v
-                    ? 'bg-emerald-700 text-white'
-                    : 'bg-zinc-200 dark:bg-zinc-800 text-text-secondary hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                    ? 'bg-brand text-brand-foreground'
+                    : 'bg-brand-muted dark:bg-input text-text-secondary hover:bg-input'
                 }`}
               >
                 {v === 'public' ? `🌍 ${t('circle.create.public')}` : `🔒 ${t('circle.create.private')}`}
@@ -90,7 +90,7 @@ export default function CreateCirclePage() {
             min={0}
             value={joinFee}
             onChange={(e) => setJoinFee(Math.max(0, parseInt(e.target.value) || 0))}
-            className="w-32 bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-emerald-700 transition-colors"
+            className="w-32 bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand transition-colors"
           />
           <p className="text-xs text-text-muted mt-1">{t('circle.create.joinFeeHint')}</p>
         </div>
@@ -100,14 +100,14 @@ export default function CreateCirclePage() {
         <div className="flex gap-3 pt-2">
           <button
             onClick={() => router.back()}
-            className="flex-1 py-2 rounded-lg border border-border-subtle text-text-secondary text-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+            className="flex-1 py-2 rounded-lg border border-border-subtle text-text-secondary text-sm hover:border-brand/35 transition-colors"
           >
             {t('circle.create.cancel')}
           </button>
           <button
             onClick={() => mutation.mutate()}
             disabled={!name.trim() || mutation.isPending}
-            className="flex-1 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 text-white text-sm transition-colors"
+            className="flex-1 py-2 rounded-lg bg-brand hover:opacity-90 disabled:opacity-40 text-brand-foreground text-sm transition-opacity"
           >
             {mutation.isPending ? t('circle.create.creating') : t('circle.create.submit')}
           </button>

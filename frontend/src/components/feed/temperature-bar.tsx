@@ -12,29 +12,21 @@ export function TemperatureBar({ temperature, compact }: Props) {
 
   const isNegative = t < 0
   const abs = Math.abs(t)
-  const pct = isNegative ? 0 : Math.min((abs / 1000) * 100, 100)
-
-  const barColor = isNegative
-    ? ''
-    : t >= 1000
-    ? 'bg-red-500'
-    : t >= 500
-    ? 'bg-orange-400'
-    : t >= 100
-    ? 'bg-amber-400'
-    : 'bg-emerald-500'
+  const pct = isNegative ? Math.min((abs / 500) * 100, 100) : Math.min((abs / 1000) * 100, 100)
 
   const numColor = isNegative
     ? 'text-red-400'
     : t >= 500
-    ? 'text-amber-400'
-    : 'text-text-muted'
+      ? 'text-amber-500'
+      : t >= 100
+        ? 'text-brand'
+        : 'text-sage'
 
   const display = isNegative
     ? `-${Math.round(abs)}`
     : abs >= 1
-    ? Math.round(abs).toString()
-    : abs.toFixed(1)
+      ? Math.round(abs).toString()
+      : abs.toFixed(1)
 
   if (compact) {
     if (t === 0) {
@@ -58,14 +50,19 @@ export function TemperatureBar({ temperature, compact }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-1.5 flex-1">
-      <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-border-subtle relative">
         <div
-          className={`h-full rounded-full transition-all ${barColor}`}
-          style={{ width: `${pct}%` }}
+          className="absolute inset-y-0 left-0 rounded-full transition-all"
+          style={{
+            width: `${pct}%`,
+            background: isNegative
+              ? 'linear-gradient(90deg, rgb(248 113 113), rgb(251 146 60))'
+              : 'linear-gradient(90deg, var(--rose), var(--brand), var(--sage))',
+          }}
         />
       </div>
-      <span className={`font-mono text-[11px] ${numColor}`}>{display}</span>
+      <span className={`font-mono text-[11px] shrink-0 ${numColor}`}>{display}</span>
     </div>
   )
 }

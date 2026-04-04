@@ -27,7 +27,7 @@ export default function TagPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -36,7 +36,7 @@ export default function TagPage() {
     return (
       <div className="text-center py-16 text-text-muted">
         <p>{t('tag.notFound', { name })}</p>
-        <button onClick={() => router.back()} className="text-emerald-400 text-sm mt-2">
+        <button onClick={() => router.back()} className="text-brand text-sm mt-2">
           {t('tag.back')}
         </button>
       </div>

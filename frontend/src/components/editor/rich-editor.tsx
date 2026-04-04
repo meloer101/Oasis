@@ -162,8 +162,8 @@ function ToolbarButton({
       className={
         'flex h-7 w-7 items-center justify-center rounded transition-colors disabled:opacity-40 ' +
         (active
-          ? 'bg-zinc-200 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-100'
-          : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800')
+          ? 'bg-brand-muted text-text-primary dark:bg-input dark:text-text-primary'
+          : 'text-text-secondary hover:bg-brand-muted dark:text-text-muted dark:hover:bg-input')
       }
     >
       {children}
@@ -185,7 +185,7 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           openOnClick: false,
           autolink: true,
           HTMLAttributes: {
-            class: 'text-emerald-600 underline dark:text-emerald-400',
+            class: 'text-brand underline',
             rel: 'noopener noreferrer',
             target: '_blank',
           },
@@ -279,16 +279,16 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
 
   if (!editor) {
     return (
-      <div className={`rich-editor-root rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 ${className}`}>
-        <div className="h-[200px] animate-pulse bg-zinc-100 dark:bg-zinc-900 rounded-xl" />
+      <div className={`rich-editor-root rounded-xl border border-border-subtle bg-[var(--card-bg)] ${className}`}>
+        <div className="h-[200px] animate-pulse bg-brand-muted/40 dark:bg-surface rounded-xl" />
       </div>
     )
   }
 
   return (
-    <div className={`rich-editor-root rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden ${className}`}>
+    <div className={`rich-editor-root rounded-xl border border-border-subtle bg-[var(--card-bg)] overflow-hidden ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 border-b border-zinc-200 dark:border-zinc-800 px-3 py-1.5">
+      <div className="flex items-center gap-0.5 border-b border-border-subtle px-3 py-1.5">
 
         {/* Text style: Bold, Italic, Underline */}
         <ToolbarButton
@@ -313,13 +313,13 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           <UnderlineIcon />
         </ToolbarButton>
 
-        <span className="mx-1.5 h-4 w-px bg-zinc-200 dark:bg-zinc-700" aria-hidden />
+        <span className="mx-1.5 h-4 w-px bg-border-subtle" aria-hidden />
 
         {/* Heading select */}
         <div className="flex items-center gap-1">
           <HeadingIcon />
           <select
-            className="h-7 rounded bg-transparent py-0 pl-0.5 pr-5 text-sm text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
+            className="h-7 rounded bg-transparent py-0 pl-0.5 pr-5 text-sm text-text-primary dark:text-text-secondary focus:outline-none cursor-pointer"
             value={
               editor.isActive('heading', { level: 1 })
                 ? 'h1'
@@ -346,7 +346,7 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           </select>
         </div>
 
-        <span className="mx-1.5 h-4 w-px bg-zinc-200 dark:bg-zinc-700" aria-hidden />
+        <span className="mx-1.5 h-4 w-px bg-border-subtle" aria-hidden />
 
         {/* Text alignment */}
         <ToolbarButton
@@ -371,16 +371,16 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           <AlignRightIcon />
         </ToolbarButton>
 
-        <span className="mx-1.5 h-4 w-px bg-zinc-200 dark:bg-zinc-700" aria-hidden />
+        <span className="mx-1.5 h-4 w-px bg-border-subtle" aria-hidden />
 
         {/* Color picker: palette icon + color swatch */}
         <label
-          className="flex h-7 cursor-pointer items-center gap-1 rounded px-1.5 text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          className="flex h-7 cursor-pointer items-center gap-1 rounded px-1.5 text-text-secondary transition-colors hover:bg-brand-muted dark:text-text-muted dark:hover:bg-input"
           title="文字颜色"
         >
           <PaletteIcon />
           <span
-            className="h-4 w-4 rounded-sm border border-zinc-300 dark:border-zinc-600"
+            className="h-4 w-4 rounded-sm border border-border-subtle"
             style={{ backgroundColor: currentColor ?? '#000000' }}
           />
           <input
@@ -391,7 +391,7 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           />
         </label>
 
-        <span className="mx-1.5 h-4 w-px bg-zinc-200 dark:bg-zinc-700" aria-hidden />
+        <span className="mx-1.5 h-4 w-px bg-border-subtle" aria-hidden />
 
         {/* Link, Image, Emoji */}
         <ToolbarButton title="链接" active={editor.isActive('link')} onClick={setLink}>
@@ -427,7 +427,7 @@ export function RichEditor({ value, onChange, placeholder = '', className = '' }
           )}
         </div>
 
-        <span className="mx-1.5 h-4 w-px bg-zinc-200 dark:bg-zinc-700" aria-hidden />
+        <span className="mx-1.5 h-4 w-px bg-border-subtle" aria-hidden />
 
         {/* Math */}
         <ToolbarButton title="行内公式" onClick={insertInlineMath}>

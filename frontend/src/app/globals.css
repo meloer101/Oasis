@@ -3,51 +3,109 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
   --color-background: var(--bg);
   --color-foreground: var(--text-primary);
   --color-surface: var(--surface);
   --color-border-subtle: var(--border);
-  --color-accent: #10b981;
+  /* Apple DESIGN.md: Link Blue (light) / Bright Blue (dark) for inline links */
+  --color-link: var(--link);
+  --color-focus: var(--focus-ring);
+  /* Brand = Apple Blue interactive; sage / rose = product semantics (consensus / accent) */
+  --color-accent: var(--sage);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-soft: var(--brand-soft);
+  --color-sage: var(--sage);
+  --color-sage-hover: var(--sage-hover);
+  --color-rose: var(--rose);
+  --color-rose-hover: var(--rose-hover);
+  --color-cream: var(--cream);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
   --color-nav-active: var(--nav-active-bg);
   --color-nav-hover: var(--nav-hover-bg);
   --color-mobile-bar: var(--mobile-bar-bg);
+  --color-card: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-input: var(--input-bg);
+  --color-cta-text: var(--cta-text);
 }
 
 :root {
-  --header-height: 56px;
+  /* awesome-design-md apple/DESIGN.md — Quick Reference + Component Stylings */
+  --header-height: 48px;
+  --radius-card: 8px;
+  --radius-input: 11px;
+  --radius-pill: 980px;
+  --shadow-elevated: 3px 5px 30px 0 rgb(0 0 0 / 0.22);
+  --focus-ring: #0071e3;
+  --link: #0066cc;
+  --cream: #f5f5f7;
   --bg: #f5f5f7;
-  --surface: #ebebed;
-  --border: #e4e4e7;
-  --text-primary: #09090b;
-  --text-secondary: #52525b;
-  --text-muted: #71717a;
-  --nav-active-bg: #e4e4e7;
-  --nav-hover-bg: #f4f4f5;
-  --mobile-bar-bg: rgb(255 255 255 / 0.95);
+  --surface: #fafafc;
+  --input-bg: #fafafc;
+  /* Filter / search button: 3px solid rgba(0,0,0,0.04) — token as single border color */
+  --input-border: rgb(0 0 0 / 0.04);
+  --border: rgb(0 0 0 / 0.06);
+  --text-primary: #1d1d1f;
+  --text-secondary: rgb(0 0 0 / 0.8);
+  --text-muted: rgb(0 0 0 / 0.48);
+  --brand: #0071e3;
+  --brand-hover: #0077ed;
+  --brand-foreground: #ffffff;
+  --brand-muted: rgb(0 113 227 / 0.14);
+  --brand-soft: #e8f4ff;
+  --cta-text: #0066cc;
+  --sage: #2f9d6c;
+  --sage-hover: #268055;
+  --rose: #c45c6a;
+  --rose-hover: #a84d5a;
+  --nav-active-bg: rgb(0 113 227 / 0.1);
+  --nav-hover-bg: rgb(0 113 227 / 0.06);
+  --mobile-bar-bg: rgb(255 255 255 / 0.72);
   --card-bg: #ffffff;
-  --card-border: #e4e4e7;
-  --topnav-bg: rgb(255 255 255 / 0.92);
-  --sidebar-bg: rgb(255 255 255 / 0.6);
+  --card-border: rgb(0 0 0 / 0.06);
+  --topnav-bg: rgb(255 255 255 / 0.72);
+  --sidebar-bg: rgb(255 255 255 / 0.72);
   color-scheme: light;
 }
 
 .dark {
-  --bg: #09090b;
-  --surface: #18181b;
-  --border: #27272a;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --nav-active-bg: #27272a;
-  --nav-hover-bg: #18181b;
-  --mobile-bar-bg: rgb(9 9 11 / 0.95);
-  --card-bg: #18181b;
-  --card-border: #27272a;
-  --topnav-bg: rgb(9 9 11 / 0.92);
-  --sidebar-bg: rgb(9 9 11 / 0.5);
+  /* DESIGN.md: page #000, surfaces #272729–#2a2a2d, nav glass rgba(0,0,0,0.8) */
+  --shadow-elevated: none;
+  --focus-ring: #0071e3;
+  --link: #2997ff;
+  --cream: #000000;
+  --bg: #000000;
+  --surface: #2a2a2d;
+  --input-bg: #323236;
+  --input-border: rgb(255 255 255 / 0.08);
+  --border: rgb(255 255 255 / 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgb(255 255 255 / 0.8);
+  --text-muted: rgb(255 255 255 / 0.48);
+  --brand: #2997ff;
+  --brand-hover: #5eb0ff;
+  --brand-foreground: #ffffff;
+  --brand-muted: rgb(41 151 255 / 0.18);
+  --brand-soft: rgb(30 55 90 / 0.95);
+  --cta-text: #2997ff;
+  --sage: #5ecf8a;
+  --sage-hover: #3cb870;
+  --rose: #ff8a98;
+  --rose-hover: #ff6678;
+  --nav-active-bg: rgb(41 151 255 / 0.16);
+  --nav-hover-bg: rgb(41 151 255 / 0.08);
+  --mobile-bar-bg: rgb(0 0 0 / 0.8);
+  --card-bg: #272729;
+  --card-border: rgb(255 255 255 / 0.08);
+  --topnav-bg: rgb(0 0 0 / 0.8);
+  --sidebar-bg: rgb(0 0 0 / 0.8);
   color-scheme: dark;
 }
 
@@ -62,7 +120,36 @@ html.dark {
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: var(--font-geist-sans, system-ui, sans-serif);
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  /* DESIGN.md Body: 17px, lh 1.47, tracking -0.374px @ 17px */
+  font-size: 1.0625rem;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    line-height: 1.12;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.font-post-serif {
+  font-family: var(--font-source-serif), ui-serif, Georgia, "Times New Roman", serif;
 }
 
 * {

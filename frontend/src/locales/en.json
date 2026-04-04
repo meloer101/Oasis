@@ -2,7 +2,8 @@
   "topNav": {
     "openMenu": "Open menu",
     "createPost": "Create post",
-    "profile": "Profile"
+    "profile": "Profile",
+    "connectWallet": "Connect wallet"
   },
   "sidebar": {
     "feed": "Feed",
@@ -15,7 +16,15 @@
     "coins": "coins",
     "logout": "Log out",
     "language": "Language",
-    "trendingTags": "Trending tags"
+    "trendingTags": "Trending tags",
+    "trendingCircles": "Trending circles",
+    "noCirclesYet": "No circles yet",
+    "verifiedMember": "Verified member",
+    "decentralizedFeed": "Decentralized feed",
+    "consensusPlatform": "Consensus platform",
+    "viewTreasury": "View global treasury",
+    "support": "Support",
+    "about": "About"
   },
   "mobileNav": {
     "feed": "Feed",
@@ -27,6 +36,12 @@
     "profile": "Profile"
   },
   "rightPanel": {
+    "yourTreasury": "Your treasury",
+    "claimRewards": "Claim rewards",
+    "globalResonance": "Global resonance",
+    "resonanceActive": "{pct}% active",
+    "resonanceBlurb": "Network-wide consensus pulse from recent Agreecoin activity.",
+    "topResonators": "Top resonators",
     "communityTitle": "About Oasis",
     "communityBlurb": "Decentralized consensus social: Agreecoin votes heat up the best ideas.",
     "exploreCircles": "Explore circles",
@@ -37,7 +52,17 @@
     "joined": "Joined",
     "walletSidebarHint": "Open Wallet for full badge progress and transactions.",
     "noTagsYet": "No tags yet",
-    "relatedPosts": "Related Posts"
+    "relatedPosts": "Related posts",
+    "relatedInsights": "Related insights",
+    "viewAll": "View all",
+    "noResonatorsYet": "No creators yet",
+    "follow": "Follow",
+    "resonance": "resonance",
+    "footerWhitepaper": "Whitepaper",
+    "footerGovernance": "Governance",
+    "footerApi": "API",
+    "footerTerms": "Terms",
+    "nodeStatus": "Node status: optimal"
   },
   "theme": {
     "light": "Light",
@@ -47,17 +72,47 @@
     "cycleAria": "Cycle theme: light, dark, system"
   },
   "auth": {
+    "layout": {
+      "footerCopyright": "© {year} Oasis Protocol",
+      "privacy": "Privacy Policy",
+      "architecture": "System Architecture",
+      "apiDocs": "API Docs"
+    },
+    "brand": {
+      "headlineLead": "Access the",
+      "headlineAccent": "Consensus.",
+      "description": "Securely authenticate to enter the curated editorial network of the Oasis Protocol.",
+      "protocolStatus": "Protocol status",
+      "synchronized": "Synchronized — 0.04ms"
+    },
     "login": {
       "tagline": "Where ideas find consensus",
+      "sessionTitle": "Initialize Session",
+      "sessionSubtitle": "Enter your credentials or use verified OAuth providers.",
+      "emailLabel": "Email / identifier",
+      "passwordLabel": "Security protocol (password)",
+      "recover": "Recover?",
+      "authorize": "Authorize entry",
+      "emailPlaceholder": "you@curator.network",
       "signIn": "Sign in",
       "signingIn": "Signing in…",
-      "noAccount": "No account?",
-      "createOne": "Create one",
+      "noAccount": "New to the Oasis?",
+      "createOne": "Register a new account",
       "rateLimit": "Too many requests. Please try again later.",
       "failed": "Sign in failed"
     },
     "register": {
       "tagline": "Join the consensus",
+      "sessionTitle": "Create Identity",
+      "sessionSubtitle": "Register with email or connect a verified OAuth provider.",
+      "usernameLabel": "Username",
+      "displayNameLabel": "Display name",
+      "emailLabel": "Email",
+      "passwordLabel": "Password",
+      "usernamePlaceholder": "e.g. curator_0x42",
+      "displayNamePlaceholder": "How others see you",
+      "emailPlaceholder": "you@curator.network",
+      "passwordPlaceholder": "At least 8 characters",
       "bonus": "You'll receive 100 Agreecoins to get started 🎉",
       "createAccount": "Create account",
       "creating": "Creating account…",
@@ -68,8 +123,9 @@
     },
     "oauth": {
       "orContinueWith": "Or continue with",
-      "google": "Continue with Google",
-      "github": "Continue with GitHub",
+      "orAuthManually": "Or authenticate manually",
+      "google": "Connect with Google",
+      "github": "Connect with GitHub",
       "apple": "Continue with Apple",
       "processing": "Signing you in…",
       "callbackError": "Sign-in failed. Redirecting…",
@@ -91,7 +147,11 @@
     "saved": "Saved",
     "save": "Save changes",
     "loadingProfile": "Loading…",
-    "mustLogin": "Sign in to edit your profile"
+    "mustLogin": "Sign in to edit your profile",
+    "navProfile": "Profile",
+    "navAppearance": "Appearance",
+    "navAccount": "Account",
+    "emailLabel": "Email"
   },
   "wallet": {
     "title": "Wallet",
@@ -145,7 +205,14 @@
     "publish": "Publish",
     "publishError": "Failed to publish. Please try again.",
     "titleRequired": "Title is required",
-    "contentRequired": "Content is required"
+    "contentRequired": "Content is required",
+    "tipsTitle": "Writing a great post",
+    "tip1": "Write a clear, descriptive title that summarizes your post in one sentence.",
+    "tip2": "Use headings, images, and code blocks to make your post easy to read.",
+    "tip3": "Add relevant tags so readers can find your post.",
+    "tipsTagsTitle": "Tagging tips",
+    "tipTag1": "Use up to 5 tags to categorize your post.",
+    "tipTag2": "Tags help others discover your content."
   },
   "editor": {
     "uploadFailed": "Image upload failed: {detail}",
@@ -163,7 +230,9 @@
     "disagreeConfirm": "Confirm doubt",
     "disagreeStats": "· {amount} coins doubted",
     "disagreeLabel": "coins doubted",
-    "capReached": "Author earnings capped — your agreement still counts toward temperature"
+    "capReached": "Author earnings capped — your agreement still counts toward temperature",
+    "verifyAgreement": "Verify agreement",
+    "challengeInsight": "Challenge insight"
   },
   "post": {
     "share": "Share",
@@ -181,7 +250,14 @@
     "post": "Post",
     "reply": "Reply",
     "delete": "Delete",
-    "deleteConfirm": "Delete this post? This cannot be undone."
+    "deleteConfirm": "Delete this post? This cannot be undone.",
+    "distribute": "Distribute",
+    "sentimentVibeGauge": "Sentiment vibe gauge",
+    "vibeAnalytical": "Analytical-cold",
+    "vibeQuestioning": "Questioning",
+    "vibeTrending": "Trending-hot",
+    "stakeConsensus": "Stake consensus",
+    "stakeConsensusSubtitle": "Add Agreecoin to signal agreement or challenge this insight."
   },
   "tag": {
     "notFound": "Tag “{name}” does not exist",
@@ -234,7 +310,11 @@
     "title": "Notifications",
     "markAllRead": "Mark all read",
     "empty": "No notifications yet",
-    "viewPost": "View post →"
+    "viewPost": "View post →",
+    "filterAll": "All",
+    "filterComments": "Comments",
+    "filterVotes": "Votes",
+    "filterFollows": "Activity"
   },
   "feed": {
     "tabDiscover": "Discover",
@@ -255,7 +335,18 @@
     "clearSearch": "Clear",
     "resultsFor": "Results for “{q}”",
     "metaComments": "{count} comments",
-    "followFallbackBanner": "You're not following anyone yet — here are the current hot posts to get you started"
+    "followFallbackBanner": "You're not following anyone yet — here are the current hot posts to get you started",
+    "featuredInsight": "Featured insight",
+    "sentimentGauge": "Sentiment gauge",
+    "activityHot": "High consensus",
+    "activityActive": "Active",
+    "activityWarm": "Warming",
+    "activityCool": "Cooling",
+    "activityCold": "Analytical",
+    "statAgreecoin": "Agreecoin",
+    "statQuestions": "Questions",
+    "statVoters": "voters",
+    "insightCategory": "Insight"
   },
   "user": {
     "notFound": "User not found.",
@@ -274,6 +365,7 @@
     "circlesHint": "Explore circles to find communities.",
     "followers": "Followers",
     "followingCount": "Following",
-    "totalReceived": "coins received"
+    "totalReceived": "coins received",
+    "recentContributions": "Recent contributions"
   }
 }

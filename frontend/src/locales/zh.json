@@ -2,7 +2,8 @@
   "topNav": {
     "openMenu": "打开菜单",
     "createPost": "发帖",
-    "profile": "个人主页"
+    "profile": "个人主页",
+    "connectWallet": "连接钱包"
   },
   "sidebar": {
     "feed": "广场",
@@ -15,7 +16,15 @@
     "coins": "币",
     "logout": "退出登录",
     "language": "语言",
-    "trendingTags": "热门标签"
+    "trendingTags": "热门标签",
+    "trendingCircles": "热门圈子",
+    "noCirclesYet": "暂无圈子",
+    "verifiedMember": "已验证成员",
+    "decentralizedFeed": "去中心化动态",
+    "consensusPlatform": "共识平台",
+    "viewTreasury": "查看全局金库",
+    "support": "支持",
+    "about": "关于"
   },
   "mobileNav": {
     "feed": "广场",
@@ -27,6 +36,12 @@
     "profile": "我的"
   },
   "rightPanel": {
+    "yourTreasury": "你的金库",
+    "claimRewards": "领取奖励",
+    "globalResonance": "全局共鸣",
+    "resonanceActive": "{pct}% 活跃",
+    "resonanceBlurb": "来自近期认同币活动的全网共识脉搏。",
+    "topResonators": "共鸣榜",
     "communityTitle": "关于 Oasis",
     "communityBlurb": "去中心化共识社交：用认同币表达立场，让好内容升温。",
     "exploreCircles": "探索圈子",
@@ -37,7 +52,17 @@
     "joined": "加入于",
     "walletSidebarHint": "在钱包页可查看完整徽章与流水。",
     "noTagsYet": "暂无标签",
-    "relatedPosts": "相关帖子"
+    "relatedPosts": "相关帖子",
+    "relatedInsights": "相关洞见",
+    "viewAll": "查看全部",
+    "noResonatorsYet": "暂无创作者",
+    "follow": "关注",
+    "resonance": "共鸣",
+    "footerWhitepaper": "白皮书",
+    "footerGovernance": "治理",
+    "footerApi": "API",
+    "footerTerms": "条款",
+    "nodeStatus": "节点状态：正常"
   },
   "theme": {
     "light": "浅色",
@@ -47,17 +72,47 @@
     "cycleAria": "切换主题：浅色、深色、跟随系统"
   },
   "auth": {
+    "layout": {
+      "footerCopyright": "© {year} Oasis Protocol",
+      "privacy": "隐私政策",
+      "architecture": "系统架构",
+      "apiDocs": "API 文档"
+    },
+    "brand": {
+      "headlineLead": "进入",
+      "headlineAccent": "共识。",
+      "description": "安全验证身份，进入 Oasis 协议策展编辑网络。",
+      "protocolStatus": "协议状态",
+      "synchronized": "已同步 — 0.04ms"
+    },
     "login": {
       "tagline": "让想法找到共识",
+      "sessionTitle": "初始化会话",
+      "sessionSubtitle": "输入账号密码，或使用已验证的 OAuth 登录。",
+      "emailLabel": "邮箱 / 标识",
+      "passwordLabel": "安全协议（密码）",
+      "recover": "找回密码？",
+      "authorize": "授权进入",
+      "emailPlaceholder": "you@curator.network",
       "signIn": "登录",
       "signingIn": "登录中…",
-      "noAccount": "还没有账号？",
-      "createOne": "注册",
+      "noAccount": "刚来 Oasis？",
+      "createOne": "注册新账号",
       "rateLimit": "请求过于频繁，请稍后再试。",
       "failed": "登录失败"
     },
     "register": {
       "tagline": "加入共识",
+      "sessionTitle": "创建身份",
+      "sessionSubtitle": "使用邮箱注册，或连接已验证的 OAuth。",
+      "usernameLabel": "用户名",
+      "displayNameLabel": "显示名称",
+      "emailLabel": "邮箱",
+      "passwordLabel": "密码",
+      "usernamePlaceholder": "例如 curator_0x42",
+      "displayNamePlaceholder": "他人看到的名称",
+      "emailPlaceholder": "you@curator.network",
+      "passwordPlaceholder": "至少 8 位",
       "bonus": "注册即送 100 枚认同币 🎉",
       "createAccount": "注册",
       "creating": "注册中…",
@@ -68,6 +123,7 @@
     },
     "oauth": {
       "orContinueWith": "或通过以下方式继续",
+      "orAuthManually": "或使用账号密码登录",
       "google": "使用 Google 登录",
       "github": "使用 GitHub 登录",
       "apple": "使用 Apple 登录",
@@ -91,7 +147,11 @@
     "saved": "已保存",
     "save": "保存更改",
     "loadingProfile": "加载中…",
-    "mustLogin": "请先登录以编辑资料"
+    "mustLogin": "请先登录以编辑资料",
+    "navProfile": "个人资料",
+    "navAppearance": "外观",
+    "navAccount": "账号",
+    "emailLabel": "邮箱"
   },
   "wallet": {
     "title": "钱包",
@@ -145,7 +205,14 @@
     "publish": "发布",
     "publishError": "发布失败，请重试",
     "titleRequired": "标题不能为空",
-    "contentRequired": "内容不能为空"
+    "contentRequired": "内容不能为空",
+    "tipsTitle": "写出好帖子",
+    "tip1": "写一个清晰的标题，用一句话概括你的帖子。",
+    "tip2": "使用标题、图片和代码块让帖子更易读。",
+    "tip3": "添加相关标签，让读者更容易找到你的内容。",
+    "tipsTagsTitle": "标签建议",
+    "tipTag1": "最多添加 5 个标签对帖子进行分类。",
+    "tipTag2": "标签有助于他人发现你的内容。"
   },
   "editor": {
     "uploadFailed": "图片上传失败：{detail}",
@@ -163,7 +230,9 @@
     "disagreeConfirm": "确认质疑",
     "disagreeStats": "· {amount} 币质疑",
     "disagreeLabel": "币质疑",
-    "capReached": "此帖作者收益已封顶，认同仍计入温度"
+    "capReached": "此帖作者收益已封顶，认同仍计入温度",
+    "verifyAgreement": "验证认同",
+    "challengeInsight": "质疑洞见"
   },
   "post": {
     "share": "分享",
@@ -181,7 +250,14 @@
     "post": "发布",
     "reply": "回复",
     "delete": "删除",
-    "deleteConfirm": "确认删除这篇帖子？此操作不可撤销。"
+    "deleteConfirm": "确认删除这篇帖子？此操作不可撤销。",
+    "distribute": "分发",
+    "sentimentVibeGauge": "情绪共鸣条",
+    "vibeAnalytical": "理性偏冷",
+    "vibeQuestioning": "质疑",
+    "vibeTrending": "趋势偏热",
+    "stakeConsensus": "质押共识",
+    "stakeConsensusSubtitle": "投入认同币以表达认同或质疑。"
   },
   "tag": {
     "notFound": "标签「{name}」不存在",
@@ -234,7 +310,11 @@
     "title": "通知",
     "markAllRead": "全部已读",
     "empty": "暂无通知",
-    "viewPost": "查看帖子 →"
+    "viewPost": "查看帖子 →",
+    "filterAll": "全部",
+    "filterComments": "评论",
+    "filterVotes": "投票",
+    "filterFollows": "动态"
   },
   "feed": {
     "tabDiscover": "发现",
@@ -255,7 +335,18 @@
     "clearSearch": "清除",
     "resultsFor": "搜索「{q}」",
     "metaComments": "{count} 条评论",
-    "followFallbackBanner": "还没有关注的人，以下是当前热门内容 — 去探索发现有趣的人吧"
+    "followFallbackBanner": "还没有关注的人，以下是当前热门内容 — 去探索发现有趣的人吧",
+    "featuredInsight": "精选洞见",
+    "sentimentGauge": "情绪指数",
+    "activityHot": "高共识",
+    "activityActive": "活跃",
+    "activityWarm": "升温",
+    "activityCool": "降温",
+    "activityCold": "偏理性",
+    "statAgreecoin": "认同币",
+    "statQuestions": "质疑",
+    "statVoters": "人投票",
+    "insightCategory": "洞见"
   },
   "user": {
     "notFound": "用户不存在。",
@@ -274,6 +365,7 @@
     "circlesHint": "在圈子页发现更多社区。",
     "followers": "粉丝",
     "followingCount": "关注",
-    "totalReceived": "累计认同"
+    "totalReceived": "累计认同",
+    "recentContributions": "近期贡献"
   }
 }

@@ -1,0 +1,25 @@
+---
+description: 将本仓库 Impeccable（.cursor/skills）视为已启用的 Agent Skills，并在匹配任务时主动加载对应 SKILL.md
+alwaysApply: true
+---
+
+# Impeccable 项目内 Skills（视为始终可用）
+
+本仓库已在项目根安装 Impeccable：技能本体在 `.agents/skills/`，Cursor 使用 `.cursor/skills/`（指向同一目录）。**请把这些目录当作已启用的 Agent Skills**：当用户任务与某个技能目录中 `SKILL.md` 的 frontmatter `description` 相符时，**先读取该目录的 `SKILL.md`（及其中引用的 reference 等文件）再回答或改代码**。
+
+## 匹配时优先加载的技能（示例）
+
+- `frontend-design`：页面/组件/视觉与审美方向、避免模板化 UI。
+- `polish`：收尾、对齐间距、一致性、上线前细节。
+- `typeset`、`arrange`、`colorize`、`animate`、`audit`、`critique` 等：任务涉及排版、布局、配色、动效、评审时读取对应目录。
+
+## 设计上下文（须遵守）
+
+遵循 `.agents/skills/frontend-design/SKILL.md` 中的 **Context Gathering Protocol**：
+
+1. 若当前指令里已有明确的 **Design Context**，或项目根存在信息足够的 `.impeccable.md`，可直接依据执行。
+2. 否则在进行**实质性界面设计或大规模视觉改版**前，应向用户确认受众、场景与品牌气质，或请用户执行 **`/teach-impeccable`** 以生成 `.impeccable.md`；**不要**仅靠读代码推断并冒充已有设计语境。
+
+## 边界
+
+纯后端、数据库、与 UI 无关的逻辑改动不必加载 Impeccable；一旦涉及前端展示、全局样式或交互视觉，则按上文加载相应技能。

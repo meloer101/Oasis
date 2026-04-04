@@ -15,7 +15,7 @@ export default function RootPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="w-7 h-7 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-7 h-7 border-2 border-brand border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }

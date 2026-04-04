@@ -11,7 +11,7 @@ import { ThemeCycleButton } from '@/components/theme/theme-cycle-button'
 import { LangSwitch } from '@/components/i18n/lang-switch'
 import { Avatar } from '@/components/ui/avatar'
 
-const HEADER_H = 'h-14'
+const HEADER_H = 'h-12'
 
 export default function Header() {
   const { user, logout } = useAuth()
@@ -60,11 +60,9 @@ export default function Header() {
     router.replace('/login')
   }
 
-  const initials = (user?.displayName ?? user?.username ?? '?').charAt(0).toUpperCase()
-
   return (
     <header
-      className={`sticky top-0 z-30 ${HEADER_H} border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-md flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 w-full min-w-0`}
+      className={`sticky top-0 z-30 ${HEADER_H} border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-xl backdrop-saturate-[180%] flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 w-full min-w-0`}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
@@ -80,7 +78,7 @@ export default function Header() {
 
         <Link
           href="/feed"
-          className="text-lg font-bold text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 transition-colors shrink-0"
+          className="text-lg font-bold text-brand hover:text-brand-hover transition-colors shrink-0"
         >
           Oasis
         </Link>
@@ -92,7 +90,7 @@ export default function Header() {
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               placeholder={t('feed.searchPlaceholder')}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-emerald-600/30 focus:border-emerald-600"
+              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/25 focus:border-brand"
             />
             <svg
               className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"
@@ -130,7 +128,7 @@ export default function Header() {
                 placeholder={t('feed.searchPlaceholder')}
                 className="flex-1 min-w-0 rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-1.5 text-sm"
               />
-              <button type="submit" className="text-xs text-emerald-600 dark:text-emerald-400 shrink-0">
+              <button type="submit" className="text-xs text-brand font-medium shrink-0">
                 OK
               </button>
               <button
@@ -148,16 +146,42 @@ export default function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0">
+        {/* Desktop: language / theme / wallet — mobile keeps these in avatar menu */}
+        <div className="hidden sm:flex items-center gap-2 md:gap-3 shrink-0">
+          <div className="hidden md:flex flex-col gap-0.5">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted leading-none">
+              {t('sidebar.language')}
+            </span>
+            <LangSwitch compact />
+          </div>
+          <div className="hidden md:flex flex-col gap-0.5 items-start">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.12em] text-text-muted leading-none">
+              {t('theme.appearance')}
+            </span>
+            <ThemeCycleButton />
+          </div>
+          <div className="flex md:hidden items-center gap-1.5">
+            <LangSwitch compact />
+            <ThemeCycleButton />
+          </div>
+          <Link
+            href="/wallet"
+            className="inline-flex items-center rounded-lg border border-brand px-2.5 py-1.5 text-xs font-semibold text-brand hover:bg-nav-hover transition-colors whitespace-nowrap"
+          >
+            {t('topNav.connectWallet')}
+          </Link>
+        </div>
+
         <Link
           href="/feed/new"
-          className="hidden min-[380px]:inline-flex items-center rounded-lg border border-emerald-600 bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-500 transition-colors shrink-0"
+          className="hidden min-[380px]:inline-flex items-center rounded-lg border border-brand bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:opacity-90 transition-opacity shrink-0"
         >
           {t('topNav.createPost')}
         </Link>
         <Link
           href="/feed/new"
-          className="min-[380px]:hidden p-2 rounded-lg bg-emerald-600 text-white shrink-0"
+          className="min-[380px]:hidden p-2 rounded-lg bg-brand text-brand-foreground shrink-0"
           aria-label={t('topNav.createPost')}
         >
           <span className="text-lg leading-none">＋</span>
@@ -165,11 +189,11 @@ export default function Header() {
 
         <Link
           href="/notifications"
-          className="relative p-2 rounded-lg text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-colors shrink-0"
+          className="relative p-1.5 sm:p-2 rounded-lg text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-colors shrink-0"
         >
-          <span className="text-lg">🔔</span>
+          <span className="text-base sm:text-lg">🔔</span>
           {unread > 0 && (
-            <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute top-0.5 right-0.5 min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] px-0.5 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold rounded-full flex items-center justify-center">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
@@ -179,15 +203,15 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
-            className="flex items-center rounded-full ring-2 ring-transparent hover:ring-emerald-600/40 transition-all"
+            className="flex items-center rounded-full ring-2 ring-transparent hover:ring-brand/35 transition-all"
             aria-expanded={menuOpen}
             aria-haspopup="true"
           >
             <Avatar
               src={user?.avatarUrl}
               name={user?.displayName ?? user?.username ?? '?'}
-              className="w-9 h-9 rounded-full bg-emerald-800 text-sm"
-              textClassName="text-emerald-200"
+              className="w-9 h-9 rounded-full bg-brand text-sm"
+              textClassName="text-brand-foreground"
             />
           </button>
           {menuOpen && (
@@ -206,7 +230,7 @@ export default function Header() {
               >
                 {t('sidebar.settings')}
               </Link>
-              <div className="border-t border-border-subtle my-2 px-4 py-2 space-y-2">
+              <div className="border-t border-border-subtle my-2 px-4 py-2 space-y-2 sm:hidden">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs text-text-muted">{t('sidebar.language')}</span>
                   <LangSwitch compact />

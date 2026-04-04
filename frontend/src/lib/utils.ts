@@ -15,8 +15,26 @@ export function heatBadge(temperature: string): { emoji: string; color: string }
   const t = parseFloat(temperature)
   if (t > 100) return { emoji: '🔥', color: 'text-red-400' }
   if (t > 20) return { emoji: '⚡', color: 'text-amber-400' }
-  if (t > 5) return { emoji: '↑', color: 'text-emerald-400' }
+  if (t > 5) return { emoji: '↑', color: 'text-sage' }
   return null
+}
+
+/** Short numeric + vibe label for feed sentiment row (i18n labels passed from caller). */
+export function sentimentActivityParts(temperature: string): {
+  signed: string
+  tone: 'hot' | 'active' | 'warm' | 'cool' | 'cold'
+} | null {
+  const t = parseFloat(temperature)
+  if (Number.isNaN(t)) return null
+  const rounded = Math.round(t)
+  const signed = rounded > 0 ? `+${rounded}` : String(rounded)
+  let tone: 'hot' | 'active' | 'warm' | 'cool' | 'cold'
+  if (t >= 60) tone = 'hot'
+  else if (t >= 20) tone = 'active'
+  else if (t > 0) tone = 'warm'
+  else if (t > -25) tone = 'cool'
+  else tone = 'cold'
+  return { signed, tone }
 }
 
 export function formatCoins(n: number): string {

@@ -66,7 +66,7 @@ function FeedPageInner() {
           <span>{t('feed.resultsFor').replace('{q}', qParam)}</span>
           <a
             href="/feed"
-            className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
+            className="text-brand font-medium hover:underline"
           >
             {t('feed.clearSearch')}
           </a>
@@ -84,7 +84,7 @@ function FeedPageInner() {
 
       {(isSearching ? search.isLoading : feed.isLoading) && (
         <div className="flex justify-center py-12">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
         </div>
       )}
 
@@ -122,7 +122,13 @@ function FeedPageInner() {
             key={post.id}
             post={post}
             feedQueryKey={feedQueryKey}
-            featured={!isSearching && index === 0}
+            featured={
+              !isSearching &&
+              index === 0 &&
+              mainTab === 'discover' &&
+              discoverSort === 'hot' &&
+              !followFallback
+            }
           />
         ))}
       </div>
@@ -133,7 +139,7 @@ function FeedPageInner() {
             type="button"
             onClick={() => feed.fetchNextPage()}
             disabled={feed.isFetchingNextPage}
-            className="px-5 py-2 text-sm text-text-secondary hover:text-text-primary border border-[var(--card-border)] hover:border-zinc-400 dark:hover:border-zinc-600 rounded-lg transition-colors disabled:opacity-50"
+            className="px-5 py-2 text-sm text-text-secondary hover:text-text-primary border border-[var(--card-border)] hover:border-brand/40 rounded-lg transition-colors disabled:opacity-50"
           >
             {feed.isFetchingNextPage ? t('feed.loading') : t('feed.loadMore')}
           </button>
@@ -158,7 +164,7 @@ function FeedPageInner() {
 function FeedFallback() {
   return (
     <div className="flex justify-center py-12">
-      <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
     </div>
   )
 }

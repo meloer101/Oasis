@@ -12,7 +12,7 @@ import MobileNav from '@/components/layout/mobile-nav'
 function HeaderFallback() {
   return (
     <div
-      className="sticky top-0 z-30 h-14 shrink-0 border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-md"
+      className="sticky top-0 z-30 h-12 shrink-0 border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-xl backdrop-saturate-[180%]"
       aria-hidden
     />
   )
@@ -31,7 +31,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-7 h-7 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-7 h-7 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

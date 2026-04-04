@@ -15,7 +15,7 @@ export default function CirclesPage() {
         <h1 className="text-xl font-bold text-text-primary">{t('circles.title')}</h1>
         <Link
           href="/circle/create"
-          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-colors"
+          className="px-4 py-2 rounded-xl bg-brand hover:opacity-90 text-brand-foreground text-sm font-medium transition-opacity"
         >
           + {t('circles.create')}
         </Link>
@@ -23,7 +23,7 @@ export default function CirclesPage() {
 
       {isLoading ? (
         <div className="flex justify-center py-16">
-          <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
         </div>
       ) : circles && circles.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -33,7 +33,7 @@ export default function CirclesPage() {
               href={`/circle/${circle.id}`}
               className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 hover:shadow-md transition-shadow flex gap-4"
             >
-              <div className="w-14 h-14 rounded-xl bg-emerald-900/35 flex items-center justify-center text-xl font-bold text-emerald-300 shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-brand-muted flex items-center justify-center text-xl font-bold text-brand shrink-0">
                 {circle.name.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
@@ -44,7 +44,7 @@ export default function CirclesPage() {
                       {formatCoins(circle.joinFee)} coins
                     </span>
                   ) : (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 font-medium">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-sage/20 dark:bg-sage/15 text-text-primary dark:text-sage font-medium">
                       {t('circles.free')}
                     </span>
                   )}

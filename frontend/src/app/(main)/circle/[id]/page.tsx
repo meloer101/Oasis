@@ -20,7 +20,7 @@ export default function CirclePage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -29,7 +29,7 @@ export default function CirclePage() {
     return (
       <div className="text-center py-16 text-text-muted">
         <p>{t('circle.detail.notFound')}</p>
-        <button onClick={() => router.back()} className="text-emerald-400 text-sm mt-2">
+        <button onClick={() => router.back()} className="text-brand text-sm mt-2">
           {t('circle.detail.back')}
         </button>
       </div>
@@ -71,7 +71,7 @@ export default function CirclePage() {
               <button
                 onClick={() => leave.mutate()}
                 disabled={leave.isPending}
-                className="shrink-0 px-4 py-1.5 rounded-lg border border-border-subtle text-text-secondary hover:border-zinc-400 dark:hover:border-zinc-600 text-sm transition-colors disabled:opacity-50"
+                className="shrink-0 px-4 py-1.5 rounded-lg border border-border-subtle text-text-secondary hover:border-brand/35 text-sm transition-colors disabled:opacity-50"
               >
                 {leave.isPending ? '…' : t('circle.detail.leave')}
               </button>
@@ -84,7 +84,7 @@ export default function CirclePage() {
             <button
               onClick={() => join.mutate()}
               disabled={join.isPending}
-              className="shrink-0 px-4 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-sm transition-colors disabled:opacity-50"
+              className="shrink-0 px-4 py-1.5 rounded-lg bg-brand hover:opacity-90 text-brand-foreground text-sm transition-opacity disabled:opacity-50"
             >
               {join.isPending
                 ? '…'
@@ -99,7 +99,7 @@ export default function CirclePage() {
       <div className="space-y-4">
         {postsLoading ? (
           <div className="flex justify-center py-8">
-            <div className="w-5 h-5 border-2 border-zinc-400 dark:border-zinc-700 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-border-subtle border-t-brand rounded-full animate-spin" />
           </div>
         ) : posts && posts.length > 0 ? (
           posts.map((post) => (

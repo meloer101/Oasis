@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { usePost, useComments } from '@/hooks/use-post'
 import { apiClient } from '@/lib/api-client'
-import { timeAgo, formatCoins, tagHue } from '@/lib/utils'
+import { timeAgo, formatCoins, tagHue, estimateReadingMinutes } from '@/lib/utils'
+import { stripHtmlToText } from '@/lib/html'
 import VoteButton from '@/components/feed/vote-button'
 import { TemperatureBar } from '@/components/feed/temperature-bar'
 import type { Comment } from '@/lib/types'
@@ -49,7 +50,7 @@ export default function PostPage() {
   if (postLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -58,7 +59,7 @@ export default function PostPage() {
     return (
       <div className="text-center py-16 text-text-muted text-sm">
         {t('post.notFound')}{' '}
-        <button type="button" onClick={() => router.back()} className="text-emerald-400 hover:text-emerald-300">
+        <button type="button" onClick={() => router.back()} className="text-brand hover:text-brand-hover">
           {t('post.goBack')}
         </button>
       </div>
@@ -90,7 +91,7 @@ export default function PostPage() {
           />
           <a
             href="#comments"
-            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-emerald-500/40 transition-colors"
+            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-brand/40 transition-colors"
             title={t('post.commentsHeading')}
           >
             💬
@@ -98,7 +99,7 @@ export default function PostPage() {
           <button
             type="button"
             onClick={sharePost}
-            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-emerald-500/40 transition-colors"
+            className="w-10 h-10 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] flex items-center justify-center text-base hover:border-brand/40 transition-colors"
             title={t('post.share')}
           >
             ↗
@@ -107,46 +108,77 @@ export default function PostPage() {
 
         <article className="flex-1 min-w-0 max-w-3xl">
           {post.imageUrl ? (
-            <div className="rounded-xl overflow-hidden border border-[var(--card-border)] mb-6 max-h-[420px] bg-zinc-100 dark:bg-zinc-900">
+            <div className="rounded-xl overflow-hidden border border-[var(--card-border)] mb-6 max-h-[420px] bg-brand-muted/35 dark:bg-[#0f172a]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.imageUrl} alt="" className="w-full max-h-[420px] object-cover" />
             </div>
           ) : null}
 
-          <h1 className="text-3xl sm:text-4xl font-bold text-text-primary leading-tight mb-4">{post.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 mb-3">
+            {post.tags && post.tags.length > 0 ? (
+              <span className="text-[10px] font-bold uppercase tracking-[0.14em] px-2.5 py-1 rounded-full bg-brand-muted text-brand border border-brand/15">
+                {post.tags[0]}
+              </span>
+            ) : null}
+            <span className="text-xs text-text-muted">
+              {t('post.readTime').replace(
+                '{min}',
+                String(
+                  estimateReadingMinutes(
+                    post.contentType === 'rich' && post.content
+                      ? stripHtmlToText(post.content)
+                      : (post.content ?? ''),
+                  ),
+                ),
+              )}
+            </span>
+          </div>
 
-          <div className="flex flex-wrap items-center gap-3 mb-6">
+          <h1 className="font-post-serif text-3xl sm:text-4xl font-bold text-text-primary leading-tight mb-4">
+            {post.title}
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-3 mb-6 justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <Avatar
                 src={post.author.avatarUrl}
                 name={post.author.displayName ?? post.author.username}
-                className="w-10 h-10 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0 text-sm"
+                className="w-10 h-10 rounded-full bg-brand-muted dark:bg-surface shrink-0 text-sm"
                 textClassName="text-text-secondary"
               />
               <div className="min-w-0">
                 <Link
                   href={`/user/${post.author.username}`}
-                  className="font-semibold text-text-primary hover:text-emerald-500 transition-colors block truncate"
+                  className="font-semibold text-text-primary hover:text-brand transition-colors block truncate"
                 >
                   {post.author.displayName ?? post.author.username}
                 </Link>
                 <p className="text-xs text-text-muted">{timeAgo(post.createdAt)}</p>
               </div>
             </div>
-            {user?.id === post.author.id && (
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  if (window.confirm(t('post.deleteConfirm'))) {
-                    deleteMutation.mutate()
-                  }
-                }}
-                disabled={deleteMutation.isPending}
-                className="text-xs text-red-400 hover:text-red-300 disabled:opacity-40 transition-colors ml-auto"
+                onClick={sharePost}
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand border border-brand/35 rounded-lg px-3 py-1.5 hover:bg-nav-hover transition-colors"
               >
-                {t('post.delete')}
+                ↗ {t('post.distribute')}
               </button>
-            )}
+              {user?.id === post.author.id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(t('post.deleteConfirm'))) {
+                      deleteMutation.mutate()
+                    }
+                  }}
+                  disabled={deleteMutation.isPending}
+                  className="text-xs text-red-400 hover:text-red-300 disabled:opacity-40 transition-colors"
+                >
+                  {t('post.delete')}
+                </button>
+              )}
+            </div>
           </div>
 
           {post.tags && post.tags.length > 0 ? (
@@ -157,7 +189,7 @@ export default function PostPage() {
                   <Link
                     key={tag}
                     href={`/tag/${encodeURIComponent(tag)}`}
-                    className="text-sm font-medium rounded px-1 -mx-1 hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                    className="text-sm font-medium rounded px-1 -mx-1 hover:bg-nav-hover"
                     style={{ color: `hsl(${hue}, 45%, 42%)` }}
                   >
                     #{tag}
@@ -167,18 +199,33 @@ export default function PostPage() {
             </div>
           ) : null}
 
-          {/* Mobile / tablet vote row */}
-          <div className="lg:hidden mb-6 p-4 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)]">
-            <VoteButton
-              postId={post.id}
-              voterCount={post.voterCount}
-              totalVoteAmount={post.totalVoteAmount}
-              disagreeVoteAmount={post.disagreeVoteAmount}
-              userVoteType={post.userVoteType ?? null}
-              queryKey={['post', id]}
-              isAuthorCapReached={Math.floor(post.totalVoteAmount * 0.8) >= 200}
-              variant="default"
-            />
+          {/* Mobile / tablet stake consensus */}
+          <div className="lg:hidden mb-6 rounded-2xl border border-brand/20 bg-[var(--card-bg)] shadow-md ring-1 ring-brand/5 overflow-hidden">
+            <div className="p-4 border-b border-[var(--card-border)] flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted">
+                  {t('post.stakeConsensus')}
+                </p>
+                <p className="text-xs text-text-secondary mt-1">{t('post.stakeConsensusSubtitle')}</p>
+              </div>
+              <p className="text-xl font-bold text-amber-500 dark:text-amber-400 tabular-nums text-right">
+                {formatCoins(post.totalVoteAmount)}{' '}
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-text-muted">AG</span>
+              </p>
+            </div>
+            <div className="p-4">
+              <VoteButton
+                postId={post.id}
+                voterCount={post.voterCount}
+                totalVoteAmount={post.totalVoteAmount}
+                disagreeVoteAmount={post.disagreeVoteAmount}
+                userVoteType={post.userVoteType ?? null}
+                queryKey={['post', id]}
+                isAuthorCapReached={Math.floor(post.totalVoteAmount * 0.8) >= 200}
+                variant="default"
+                stackedActions
+              />
+            </div>
           </div>
 
           <div className="max-w-none text-[1.05rem] leading-relaxed [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg [&_p]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6">
@@ -188,7 +235,7 @@ export default function PostPage() {
                   href={post.linkUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-600 dark:text-emerald-400 hover:underline break-all text-lg"
+                  className="text-brand hover:underline break-all text-lg font-medium"
                 >
                   🔗 {post.linkUrl}
                 </a>
@@ -203,35 +250,47 @@ export default function PostPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 mt-8 pt-6 border-t border-[var(--card-border)] text-sm text-text-muted">
-            <TemperatureBar temperature={post.temperature} />
-            <span>
-              👁 {post.viewCount} {t('post.views')}
-            </span>
-            <span>
-              💬 {post.commentCount} {t('post.comments')}
-            </span>
-            {post.totalVoteAmount > 0 && (
+          <div className="mt-8 pt-6 border-t border-[var(--card-border)] space-y-4">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-text-muted mb-2">
+                {t('post.sentimentVibeGauge')}
+              </p>
+              <TemperatureBar temperature={post.temperature} />
+              <div className="flex justify-between gap-2 mt-1.5 text-[9px] font-semibold uppercase tracking-wide text-text-muted">
+                <span className="text-left">{t('post.vibeAnalytical')}</span>
+                <span className="text-center shrink-0">{t('post.vibeQuestioning')}</span>
+                <span className="text-right">{t('post.vibeTrending')}</span>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted">
               <span>
-                ⚡{' '}
-                {t('post.agreeStats', {
-                  count: post.voterCount,
-                  amount: formatCoins(post.totalVoteAmount),
-                })}
+                👁 {post.viewCount} {t('post.views')}
               </span>
-            )}
-            {post.disagreeVoteAmount > 0 && (
               <span>
-                💧 {formatCoins(post.disagreeVoteAmount)} {t('vote.disagreeLabel')}
+                💬 {post.commentCount} {t('post.comments')}
               </span>
-            )}
-            <button
-              type="button"
-              onClick={sharePost}
-              className="lg:hidden text-emerald-600 dark:text-emerald-400 text-sm font-medium"
-            >
-              {t('post.share')}
-            </button>
+              {post.totalVoteAmount > 0 && (
+                <span>
+                  ⚡{' '}
+                  {t('post.agreeStats', {
+                    count: post.voterCount,
+                    amount: formatCoins(post.totalVoteAmount),
+                  })}
+                </span>
+              )}
+              {post.disagreeVoteAmount > 0 && (
+                <span>
+                  💧 {formatCoins(post.disagreeVoteAmount)} {t('vote.disagreeLabel')}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={sharePost}
+                className="sm:hidden text-brand text-sm font-medium"
+              >
+                {t('post.share')}
+              </button>
+            </div>
           </div>
         </article>
       </div>
@@ -245,7 +304,7 @@ export default function PostPage() {
 
         {commentsLoading && (
           <div className="flex justify-center py-6">
-            <div className="w-5 h-5 border-2 border-zinc-400 dark:border-zinc-700 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-border-subtle border-t-brand rounded-full animate-spin" />
           </div>
         )}
 
@@ -307,13 +366,13 @@ function CommentForm({
         onChange={(e) => setContent(e.target.value)}
         placeholder={parentId ? t('post.replyPlaceholder') : t('post.commentPlaceholder')}
         rows={parentId ? 2 : 3}
-        className="flex-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-emerald-600/25 resize-none"
+        className="flex-1 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-brand/25 resize-none"
       />
       <button
         type="button"
         onClick={() => mutation.mutate()}
         disabled={!content.trim() || mutation.isPending}
-        className="self-end sm:self-stretch px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm rounded-xl transition-colors shrink-0 h-fit sm:h-auto"
+        className="self-end sm:self-stretch px-5 py-2 bg-brand hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-brand-foreground text-sm rounded-xl transition-opacity shrink-0 h-fit sm:h-auto"
       >
         {mutation.isPending ? '…' : t('post.post')}
       </button>
@@ -339,7 +398,7 @@ function CommentThread({
         <Avatar
           src={comment.author.avatarUrl}
           name={comment.author.displayName ?? comment.author.username}
-          className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 text-xs"
+          className="w-8 h-8 rounded-full bg-brand-muted dark:bg-surface text-xs"
           textClassName="text-text-secondary"
         />
         <span className="text-sm font-medium text-text-primary">

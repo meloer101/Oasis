@@ -9,7 +9,7 @@ const BADGE_META: Record<
   BadgeType,
   { emoji: string; color: string; threshold: number; labelKey: string }
 > = {
-  newcomer: { emoji: '🌱', color: 'text-emerald-400', threshold: 100, labelKey: 'newcomer' },
+  newcomer: { emoji: '🌱', color: 'text-sage', threshold: 100, labelKey: 'newcomer' },
   resonator: { emoji: '⚡', color: 'text-blue-400', threshold: 500, labelKey: 'resonator' },
   vibe_master: { emoji: '🔥', color: 'text-orange-400', threshold: 2000, labelKey: 'vibe_master' },
   founder: { emoji: '🏔️', color: 'text-yellow-400', threshold: 5000, labelKey: 'founder' },
@@ -25,7 +25,7 @@ export default function WalletPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -46,7 +46,7 @@ export default function WalletPage() {
 
       <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5 shadow-sm">
         <p className="text-sm text-text-muted mb-1">{t('wallet.balance')}</p>
-        <p className="text-4xl font-bold text-emerald-400 tabular-nums">
+        <p className="text-4xl font-bold text-brand tabular-nums">
           {formatCoins(wallet.balance)}
         </p>
         <p className="text-xs text-text-muted mt-1">
@@ -87,15 +87,15 @@ export default function WalletPage() {
                       {label}
                     </span>
                     {isCurrent && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-text-secondary">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-muted dark:bg-input text-text-secondary">
                         {t('wallet.current')}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1 bg-brand-muted dark:bg-input rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${earned ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-zinc-700'}`}
+                        className={`h-full rounded-full ${earned ? 'bg-sage' : 'bg-text-muted/30 dark:bg-text-muted/25'}`}
                         style={{ width: `${Math.min((wallet.balance / meta.threshold) * 100, 100)}%` }}
                       />
                     </div>
@@ -134,7 +134,7 @@ export default function WalletPage() {
                 </div>
                 <span
                   className={`text-sm font-semibold tabular-nums shrink-0 ${
-                    tx.isCredit ? 'text-emerald-400' : 'text-red-400'
+                    tx.isCredit ? 'text-sage' : 'text-red-400'
                   }`}
                 >
                   {tx.isCredit ? '+' : ''}

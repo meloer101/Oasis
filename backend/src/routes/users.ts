@@ -162,10 +162,12 @@ userRoutes.get('/:username/posts', async (c) => {
       id: posts.id,
       title: posts.title,
       contentType: posts.contentType,
+      imageUrl: posts.imageUrl,
       viewCount: posts.viewCount,
       commentCount: posts.commentCount,
       voterCount: posts.voterCount,
       totalVoteAmount: posts.totalVoteAmount,
+      disagreeVoteAmount: posts.disagreeVoteAmount,
       temperature: posts.temperature,
       createdAt: posts.createdAt,
     })

@@ -126,10 +126,10 @@ export default function NewPostPage() {
   }
 
   const inputClass =
-    'w-full bg-surface border border-border-subtle rounded-lg px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-emerald-700 transition-colors text-sm'
+    'w-full bg-surface border border-border-subtle rounded-lg px-4 py-3 text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors text-sm'
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-lg font-semibold text-text-primary">{t('feedNew.title')}</h1>
         <button
@@ -140,7 +140,8 @@ export default function NewPostPage() {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="flex gap-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex-1 min-w-0 space-y-4">
         <div className="flex gap-3">
           {(['rich', 'link'] as const).map((type) => (
             <label key={type} className="flex items-center gap-1.5 cursor-pointer">
@@ -148,7 +149,7 @@ export default function NewPostPage() {
                 {...register('contentType')}
                 type="radio"
                 value={type}
-                className="accent-emerald-500"
+                className="accent-brand"
               />
               <span className="text-sm text-text-secondary capitalize">
                 {type === 'rich' ? `📝 ${t('feedNew.richText')}` : `🔗 ${t('feedNew.link')}`}
@@ -204,7 +205,7 @@ export default function NewPostPage() {
             <select
               value={circleId}
               onChange={(e) => setCircleId(e.target.value)}
-              className="w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-emerald-700 transition-colors"
+              className="w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-brand transition-colors"
             >
               <option value="">{t('feedNew.circleNone')}</option>
               {circles.map((c) => (
@@ -218,13 +219,13 @@ export default function NewPostPage() {
 
         <div>
           <div
-            className="flex flex-wrap gap-1.5 min-h-[44px] bg-surface border border-border-subtle rounded-lg px-3 py-2 focus-within:border-emerald-700 transition-colors cursor-text"
+            className="flex flex-wrap gap-1.5 min-h-[44px] bg-surface border border-border-subtle rounded-lg px-3 py-2 focus-within:border-brand transition-colors cursor-text"
             onClick={() => tagRef.current?.focus()}
           >
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-zinc-300 dark:bg-zinc-700 text-text-secondary"
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-brand-muted dark:bg-input text-text-secondary"
               >
                 #{tag}
                 <button
@@ -258,12 +259,37 @@ export default function NewPostPage() {
           <button
             type="submit"
             disabled={isSubmitting || mutation.isPending}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-5 py-2.5 bg-brand hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-brand-foreground text-sm font-medium rounded-lg transition-opacity"
           >
             {mutation.isPending ? t('feedNew.publishing') : t('feedNew.publish')}
           </button>
         </div>
       </form>
+
+      {/* Writing tips sidebar */}
+      <aside className="hidden lg:block w-64 shrink-0">
+        <div className="sticky top-20 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 space-y-4 text-sm">
+          <div>
+            <p className="font-semibold text-text-primary mb-2">{t('feedNew.tipsTitle')}</p>
+            <ul className="space-y-2 text-text-muted text-xs leading-relaxed list-disc pl-4">
+              <li>{t('feedNew.tip1')}</li>
+              <li>{t('feedNew.tip2')}</li>
+              <li>{t('feedNew.tip3')}</li>
+            </ul>
+          </div>
+          <div className="border-t border-[var(--card-border)] pt-4">
+            <p className="font-semibold text-text-primary mb-2">{t('feedNew.tipsTagsTitle')}</p>
+            <ul className="space-y-2 text-text-muted text-xs leading-relaxed list-disc pl-4">
+              <li>{t('feedNew.tipTag1')}</li>
+              <li>{t('feedNew.tipTag2')}</li>
+            </ul>
+          </div>
+          <div className="border-t border-[var(--card-border)] pt-4">
+            <p className="text-xs text-text-muted leading-relaxed">{t('feedNew.rewardHint')}</p>
+          </div>
+        </div>
+      </aside>
+      </div>
     </div>
   )
 }
