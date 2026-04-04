@@ -36,7 +36,8 @@
     "postTags": "Tags",
     "joined": "Joined",
     "walletSidebarHint": "Open Wallet for full badge progress and transactions.",
-    "noTagsYet": "No tags yet"
+    "noTagsYet": "No tags yet",
+    "relatedPosts": "Related Posts"
   },
   "theme": {
     "light": "Light",
@@ -64,6 +65,15 @@
       "signIn": "Sign in",
       "rateLimit": "Too many requests. Please try again later.",
       "failed": "Registration failed"
+    },
+    "oauth": {
+      "orContinueWith": "Or continue with",
+      "google": "Continue with Google",
+      "github": "Continue with GitHub",
+      "apple": "Continue with Apple",
+      "processing": "Signing you in…",
+      "callbackError": "Sign-in failed. Redirecting…",
+      "failed": "OAuth sign-in failed. Please try again."
     }
   },
   "settings": {
@@ -73,7 +83,9 @@
     "displayName": "Display name",
     "bio": "Bio",
     "bioPlaceholder": "Tell us about yourself…",
-    "avatarUrl": "Avatar URL",
+    "avatarUrl": "Avatar",
+    "uploadAvatar": "Upload image",
+    "uploading": "Uploading…",
     "saveError": "Save failed. Please try again.",
     "saving": "Saving…",
     "saved": "Saved",
@@ -259,6 +271,9 @@
     "tabPosts": "Posts",
     "tabCircles": "Circles",
     "circlesEmpty": "No circles created yet.",
-    "circlesHint": "Explore circles to find communities."
+    "circlesHint": "Explore circles to find communities.",
+    "followers": "Followers",
+    "followingCount": "Following",
+    "totalReceived": "coins received"
   }
 }

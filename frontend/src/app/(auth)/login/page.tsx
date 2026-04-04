@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api-client'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
+import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 const schema = z.object({
   email: z.string().email('Invalid email').transform((s) => s.trim().toLowerCase()),
@@ -90,6 +91,8 @@ export default function LoginPage() {
           {isSubmitting ? t('auth.login.signingIn') : t('auth.login.signIn')}
         </button>
       </form>
+
+      <OAuthButtons />
 
       <p className="mt-6 text-center text-text-muted text-sm">
         {t('auth.login.noAccount')}{' '}

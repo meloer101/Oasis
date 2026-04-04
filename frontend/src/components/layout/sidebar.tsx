@@ -42,7 +42,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto min-h-0 py-2">
+      <nav className="space-y-0.5 py-2">
         <NavItem href="/feed" active={pathname === '/feed'} icon="◈" onNavigate={onNavigate}>
           {t('sidebar.feed')}
         </NavItem>
@@ -62,7 +62,7 @@ function SidebarInner({ onNavigate }: { onNavigate?: () => void }) {
         </NavItem>
       </nav>
 
-      <div className="border-t border-border-subtle pt-3 mt-auto shrink-0">
+      <div className="border-t border-border-subtle pt-3 shrink-0">
         <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
           {t('sidebar.trendingTags')}
         </p>

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, count, sum } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userBalances, userBadges, userFollows, posts } from '../db/schema.js'
 import { authenticate, type AuthVariables } from '../middleware/auth.js'
@@ -119,7 +119,30 @@ userRoutes.get('/:username', async (c) => {
     isFollowing = !!f
   }
 
-  return c.json({ ...user, badges, isFollowing })
+  const [followerRow] = await db
+    .select({ value: count() })
+    .from(userFollows)
+    .where(eq(userFollows.followingId, user.id))
+
+  const [followingRow] = await db
+    .select({ value: count() })
+    .from(userFollows)
+    .where(eq(userFollows.followerId, user.id))
+
+  const [postStatsRow] = await db
+    .select({ postCount: count(), totalReceived: sum(posts.totalVoteAmount) })
+    .from(posts)
+    .where(and(eq(posts.authorId, user.id), eq(posts.status, 'published')))
+
+  return c.json({
+    ...user,
+    badges,
+    isFollowing,
+    followerCount: followerRow?.value ?? 0,
+    followingCount: followingRow?.value ?? 0,
+    postCount: postStatsRow?.postCount ?? 0,
+    totalReceived: Number(postStatsRow?.totalReceived ?? 0),
+  })
 })
 
 // GET /api/users/:username/posts — user's published posts

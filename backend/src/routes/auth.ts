@@ -11,6 +11,7 @@ import {
   generateRefreshToken,
   hashRefreshToken,
 } from '../lib/jwt.js'
+import { issueSession } from '../lib/session.js'
 import { extractConflictField, isUniqueViolation } from '../lib/db-errors.js'
 import { rateLimiter } from '../middleware/rate-limit.js'
 import { authenticate, type AuthVariables } from '../middleware/auth.js'
@@ -78,27 +79,6 @@ const logoutLimiter = rateLimiter({
   message: 'Too many logout attempts, please try again later',
 })
 
-function refreshExpiresAt(): Date {
-  const days = Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? 30)
-  const ms = Math.max(1, days) * 24 * 60 * 60 * 1000
-  return new Date(Date.now() + ms)
-}
-
-async function issueSession(
-  userId: string,
-  username: string,
-  tokenVersion: number
-): Promise<{ accessToken: string; refreshToken: string }> {
-  const accessToken = signAccessToken({ userId, username })
-  const { raw, hash } = generateRefreshToken()
-  await db.insert(refreshTokens).values({
-    userId,
-    tokenHash: hash,
-    tokenVersion,
-    expiresAt: refreshExpiresAt(),
-  })
-  return { accessToken, refreshToken: raw }
-}
 
 // POST /api/auth/register
 authRoutes.post(
@@ -250,6 +230,10 @@ authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (
     return c.json({ error: 'Invalid credentials' }, 401)
   }
 
+  if (!user.passwordHash) {
+    return c.json({ error: 'Invalid credentials' }, 401)
+  }
+
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
     return c.json({ error: 'Invalid credentials' }, 401)
@@ -358,7 +342,7 @@ authRoutes.post(
           userId: row.userId,
           tokenHash: newHash,
           tokenVersion: u.tokenVersion,
-          expiresAt: refreshExpiresAt(),
+          expiresAt: new Date(Date.now() + Math.max(1, Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS ?? 30)) * 24 * 60 * 60 * 1000),
         })
 
         return { accessToken, refreshToken: newRaw }

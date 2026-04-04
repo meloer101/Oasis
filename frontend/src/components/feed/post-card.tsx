@@ -7,6 +7,7 @@ import VoteButton from './vote-button'
 import { TemperatureBar } from './temperature-bar'
 import { stripHtmlToText } from '@/lib/html'
 import { useLocale } from '@/hooks/use-locale'
+import { Avatar } from '@/components/ui/avatar'
 
 interface Props {
   post: Post
@@ -46,9 +47,12 @@ export default function PostCard({ post, feedQueryKey, featured = false }: Props
         {/* Author */}
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-sm font-semibold text-text-secondary shrink-0">
-              {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
-            </div>
+            <Avatar
+              src={post.author.avatarUrl}
+              name={post.author.displayName ?? post.author.username}
+              className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 shrink-0 text-sm"
+              textClassName="text-text-secondary"
+            />
             <div className="min-w-0 text-sm">
               <Link
                 href={`/user/${post.author.username}`}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { apiClient } from '@/lib/api-client'
@@ -8,6 +8,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
 import { ThemeSelect } from '@/components/theme/theme-select'
 import { LangSwitch } from '@/components/i18n/lang-switch'
+import { Avatar } from '@/components/ui/avatar'
 
 type MeUser = NonNullable<ReturnType<typeof useAuth>['user']>
 
@@ -25,6 +26,24 @@ function SettingsProfileForm({
   const [bio, setBio] = useState(user.bio ?? '')
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? '')
   const [saved, setSaved] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleAvatarUpload(file: File) {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await apiClient.post<{ url: string }>('/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setAvatarUrl(res.data.url)
+    } catch {
+      // ignore upload error, let user retry
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -76,7 +95,34 @@ function SettingsProfileForm({
       </div>
 
       <div>
-        <label className="text-sm text-text-secondary block mb-1.5">{t('settings.avatarUrl')}</label>
+        <label className="text-sm text-text-secondary block mb-2">{t('settings.avatarUrl')}</label>
+        <div className="flex items-center gap-3 mb-2">
+          <Avatar
+            src={avatarUrl || null}
+            name={displayName || user.username}
+            className="w-14 h-14 rounded-full bg-emerald-800 shrink-0 text-xl font-bold"
+            textClassName="text-emerald-200"
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void handleAvatarUpload(file)
+              e.target.value = ''
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="px-3 py-1.5 text-sm rounded-lg border border-[var(--card-border)] hover:bg-nav-hover transition-colors disabled:opacity-50 text-text-secondary"
+          >
+            {uploading ? t('settings.uploading') : t('settings.uploadAvatar')}
+          </button>
+        </div>
         <input
           value={avatarUrl}
           onChange={(e) => setAvatarUrl(e.target.value)}

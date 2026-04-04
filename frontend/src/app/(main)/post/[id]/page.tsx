@@ -13,6 +13,7 @@ import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
 import { PostHtmlContent } from '@/components/post/post-html-content'
 import Link from 'next/link'
+import { Avatar } from '@/components/ui/avatar'
 
 export default function PostPage() {
   const params = useParams()
@@ -116,9 +117,12 @@ export default function PostPage() {
 
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-sm font-semibold text-text-secondary shrink-0">
-                {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
-              </div>
+              <Avatar
+                src={post.author.avatarUrl}
+                name={post.author.displayName ?? post.author.username}
+                className="w-10 h-10 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0 text-sm"
+                textClassName="text-text-secondary"
+              />
               <div className="min-w-0">
                 <Link
                   href={`/user/${post.author.username}`}
@@ -332,9 +336,12 @@ function CommentThread({
   return (
     <div className="py-4 first:pt-0">
       <div className="flex items-center gap-2 mb-2">
-        <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-text-secondary">
-          {(comment.author.displayName ?? comment.author.username).charAt(0).toUpperCase()}
-        </div>
+        <Avatar
+          src={comment.author.avatarUrl}
+          name={comment.author.displayName ?? comment.author.username}
+          className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 text-xs"
+          textClassName="text-text-secondary"
+        />
         <span className="text-sm font-medium text-text-primary">
           {comment.author.displayName ?? comment.author.username}
         </span>

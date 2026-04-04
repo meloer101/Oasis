@@ -5,12 +5,13 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import { timeAgo, tagHue } from '@/lib/utils'
+import { timeAgo, tagHue, formatCoins } from '@/lib/utils'
 import PostCard from '@/components/feed/post-card'
 import { useAuth } from '@/providers/auth-provider'
 import type { Post, Circle } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 import { useCircles } from '@/hooks/use-circle'
+import { Avatar } from '@/components/ui/avatar'
 
 const BADGE_META: Record<string, { emoji: string; color: string; bg: string }> = {
   newcomer: { emoji: '🌱', color: 'text-emerald-400', bg: 'bg-emerald-900/30 border-emerald-800/50' },
@@ -28,6 +29,10 @@ interface UserProfile {
   createdAt: string
   isFollowing: boolean
   badges: { badgeType: string; isActive: boolean }[]
+  followerCount: number
+  followingCount: number
+  postCount: number
+  totalReceived: number
 }
 
 interface UserPost {
@@ -154,9 +159,12 @@ export default function UserProfilePage() {
       >
         <div className="px-6 sm:px-8 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-            <div className="w-20 h-20 sm:w-[5.5rem] sm:h-[5.5rem] rounded-full bg-emerald-700 flex items-center justify-center text-3xl font-bold text-white shrink-0 ring-4 ring-white/20 dark:ring-black/20">
-              {initial}
-            </div>
+            <Avatar
+              src={profile.avatarUrl}
+              name={displayName}
+              className="w-20 h-20 sm:w-[5.5rem] sm:h-[5.5rem] rounded-full bg-emerald-700 shrink-0 ring-4 ring-white/20 dark:ring-black/20 text-3xl font-bold"
+              textClassName="text-white"
+            />
 
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -186,7 +194,27 @@ export default function UserProfilePage() {
               ) : (
                 <p className="text-sm text-text-muted italic">{t('user.noBio')}</p>
               )}
-              <p className="text-xs text-text-muted mt-3">
+              <div className="flex flex-wrap gap-x-5 gap-y-1 mt-3">
+                <span className="text-sm text-text-secondary">
+                  <span className="font-semibold text-text-primary">{profile.followerCount}</span>{' '}
+                  {t('user.followers')}
+                </span>
+                <span className="text-sm text-text-secondary">
+                  <span className="font-semibold text-text-primary">{profile.followingCount}</span>{' '}
+                  {t('user.followingCount')}
+                </span>
+                <span className="text-sm text-text-secondary">
+                  <span className="font-semibold text-text-primary">{profile.postCount}</span>{' '}
+                  {t('user.posts')}
+                </span>
+                {profile.totalReceived > 0 && (
+                  <span className="text-sm text-text-secondary">
+                    <span className="font-semibold text-emerald-500">⚡ {formatCoins(profile.totalReceived)}</span>{' '}
+                    {t('user.totalReceived')}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-text-muted mt-2">
                 {t('user.joined', { time: timeAgo(profile.createdAt) })}
               </p>
             </div>

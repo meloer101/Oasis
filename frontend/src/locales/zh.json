@@ -36,7 +36,8 @@
     "postTags": "本文标签",
     "joined": "加入于",
     "walletSidebarHint": "在钱包页可查看完整徽章与流水。",
-    "noTagsYet": "暂无标签"
+    "noTagsYet": "暂无标签",
+    "relatedPosts": "相关帖子"
   },
   "theme": {
     "light": "浅色",
@@ -64,6 +65,15 @@
       "signIn": "登录",
       "rateLimit": "请求过于频繁，请稍后再试。",
       "failed": "注册失败"
+    },
+    "oauth": {
+      "orContinueWith": "或通过以下方式继续",
+      "google": "使用 Google 登录",
+      "github": "使用 GitHub 登录",
+      "apple": "使用 Apple 登录",
+      "processing": "正在登录…",
+      "callbackError": "登录失败，正在跳转…",
+      "failed": "OAuth 登录失败，请重试。"
     }
   },
   "settings": {
@@ -73,7 +83,9 @@
     "displayName": "显示名称",
     "bio": "个人简介",
     "bioPlaceholder": "介绍一下自己…",
-    "avatarUrl": "头像 URL",
+    "avatarUrl": "头像",
+    "uploadAvatar": "上传图片",
+    "uploading": "上传中…",
     "saveError": "保存失败，请重试",
     "saving": "保存中…",
     "saved": "已保存",
@@ -259,6 +271,9 @@
     "tabPosts": "帖子",
     "tabCircles": "圈子",
     "circlesEmpty": "暂无创建的圈子。",
-    "circlesHint": "在圈子页发现更多社区。"
+    "circlesHint": "在圈子页发现更多社区。",
+    "followers": "粉丝",
+    "followingCount": "关注",
+    "totalReceived": "累计认同"
   }
 }

@@ -10,6 +10,7 @@ import { useWallet } from '@/hooks/use-wallet'
 import { useAuth } from '@/providers/auth-provider'
 import { apiClient } from '@/lib/api-client'
 import { timeAgo, formatCoins } from '@/lib/utils'
+import { Avatar } from '@/components/ui/avatar'
 
 function PanelCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
@@ -38,12 +39,16 @@ export default function RightPanel() {
   const { user: me, balance } = useAuth()
   const { data: popular } = usePopularTags(8)
 
-  if (pathname.startsWith('/feed/new')) {
-    return null
-  }
-
   const postId = pathname.startsWith('/post/') ? (params.id as string) : ''
   const { data: post } = usePost(postId)
+
+  const firstTag = postId && post?.tags?.length ? post.tags[0] : ''
+  const { data: relatedData } = useQuery<{ posts: { id: string; title: string; temperature: string }[] }>({
+    queryKey: ['tag', firstTag],
+    queryFn: () => apiClient.get(`/api/tags/${encodeURIComponent(firstTag)}`).then((r) => r.data),
+    enabled: !!firstTag,
+  })
+  const relatedPosts = (relatedData?.posts ?? []).filter((p) => p.id !== postId).slice(0, 3)
 
   const username = pathname.startsWith('/user/') ? (params.username as string) : ''
   const { data: profile } = useQuery<UserCard>({
@@ -55,6 +60,10 @@ export default function RightPanel() {
   const walletQuery = useWallet()
   const wallet = pathname === '/wallet' ? walletQuery.data : undefined
 
+  if (pathname.startsWith('/feed/new')) {
+    return null
+  }
+
   return (
     <aside className="hidden xl:block w-[300px] shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4 pl-2 space-y-4">
       {postId && post ? (
@@ -64,9 +73,12 @@ export default function RightPanel() {
               {t('rightPanel.author')}
             </p>
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-800 flex items-center justify-center text-lg font-bold text-emerald-200 shrink-0">
-                {(post.author.displayName ?? post.author.username).charAt(0).toUpperCase()}
-              </div>
+              <Avatar
+                src={post.author.avatarUrl}
+                name={post.author.displayName ?? post.author.username}
+                className="w-12 h-12 rounded-full bg-emerald-800 shrink-0 text-lg font-bold"
+                textClassName="text-emerald-200"
+              />
               <div className="min-w-0">
                 <Link
                   href={`/user/${post.author.username}`}
@@ -99,6 +111,32 @@ export default function RightPanel() {
                     #{tag}
                   </Link>
                 ))}
+              </div>
+            </PanelCard>
+          ) : null}
+          {relatedPosts.length > 0 ? (
+            <PanelCard>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
+                {t('rightPanel.relatedPosts')}
+              </p>
+              <div className="space-y-2">
+                {relatedPosts.map((p) => {
+                  const temp = parseFloat(p.temperature)
+                  const tempStr = temp.toFixed(1)
+                  const tempColor = temp < 0 ? 'text-red-400' : 'text-emerald-500'
+                  return (
+                    <Link
+                      key={p.id}
+                      href={`/post/${p.id}`}
+                      className="flex items-start justify-between gap-2 group"
+                    >
+                      <span className="text-sm text-text-secondary group-hover:text-text-primary transition-colors line-clamp-2 leading-snug">
+                        {p.title}
+                      </span>
+                      <span className={`text-xs tabular-nums shrink-0 ${tempColor}`}>{tempStr}°</span>
+                    </Link>
+                  )
+                })}
               </div>
             </PanelCard>
           ) : null}

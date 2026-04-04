@@ -16,6 +16,7 @@ import { circleRoutes } from './routes/circles.js'
 import { tagRoutes } from './routes/tag-routes.js'
 import { notificationRoutes } from './routes/notifications.js'
 import { uploadRoutes } from './routes/upload.js'
+import { oauthRoutes } from './routes/oauth.js'
 import { distributeDailyCoins, scheduleDailyCoins } from './jobs/daily-coins.js'
 import { scheduleCleanupRefreshTokens } from './jobs/cleanup-tokens.js'
 
@@ -92,6 +93,7 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 
 // Routes
 app.route('/api/auth', authRoutes)
+app.route('/api/auth/oauth', oauthRoutes)
 app.route('/api/posts', postRoutes)
 app.route('/api/votes', voteRoutes)
 app.route('/api/users', userRoutes)
