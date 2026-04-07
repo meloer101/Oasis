@@ -14,7 +14,7 @@ const HEADER_H = 'h-12'
 
 export default function Header() {
   const { user, logout } = useAuth()
-  const { t } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -27,6 +27,10 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const btnBase = 'h-9 px-4 rounded-full text-sm font-medium transition-all active:scale-95 flex items-center justify-center shrink-0'
+  const btnSecondary = `${btnBase} border border-[var(--border-subtle)] bg-[var(--card-bg)] text-text-primary hover:bg-nav-hover`
+  const btnPrimary = `${btnBase} bg-text-primary text-[var(--bg)] hover:opacity-80`
 
   useEffect(() => {
     setSearchDraft(qFromFeed)
@@ -151,7 +155,7 @@ export default function Header() {
         <div className="hidden sm:flex items-center shrink-0">
           <Link
             href="/wallet"
-            className="inline-flex items-center rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-nav-hover hover:border-[color-mix(in_srgb,var(--text-primary)_22%,var(--card-border))] transition-colors whitespace-nowrap"
+            className={`${btnSecondary} min-w-[110px]`}
           >
             {t('topNav.connectWallet')}
           </Link>
@@ -159,7 +163,7 @@ export default function Header() {
 
         <Link
           href={newPostHref}
-          className="hidden min-[380px]:inline-flex items-center rounded-full bg-text-primary px-4 py-1.5 text-sm font-medium text-[var(--bg)] hover:opacity-80 transition-all active:scale-95 shrink-0"
+          className={`hidden min-[380px]:inline-flex ${btnPrimary} min-w-[110px]`}
         >
           {t('topNav.createPost')}
         </Link>
@@ -182,6 +186,35 @@ export default function Header() {
             </span>
           )}
         </Link>
+
+        {/* Language Switcher */}
+        <div className="relative group hidden sm:block">
+          <button
+            type="button"
+            className={`${btnSecondary} min-w-[80px] gap-1`}
+          >
+            <span>{locale === 'en' ? 'EN' : '中文'}</span>
+            <svg className="w-3 h-3 opacity-50 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div className="absolute right-0 top-full pt-2 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-50">
+            <div className="w-32 rounded-xl border border-[var(--border-subtle)] bg-[var(--card-bg)] py-2 shadow-xl">
+              <button
+                onClick={() => setLocale('en')}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors ${locale === 'en' ? 'text-text-primary font-medium bg-nav-active' : 'text-text-secondary hover:bg-nav-hover'}`}
+              >
+                English
+              </button>
+              <button
+                onClick={() => setLocale('zh')}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors ${locale === 'zh' ? 'text-text-primary font-medium bg-nav-active' : 'text-text-secondary hover:bg-nav-hover'}`}
+              >
+                简体中文
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="relative shrink-0" ref={menuRef}>
           <button

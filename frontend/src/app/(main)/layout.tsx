@@ -7,6 +7,7 @@ import { LayoutShellProvider } from '@/providers/layout-shell-provider'
 import Sidebar from '@/components/layout/sidebar'
 import Header from '@/components/layout/header'
 import RightPanel from '@/components/layout/right-panel'
+import RightPanelToggle from '@/components/layout/right-panel-toggle'
 import MobileNav from '@/components/layout/mobile-nav'
 
 function HeaderFallback() {
@@ -45,7 +46,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <Header />
         </Suspense>
 
-        <div className="flex flex-1 min-h-0 min-w-0">
+        <div className="flex flex-1 min-h-0 min-w-0 relative">
+          <RightPanelToggle />
           <Sidebar />
 
           <main className="flex-1 min-w-0 px-4 sm:px-6 py-6 pb-[4.5rem] md:pb-6">{children}</main>

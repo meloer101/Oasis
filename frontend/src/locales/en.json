@@ -62,7 +62,10 @@
     "footerGovernance": "Governance",
     "footerApi": "API",
     "footerTerms": "Terms",
-    "nodeStatus": "Node status: optimal"
+    "nodeStatus": "Node status: optimal",
+    "toggleShow": "Info",
+    "toggleHide": "Hide",
+    "toggleAria": "Show or hide the right information panel"
   },
   "theme": {
     "light": "Light",

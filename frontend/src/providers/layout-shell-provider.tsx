@@ -6,14 +6,23 @@ type LayoutShellContextValue = {
   mobileSidebarOpen: boolean
   setMobileSidebarOpen: (open: boolean) => void
   toggleMobileSidebar: () => void
+  rightPanelOpen: boolean
+  setRightPanelOpen: (open: boolean) => void
+  toggleRightPanel: () => void
 }
 
 const LayoutShellContext = createContext<LayoutShellContextValue | null>(null)
 
 export function LayoutShellProvider({ children }: { children: ReactNode }) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [rightPanelOpen, setRightPanelOpen] = useState(true)
+
   const toggleMobileSidebar = useCallback(() => {
     setMobileSidebarOpen((o) => !o)
+  }, [])
+
+  const toggleRightPanel = useCallback(() => {
+    setRightPanelOpen((o) => !o)
   }, [])
 
   const value = useMemo(
@@ -21,8 +30,11 @@ export function LayoutShellProvider({ children }: { children: ReactNode }) {
       mobileSidebarOpen,
       setMobileSidebarOpen,
       toggleMobileSidebar,
+      rightPanelOpen,
+      setRightPanelOpen,
+      toggleRightPanel,
     }),
-    [mobileSidebarOpen]
+    [mobileSidebarOpen, rightPanelOpen]
   )
 
   return <LayoutShellContext.Provider value={value}>{children}</LayoutShellContext.Provider>

@@ -62,7 +62,10 @@
     "footerGovernance": "治理",
     "footerApi": "API",
     "footerTerms": "条款",
-    "nodeStatus": "节点状态：正常"
+    "nodeStatus": "节点状态：正常",
+    "toggleShow": "信息栏",
+    "toggleHide": "收起",
+    "toggleAria": "显示或隐藏右侧信息栏"
   },
   "theme": {
     "light": "浅色",

@@ -9,6 +9,7 @@ import { useCircles } from '@/hooks/use-circle'
 import { usePost } from '@/hooks/use-post'
 import { useWallet } from '@/hooks/use-wallet'
 import { useAuth } from '@/providers/auth-provider'
+import { useLayoutShell } from '@/providers/layout-shell-provider'
 import { apiClient } from '@/lib/api-client'
 import { timeAgo, formatCoins } from '@/lib/utils'
 import { Avatar } from '@/components/ui/avatar'
@@ -145,6 +146,7 @@ export default function RightPanel() {
   const params = useParams()
   const { user: me, balance } = useAuth()
   const { data: popular } = usePopularTags(8)
+  const { rightPanelOpen } = useLayoutShell()
   const isFeedHome = pathname === '/feed'
 
   const postId = pathname.startsWith('/post/') ? (params.id as string) : ''
@@ -168,12 +170,12 @@ export default function RightPanel() {
   const walletQuery = useWallet()
   const wallet = pathname === '/wallet' ? walletQuery.data : undefined
 
-  if (pathname.startsWith('/feed/new')) {
+  if (pathname.startsWith('/feed/new') || !rightPanelOpen) {
     return null
   }
 
   return (
-    <aside className="hidden xl:block w-[300px] shrink-0 sticky top-12 h-[calc(100vh-3rem)] overflow-y-auto py-4 pl-2 space-y-4">
+    <aside className="hidden xl:block w-[320px] shrink-0 sticky top-12 h-[calc(100vh-3rem)] overflow-y-auto py-4 pl-2 pr-6 space-y-4 animate-fade-in">
       <TreasuryCard balance={balance} />
       <ResonanceCard />
 

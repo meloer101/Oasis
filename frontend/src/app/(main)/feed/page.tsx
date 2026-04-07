@@ -67,7 +67,7 @@ function usePostSearch(q: string) {
   })
 }
 
-  const btnPrimary =
+const btnPrimary =
   'inline-flex items-center justify-center rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-brand-foreground transition-all duration-300 ease-[var(--ease-out-expo)] hover:opacity-80 active:scale-95'
 const btnSecondary =
   'inline-flex items-center justify-center rounded-full border border-[var(--border-subtle)] bg-transparent px-6 py-2.5 text-sm font-medium text-text-primary transition-all duration-300 ease-[var(--ease-out-expo)] hover:bg-nav-hover active:scale-95'
@@ -113,29 +113,21 @@ function FeedPageInner() {
 
       {!isSearching && (
         <>
-          <section className="mb-12 px-1 motion-safe:animate-fade-in-up">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <section className="mb-8 px-1 motion-safe:animate-fade-in-up">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted opacity-80">
+                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-2 opacity-80">
                   {t('feed.heroEyebrow')}
                 </p>
-                <h1 className="font-post-serif text-4xl sm:text-5xl font-medium text-text-primary mt-4 tracking-tighter leading-tight">
+                <h1 className="font-post-serif text-3xl sm:text-4xl font-medium text-text-primary mt-2 tracking-tighter leading-tight">
                   {t('feed.heroTitle')}
                 </h1>
-                <p className="text-lg text-text-secondary mt-4 max-w-2xl leading-relaxed font-normal opacity-90">{t('feed.heroSubtitle')}</p>
-                <div className="flex flex-wrap gap-3 mt-8">
-                  <Link href="/feed/new" className={btnPrimary}>
-                    {t('topNav.createPost')}
-                  </Link>
-                  <Link href="/circles" className={btnSecondary}>
-                    {t('rightPanel.exploreCircles')}
-                  </Link>
-                </div>
+                <p className="text-base text-text-secondary mt-3 max-w-2xl leading-relaxed font-normal opacity-90">{t('feed.heroSubtitle')}</p>
               </div>
             </div>
           </section>
 
-          <div className="mb-8">
+          <div className="mb-6">
             <FeedTabs
               mainTab={effectiveMainTab}
               discoverSort={discoverSort}
