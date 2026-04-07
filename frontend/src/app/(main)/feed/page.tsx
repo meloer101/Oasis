@@ -6,10 +6,11 @@ import { useSearchParams } from 'next/navigation'
 import { useFeed } from '@/hooks/use-feed'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
-import FeedTabs, { type DiscoverSort, type MainFeedTab } from '@/components/feed/feed-tabs'
+import FeedTabs, { type CategoryFilter, type DiscoverSort, type MainFeedTab } from '@/components/feed/feed-tabs'
 import PostCard from '@/components/feed/post-card'
 import type { FeedType, Post } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
+import { PostCardSkeleton } from '@/components/ui/skeletons'
 
 interface SearchPage {
   items: Post[]
@@ -66,10 +67,10 @@ function usePostSearch(q: string) {
   })
 }
 
-const btnPrimary =
-  'inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground shadow-sm transition-[box-shadow,opacity,transform] duration-200 ease-[var(--ease-out-expo)] hover:opacity-[0.92] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card-bg)] active:scale-[0.99]'
+  const btnPrimary =
+  'inline-flex items-center justify-center rounded-full bg-brand px-6 py-2.5 text-sm font-medium text-brand-foreground transition-all duration-300 ease-[var(--ease-out-expo)] hover:opacity-80 active:scale-95'
 const btnSecondary =
-  'inline-flex items-center justify-center rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-2 text-sm font-semibold text-text-primary transition-colors duration-200 ease-[var(--ease-out-expo)] hover:bg-nav-hover hover:border-[color-mix(in_srgb,var(--text-primary)_20%,var(--card-border))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card-bg)]'
+  'inline-flex items-center justify-center rounded-full border border-[var(--border-subtle)] bg-transparent px-6 py-2.5 text-sm font-medium text-text-primary transition-all duration-300 ease-[var(--ease-out-expo)] hover:bg-nav-hover active:scale-95'
 
 function FeedPageInner() {
   const { t } = useLocale()
@@ -78,6 +79,7 @@ function FeedPageInner() {
 
   const [mainTab, setMainTab] = useState<MainFeedTab>('discover')
   const [discoverSort, setDiscoverSort] = useState<DiscoverSort>('hot')
+  const [category, setCategory] = useState<CategoryFilter>('all')
 
   const isSearching = qParam.length > 0
   const effectiveMainTab: MainFeedTab = isSearching ? 'discover' : mainTab
@@ -87,23 +89,23 @@ function FeedPageInner() {
     [effectiveMainTab, discoverSort]
   )
 
-  const feed = useFeed(feedType)
+  const feed = useFeed(feedType, category)
   const search = usePostSearch(qParam)
 
   const feedPosts = feed.data?.pages.flatMap((p) => p.items) ?? []
   const searchPosts = search.data?.pages.flatMap((p) => p.items) ?? []
   const followFallback = feedType === 'follow' && (feed.data?.pages[0]?.followFallback ?? false)
-  const feedQueryKey = isSearching ? ['post-search', qParam] : ['feed', feedType]
+  const feedQueryKey = isSearching ? ['post-search', qParam] : ['feed', feedType, category === 'all' ? 'all' : category]
 
   const loadMoreClass =
-    'px-5 py-2.5 text-sm font-medium text-text-secondary rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] transition-[color,background-color,border-color,box-shadow] duration-200 ease-[var(--ease-out-expo)] hover:text-text-primary hover:bg-nav-hover hover:border-[color-mix(in_srgb,var(--text-primary)_18%,var(--card-border))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-50 disabled:pointer-events-none'
+    'px-8 py-2.5 text-sm font-medium text-text-secondary rounded-full border border-[var(--border-subtle)] bg-transparent transition-all duration-300 ease-[var(--ease-out-expo)] hover:text-text-primary hover:bg-nav-hover active:scale-95 disabled:opacity-50 disabled:pointer-events-none'
 
   return (
     <div>
       {isSearching && (
-        <div className="feed-panel mb-5 flex flex-wrap items-center gap-2 px-4 py-3 text-sm text-text-muted motion-safe:animate-fade-in-up">
-          <span>{t('feed.resultsFor').replace('{q}', qParam)}</span>
-          <Link href="/feed" className="text-text-primary font-medium hover:underline underline-offset-2">
+        <div className="mb-8 flex flex-wrap items-center gap-3 px-1 py-4 text-sm text-text-muted border-b border-[var(--border-subtle)] motion-safe:animate-fade-in-up">
+          <span className="font-medium text-text-secondary">{t('feed.resultsFor').replace('{q}', qParam)}</span>
+          <Link href="/feed" className="text-text-primary font-medium hover:opacity-70 transition-opacity">
             {t('feed.clearSearch')}
           </Link>
         </div>
@@ -111,17 +113,17 @@ function FeedPageInner() {
 
       {!isSearching && (
         <>
-          <section className="feed-hero mb-5 p-5 sm:p-6 motion-safe:animate-fade-in-up">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <section className="mb-12 px-1 motion-safe:animate-fade-in-up">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted opacity-80">
                   {t('feed.heroEyebrow')}
                 </p>
-                <h1 className="font-post-serif text-2xl sm:text-[1.75rem] font-semibold text-text-primary mt-2 tracking-tight">
+                <h1 className="font-post-serif text-4xl sm:text-5xl font-medium text-text-primary mt-4 tracking-tighter leading-tight">
                   {t('feed.heroTitle')}
                 </h1>
-                <p className="text-sm text-text-secondary mt-2 max-w-2xl leading-relaxed">{t('feed.heroSubtitle')}</p>
-                <div className="flex flex-wrap gap-2 mt-5">
+                <p className="text-lg text-text-secondary mt-4 max-w-2xl leading-relaxed font-normal opacity-90">{t('feed.heroSubtitle')}</p>
+                <div className="flex flex-wrap gap-3 mt-8">
                   <Link href="/feed/new" className={btnPrimary}>
                     {t('topNav.createPost')}
                   </Link>
@@ -133,22 +135,22 @@ function FeedPageInner() {
             </div>
           </section>
 
-          <FeedTabs
-            mainTab={effectiveMainTab}
-            discoverSort={discoverSort}
-            onMainTabChange={setMainTab}
-            onDiscoverSortChange={setDiscoverSort}
-          />
+          <div className="mb-8">
+            <FeedTabs
+              mainTab={effectiveMainTab}
+              discoverSort={discoverSort}
+              category={category}
+              onMainTabChange={setMainTab}
+              onDiscoverSortChange={setDiscoverSort}
+              onCategoryChange={setCategory}
+            />
+          </div>
         </>
       )}
 
       {(isSearching ? search.isLoading : feed.isLoading) && (
-        <div className="flex justify-center py-12">
-          <div
-            className="w-6 h-6 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin motion-reduce:animate-none motion-reduce:border-t-[var(--text-primary)]"
-            role="status"
-            aria-label={t('feed.loading')}
-          />
+        <div className="space-y-4">
+          {[0, 1, 2].map((i) => <PostCardSkeleton key={i} />)}
         </div>
       )}
 
@@ -160,18 +162,18 @@ function FeedPageInner() {
       )}
 
       {!isSearching && followFallback && (
-        <div className="feed-panel mb-3 px-4 py-3 text-sm text-text-secondary leading-relaxed">
+        <div className="mb-6 px-4 py-3 text-sm text-text-secondary leading-relaxed border border-[var(--border-subtle)] rounded-xl bg-[color-mix(in_srgb,var(--text-primary)_2%,var(--bg))]">
           {t('feed.followFallbackBanner')}
         </div>
       )}
 
       {!isSearching && !feed.isLoading && feedPosts.length === 0 && !feed.error && (
-        <div className="feed-panel text-center py-14 px-4 motion-safe:animate-fade-in-up">
-          <IconFeedEmpty className="mx-auto mb-4 text-text-muted opacity-80" />
-          <p className="text-sm text-text-secondary max-w-sm mx-auto leading-relaxed">
+        <div className="text-center py-20 px-4 motion-safe:animate-fade-in-up">
+          <IconFeedEmpty className="mx-auto mb-6 text-text-muted opacity-40" />
+          <p className="text-base text-text-secondary max-w-sm mx-auto leading-relaxed font-normal">
             {feedType === 'follow' ? t('feed.emptyFollow') : t('feed.empty')}
           </p>
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
             <Link href="/feed/new" className={btnPrimary}>
               {t('topNav.createPost')}
             </Link>
@@ -182,29 +184,34 @@ function FeedPageInner() {
         </div>
       )}
       {isSearching && !search.isLoading && searchPosts.length === 0 && !search.error && (
-        <div className="feed-panel text-center py-14 px-4 motion-safe:animate-fade-in-up">
-          <IconSearchEmpty className="mx-auto mb-4 text-text-muted opacity-80" />
-          <p className="text-sm text-text-secondary max-w-sm mx-auto">{t('feed.searchEmpty').replace('{q}', qParam)}</p>
-          <Link href="/feed" className={`${btnSecondary} mt-6`}>
+        <div className="text-center py-20 px-4 motion-safe:animate-fade-in-up">
+          <IconSearchEmpty className="mx-auto mb-6 text-text-muted opacity-40" />
+          <p className="text-base text-text-secondary max-w-sm mx-auto font-normal">{t('feed.searchEmpty').replace('{q}', qParam)}</p>
+          <Link href="/feed" className={`${btnSecondary} mt-8`}>
             {t('feed.clearSearch')}
           </Link>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="divide-y divide-[var(--border-subtle)]">
         {(isSearching ? searchPosts : feedPosts).map((post, index) => (
-          <PostCard
+          <div
             key={post.id}
-            post={post}
-            feedQueryKey={feedQueryKey}
-            featured={
-              !isSearching &&
-              index === 0 &&
-              effectiveMainTab === 'discover' &&
-              discoverSort === 'hot' &&
-              !followFallback
-            }
-          />
+            className="motion-safe:animate-fade-in-up"
+            style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+          >
+            <PostCard
+              post={post}
+              feedQueryKey={feedQueryKey}
+              featured={
+                !isSearching &&
+                index === 0 &&
+                effectiveMainTab === 'discover' &&
+                discoverSort === 'hot' &&
+                !followFallback
+              }
+            />
+          </div>
         ))}
       </div>
 
@@ -233,12 +240,8 @@ function FeedPageInner() {
 
 function FeedFallback() {
   return (
-    <div className="flex justify-center py-12">
-      <div
-        className="w-6 h-6 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin motion-reduce:animate-none motion-reduce:border-t-[var(--text-primary)]"
-        role="status"
-        aria-hidden
-      />
+    <div className="space-y-4">
+      {[0, 1, 2].map((i) => <PostCardSkeleton key={i} />)}
     </div>
   )
 }

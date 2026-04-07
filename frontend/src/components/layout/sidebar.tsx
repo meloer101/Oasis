@@ -7,6 +7,7 @@ import { useCircles } from '@/hooks/use-circle'
 import { useLayoutShell } from '@/providers/layout-shell-provider'
 import { useAuth } from '@/providers/auth-provider'
 import { Avatar } from '@/components/ui/avatar'
+import { getNewPostHref } from '@/lib/new-post-href'
 
 function NavItem({
   href,
@@ -25,14 +26,14 @@ function NavItem({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors border-l-[3px] ${
+      className={`flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition-all duration-300 ${
         active
-          ? 'bg-nav-active text-text-primary font-medium border-text-primary shadow-[inset_0_0_0_1px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.08)]'
-          : 'text-text-secondary hover:text-text-primary hover:bg-nav-hover border-transparent'
+          ? 'bg-text-primary text-[var(--bg)] font-medium shadow-md scale-[1.02]'
+          : 'text-text-secondary hover:text-text-primary hover:bg-nav-hover'
       }`}
     >
       <span className="text-base w-5 text-center shrink-0">{icon}</span>
-      {children}
+      <span className="tracking-tight">{children}</span>
     </Link>
   )
 }
@@ -46,46 +47,44 @@ function SidebarInner({
 }) {
   const { t } = useLocale()
   const pathname = usePathname()
+  const newPostHref = getNewPostHref(pathname)
   const { data: circles, isLoading } = useCircles()
   const trending = (circles ?? []).slice(0, 5)
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full">
-      <div className="px-2 pt-3 pb-4 border-b border-border-subtle mb-1 shrink-0">
+      <div className="px-4 pt-6 pb-6 mb-2 shrink-0">
         {user ? (
-          <div className="flex items-center gap-2.5 px-2">
+          <div className="flex items-center gap-3 px-1">
             <Avatar
               src={user.avatarUrl}
               name={user.displayName ?? user.username}
-              className="size-8 rounded-lg bg-[var(--text-primary)] shrink-0 text-sm font-bold"
-              textClassName="text-[var(--card-bg)]"
+              className="size-10 rounded-full bg-text-primary shrink-0 text-sm font-medium"
+              textClassName="text-[var(--bg)]"
             />
             <div className="min-w-0">
-              <p className="text-sm font-bold text-text-primary leading-tight truncate">
+              <p className="text-sm font-medium text-text-primary leading-tight truncate tracking-tight">
                 {user.displayName ?? user.username}
               </p>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-text-muted truncate">
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-text-muted mt-1 truncate opacity-70">
                 {t('sidebar.verifiedMember')}
               </p>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 px-2">
-            <span className="inline-flex size-8 rounded-md bg-[var(--text-primary)] shrink-0 shadow-sm" aria-hidden />
+          <div className="flex items-center gap-3 px-1">
+            <span className="inline-flex size-10 rounded-full bg-text-primary shrink-0 shadow-sm" aria-hidden />
             <div className="min-w-0">
-              <p className="text-sm font-bold text-text-primary leading-tight truncate">Oasis</p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-muted truncate">
+              <p className="text-sm font-medium text-text-primary leading-tight truncate tracking-tight">Oasis</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-text-muted mt-1 truncate opacity-70">
                 {t('sidebar.decentralizedFeed')}
               </p>
             </div>
           </div>
         )}
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted/90 mt-3 px-2">
-          {t('sidebar.consensusPlatform')}
-        </p>
       </div>
 
-      <nav className="space-y-0.5 py-2 shrink-0">
+      <nav className="space-y-1 py-2 px-2 shrink-0">
         <NavItem href="/feed" active={pathname === '/feed'} icon="◈" onNavigate={onNavigate}>
           {t('sidebar.feed')}
         </NavItem>
@@ -105,54 +104,54 @@ function SidebarInner({
         </NavItem>
       </nav>
 
-      <div className="border-t border-border-subtle pt-3 mt-1 shrink-0">
-        <p className="px-3 text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
+      <div className="pt-8 mt-4 shrink-0 px-2">
+        <p className="px-4 text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-4 opacity-60">
           {t('sidebar.trendingCircles')}
         </p>
-        <div className="space-y-0.5 max-h-36 overflow-y-auto">
-          {isLoading && <p className="px-3 text-xs text-text-muted py-1">{t('feed.loading')}</p>}
+        <div className="space-y-1 max-h-48 overflow-y-auto px-1">
+          {isLoading && <p className="px-4 text-xs text-text-muted py-1">{t('feed.loading')}</p>}
           {!isLoading &&
             trending.map((circle) => (
               <Link
                 key={circle.id}
                 href={`/circle/${circle.id}`}
                 onClick={onNavigate}
-                className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg text-sm text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-colors"
+                className="flex items-center justify-between gap-2 px-4 py-2 rounded-full text-sm text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-all duration-300 group"
               >
-                <span className="truncate">#{circle.name}</span>
-                <span className="text-[10px] text-text-muted shrink-0 tabular-nums">
+                <span className="truncate group-hover:translate-x-0.5 transition-transform">#{circle.name}</span>
+                <span className="text-[10px] text-text-muted shrink-0 tabular-nums font-medium opacity-60">
                   {circle.memberCount.toLocaleString()}
                 </span>
               </Link>
             ))}
           {!isLoading && trending.length === 0 && (
-            <p className="px-3 text-xs text-text-muted py-1">{t('sidebar.noCirclesYet')}</p>
+            <p className="px-4 text-xs text-text-muted py-1">{t('sidebar.noCirclesYet')}</p>
           )}
         </div>
       </div>
 
-      <div className="shrink-0 space-y-2 pt-3 pb-2 mt-auto border-t border-border-subtle">
+      <div className="shrink-0 space-y-3 pt-8 pb-6 mt-auto px-4">
         <Link
-          href="/feed/new"
+          href={newPostHref}
           onClick={onNavigate}
-          className="flex items-center justify-center gap-2 w-full rounded-xl bg-brand text-brand-foreground text-sm font-semibold py-2.5 hover:opacity-90 transition-opacity shadow-sm"
+          className="flex items-center justify-center gap-2 w-full rounded-full bg-text-primary text-[var(--bg)] text-sm font-medium py-3 hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-text-primary/10"
         >
-          <span aria-hidden>✦</span>
+          <span aria-hidden className="text-lg">＋</span>
           {t('sidebar.newPost')}
         </Link>
         <Link
           href="/wallet"
           onClick={onNavigate}
-          className="flex items-center justify-center gap-2 w-full rounded-xl border border-border-subtle bg-[var(--card-bg)] text-text-primary text-sm font-medium py-2.5 hover:bg-nav-hover transition-colors"
+          className="flex items-center justify-center gap-2 w-full rounded-full border border-[var(--border-subtle)] bg-transparent text-text-primary text-sm font-medium py-3 hover:bg-nav-hover transition-all active:scale-95"
         >
           <span aria-hidden>🏛</span>
           {t('sidebar.viewTreasury')}
         </Link>
-        <div className="flex justify-center gap-4 px-2 pt-1">
-          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-text-primary transition-colors">
+        <div className="flex justify-center gap-6 pt-4">
+          <a href="#" className="text-[9px] font-medium uppercase tracking-[0.2em] text-text-muted hover:text-text-primary transition-colors opacity-60 hover:opacity-100">
             {t('sidebar.support')}
           </a>
-          <a href="#" className="text-[10px] uppercase tracking-wide text-text-muted hover:text-text-primary transition-colors">
+          <a href="#" className="text-[9px] font-medium uppercase tracking-[0.2em] text-text-muted hover:text-text-primary transition-colors opacity-60 hover:opacity-100">
             {t('sidebar.about')}
           </a>
         </div>

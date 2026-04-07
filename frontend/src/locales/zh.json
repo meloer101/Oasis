@@ -180,6 +180,8 @@
       "post_reward": "发帖奖励",
       "comment_reward": "评论奖励",
       "vote_received": "帖子被认同",
+      "vote_revoked_refund": "投票撤销退款",
+      "vote_revoked_unburn_mint": "投票撤销返还",
       "transaction_fee_burned": "平台手续费",
       "circle_join_fee": "加入圈子",
       "system_mint": "系统发放",
@@ -190,6 +192,10 @@
   "feedNew": {
     "title": "发布帖子",
     "cancel": "取消",
+    "draftFound": "检测到未发布草稿。",
+    "draftRestore": "恢复",
+    "draftDiscard": "丢弃",
+    "draftDiscardConfirm": "确认丢弃草稿？",
     "markdown": "正文",
     "richText": "富文本",
     "link": "链接",
@@ -200,12 +206,19 @@
     "tagsHint": "回车或逗号添加标签",
     "circle": "发布到圈子",
     "circleNone": "不归属圈子（公开广场）",
+    "visibility": "谁可以看到",
+    "visibilityPublic": "所有人（全站信息流 + 圈子内）",
+    "visibilityCircleOnly": "仅圈子成员",
+    "postingInCircle": "发布到圈子",
+    "postGloballyInstead": "改为发布到全站",
+    "invalidCircleLink": "圈子链接无效或该圈子已不存在。",
     "rewardHint": "发帖获得 +5 枚认同币奖励",
     "publishing": "发布中…",
     "publish": "发布",
     "publishError": "发布失败，请重试",
     "titleRequired": "标题不能为空",
     "contentRequired": "内容不能为空",
+    "categoryLabel": "分类",
     "tipsTitle": "写出好帖子",
     "tip1": "写一个清晰的标题，用一句话概括你的帖子。",
     "tip2": "使用标题、图片和代码块让帖子更易读。",
@@ -232,10 +245,18 @@
     "disagreeLabel": "币质疑",
     "capReached": "此帖作者收益已封顶，认同仍计入温度",
     "verifyAgreement": "验证认同",
-    "challengeInsight": "质疑洞见"
+    "challengeInsight": "质疑洞见",
+    "undo": "撤销",
+    "undoConfirm": "确认撤销这次投票？将退回认同币并回滚统计。",
+    "undoFailed": "撤销失败",
+    "undoTooOld": "超过 10 分钟无法撤销",
+    "undoAuthorInsufficient": "作者余额不足，暂无法撤销",
+    "undoNotFound": "未找到可撤销的投票"
   },
   "post": {
     "share": "分享",
+    "copied": "已复制",
+    "copyFailed": "复制失败",
     "readTime": "{min} 分钟阅读",
     "notFound": "帖子不存在。",
     "goBack": "返回",
@@ -249,6 +270,14 @@
     "commentPlaceholder": "发表评论…（+2 币）",
     "post": "发布",
     "reply": "回复",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "edited": "已编辑",
+    "commentDeleted": "此评论已删除。",
+    "commentDeleteConfirm": "确认删除这条评论？",
+    "commentEditFailed": "评论编辑失败",
+    "commentDeleteFailed": "评论删除失败",
     "delete": "删除",
     "deleteConfirm": "确认删除这篇帖子？此操作不可撤销。",
     "distribute": "分发",
@@ -257,7 +286,11 @@
     "vibeQuestioning": "质疑",
     "vibeTrending": "趋势偏热",
     "stakeConsensus": "质押共识",
-    "stakeConsensusSubtitle": "投入认同币以表达认同或质疑。"
+    "stakeConsensusSubtitle": "投入认同币以表达认同或质疑。",
+    "circleOnlyTitle": "仅成员可见",
+    "circleOnlyDescription": "此帖仅对该圈子成员可见。加入圈子后即可阅读。",
+    "viewCircle": "查看圈子",
+    "membersOnlyShort": "仅成员"
   },
   "tag": {
     "notFound": "标签「{name}」不存在",
@@ -303,7 +336,16 @@
       "owner": "山主",
       "joinPaid": "加入 ({amount} 币)",
       "join": "加入圈子",
-      "empty": "圈子里还没有帖子"
+      "empty": "圈子里还没有帖子",
+      "newPost": "在圈子中发帖",
+      "writeFirstPost": "发布第一篇帖子",
+      "joinConfirmPrompt": "加入此圈子需花费 {amount} 币，确认吗？",
+      "joinConfirm": "确认加入",
+      "joinCancel": "取消",
+      "joinFailed": "加入失败，请重试。",
+      "joinInsufficientFunds": "认同币余额不足。",
+      "joinSuccess": "已成功加入！",
+      "leaveFailed": "退出失败，请重试。"
     }
   },
   "notifications": {
@@ -339,6 +381,13 @@
     "featuredInsight": "精选洞见",
     "ariaMainTabs": "信息流范围",
     "ariaSortTabs": "发现页排序",
+    "ariaCategoryFilter": "内容分类过滤",
+    "category": {
+      "all": "全部",
+      "idea": "创意",
+      "tech": "技术",
+      "else": "其他"
+    },
     "heroEyebrow": "编辑精选",
     "heroTitle": "来自结构化讨论的信号",
     "heroSubtitle": "阅读高质量帖子，关注可信作者，并以 Agreecoin 权重的共识参与讨论。",
@@ -372,5 +421,11 @@
     "followingCount": "关注",
     "totalReceived": "累计认同",
     "recentContributions": "近期贡献"
+  },
+  "error": {
+    "title": "出了点问题",
+    "description": "发生了意外错误。你可以重试，或返回首页。",
+    "retry": "重试",
+    "goHome": "回到首页"
   }
 }

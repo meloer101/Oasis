@@ -8,6 +8,7 @@ import { useNotifications } from '@/hooks/use-notifications'
 import { useLocale } from '@/hooks/use-locale'
 import { useLayoutShell } from '@/providers/layout-shell-provider'
 import { Avatar } from '@/components/ui/avatar'
+import { getNewPostHref } from '@/lib/new-post-href'
 
 const HEADER_H = 'h-12'
 
@@ -58,9 +59,11 @@ export default function Header() {
     router.replace('/login')
   }
 
+  const newPostHref = getNewPostHref(pathname)
+
   return (
     <header
-      className={`sticky top-0 z-30 ${HEADER_H} border-b border-[var(--card-border)] bg-[var(--topnav-bg)] backdrop-blur-xl backdrop-saturate-[180%] flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 w-full min-w-0`}
+      className={`sticky top-0 z-30 ${HEADER_H} border-b border-[var(--border-subtle)] bg-[var(--topnav-bg)] backdrop-blur-2xl backdrop-saturate-[180%] flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-6 w-full min-w-0 transition-all duration-300`}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
@@ -76,7 +79,7 @@ export default function Header() {
 
         <Link
           href="/feed"
-          className="text-lg font-bold text-text-primary hover:opacity-80 transition-opacity shrink-0 tracking-tight"
+          className="text-xl font-medium text-text-primary hover:opacity-70 transition-opacity shrink-0 tracking-tighter"
         >
           Oasis
         </Link>
@@ -88,7 +91,7 @@ export default function Header() {
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               placeholder={t('feed.searchPlaceholder')}
-              className="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] pl-9 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--text-primary)_18%,transparent)] focus:border-[color-mix(in_srgb,var(--text-primary)_35%,var(--card-border))]"
+              className="w-full rounded-full border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--text-primary)_3%,var(--bg))] pl-10 pr-4 py-1.5 text-sm text-text-primary placeholder:text-text-muted/50 focus:outline-none focus:ring-1 focus:ring-text-primary/20 focus:border-text-primary/30 transition-all duration-300"
             />
             <svg
               className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none"
@@ -155,13 +158,13 @@ export default function Header() {
         </div>
 
         <Link
-          href="/feed/new"
-          className="hidden min-[380px]:inline-flex items-center rounded-lg border border-[var(--text-primary)] bg-[var(--text-primary)] px-3 py-1.5 text-sm font-medium text-[var(--card-bg)] hover:opacity-90 transition-opacity shrink-0"
+          href={newPostHref}
+          className="hidden min-[380px]:inline-flex items-center rounded-full bg-text-primary px-4 py-1.5 text-sm font-medium text-[var(--bg)] hover:opacity-80 transition-all active:scale-95 shrink-0"
         >
           {t('topNav.createPost')}
         </Link>
         <Link
-          href="/feed/new"
+          href={newPostHref}
           className="min-[380px]:hidden p-2 rounded-lg bg-[var(--text-primary)] text-[var(--card-bg)] shrink-0"
           aria-label={t('topNav.createPost')}
         >

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { usePost, useComments } from '@/hooks/use-post'
+import { usePost, useComments, getCircleOnlyGateFromError } from '@/hooks/use-post'
 import { apiClient } from '@/lib/api-client'
 import { timeAgo, formatCoins, estimateReadingMinutes } from '@/lib/utils'
 import { stripHtmlToText } from '@/lib/html'
@@ -15,6 +15,8 @@ import { useLocale } from '@/hooks/use-locale'
 import { PostHtmlContent } from '@/components/post/post-html-content'
 import Link from 'next/link'
 import { Avatar } from '@/components/ui/avatar'
+import { shareUrl } from '@/lib/share'
+import { PostDetailSkeleton } from '@/components/ui/skeletons'
 
 export default function PostPage() {
   const params = useParams()
@@ -24,7 +26,8 @@ export default function PostPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: post, isLoading: postLoading, error: postError } = usePost(id)
-  const { data: comments, isLoading: commentsLoading } = useComments(id)
+  const { data: comments, isLoading: commentsLoading } = useComments(id, { enabled: !!post })
+  const [shareState, setShareState] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   const deleteMutation = useMutation({
     mutationFn: () => apiClient.delete(`/api/posts/${id}`),
@@ -34,23 +37,51 @@ export default function PostPage() {
     },
   })
 
-  function sharePost() {
-    const url = typeof window !== 'undefined' ? window.location.href : ''
-    if (navigator.share) {
-      void navigator.share({ url, title: post?.title }).catch(() => copyUrl(url))
-    } else {
-      copyUrl(url)
-    }
+  function shareLabel() {
+    if (shareState === 'copied') return t('post.copied')
+    if (shareState === 'failed') return t('post.copyFailed')
+    return t('post.share')
   }
 
-  function copyUrl(url: string) {
-    void navigator.clipboard.writeText(url).catch(() => {})
+  useEffect(() => {
+    if (shareState === 'idle') return
+    const timer = window.setTimeout(() => setShareState('idle'), 1500)
+    return () => window.clearTimeout(timer)
+  }, [shareState])
+
+  async function sharePost() {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const result = await shareUrl({ url, title: post?.title ?? undefined })
+    if (result === 'failed') setShareState('failed')
+    else setShareState('copied')
   }
 
   if (postLoading) {
+    return <PostDetailSkeleton />
+  }
+
+  const circleOnlyGate = getCircleOnlyGateFromError(postError)
+  if (circleOnlyGate) {
     return (
-      <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-[var(--text-primary)] border-t-transparent rounded-full animate-spin" />
+      <div>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-sm text-text-muted hover:text-text-secondary transition-colors mb-5 flex items-center gap-1"
+        >
+          {t('post.back')}
+        </button>
+        <div className="max-w-md mx-auto rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-8 text-center shadow-sm">
+          <p className="text-lg font-semibold text-text-primary">{t('post.circleOnlyTitle')}</p>
+          <p className="text-sm text-text-secondary mt-3 leading-relaxed">{t('post.circleOnlyDescription')}</p>
+          <p className="text-xs text-text-muted mt-2">{circleOnlyGate.name}</p>
+          <Link
+            href={`/circle/${circleOnlyGate.id}`}
+            className="inline-flex mt-6 px-5 py-2.5 bg-brand text-brand-foreground text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
+          >
+            {t('post.viewCircle')}
+          </Link>
+        </div>
       </div>
     )
   }
@@ -162,7 +193,7 @@ export default function PostPage() {
                 onClick={sharePost}
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-text-primary border border-[var(--card-border)] rounded-lg px-3 py-1.5 hover:bg-nav-hover transition-colors"
               >
-                ↗ {t('post.distribute')}
+                ↗ {shareState === 'idle' ? t('post.distribute') : shareLabel()}
               </button>
               {user?.id === post.author.id && (
                 <button
@@ -279,15 +310,15 @@ export default function PostPage() {
                   💧 {formatCoins(post.disagreeVoteAmount)} {t('vote.disagreeLabel')}
                 </span>
               )}
-              <button
-                type="button"
-                onClick={sharePost}
-                className="sm:hidden text-text-primary text-sm font-medium"
-              >
-                {t('post.share')}
-              </button>
-            </div>
-          </div>
+	              <button
+	                type="button"
+	                onClick={sharePost}
+	                className="sm:hidden text-text-primary text-sm font-medium"
+	              >
+	                {shareLabel()}
+	              </button>
+	            </div>
+	          </div>
         </article>
       </div>
 
@@ -386,23 +417,127 @@ function CommentThread({
   postId: string
 }) {
   const [replying, setReplying] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editValue, setEditValue] = useState(comment.content)
+  const [editError, setEditError] = useState('')
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
   const { t } = useLocale()
+
+  const isRemoved = (comment.status ?? 'published') === 'removed'
+  const isMine = user?.id === comment.author.id
+  const wasEdited = !!comment.updatedAt && comment.updatedAt !== comment.createdAt
+
+  const editMutation = useMutation({
+    mutationFn: () => apiClient.patch(`/api/comments/${comment.id}`, { content: editValue }),
+    onSuccess: () => {
+      setEditing(false)
+      setEditError('')
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] })
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      setEditError(msg ?? t('post.commentEditFailed'))
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => apiClient.delete(`/api/comments/${comment.id}`),
+    onSuccess: () => {
+      setEditError('')
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] })
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      setEditError(msg ?? t('post.commentDeleteFailed'))
+    },
+  })
 
   return (
     <div className="py-4 first:pt-0">
-      <div className="flex items-center gap-2 mb-2">
-        <Avatar
-          src={comment.author.avatarUrl}
-          name={comment.author.displayName ?? comment.author.username}
-          className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_8%,var(--card-bg))] dark:bg-surface text-xs"
-          textClassName="text-text-secondary"
-        />
-        <span className="text-sm font-medium text-text-primary">
-          {comment.author.displayName ?? comment.author.username}
-        </span>
-        <span className="text-xs text-text-muted">{timeAgo(comment.createdAt)}</span>
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Avatar
+            src={comment.author.avatarUrl}
+            name={comment.author.displayName ?? comment.author.username}
+            className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_8%,var(--card-bg))] dark:bg-surface text-xs"
+            textClassName="text-text-secondary"
+          />
+          <span className="text-sm font-medium text-text-primary truncate">
+            {comment.author.displayName ?? comment.author.username}
+          </span>
+          <span className="text-xs text-text-muted shrink-0">
+            {timeAgo(comment.createdAt)}
+            {wasEdited ? ` · ${t('post.edited')}` : ''}
+          </span>
+        </div>
+
+        {isMine && !isRemoved && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setEditValue(comment.content)
+                setEditing((v) => !v)
+                setEditError('')
+              }}
+              className="text-xs text-text-muted hover:text-text-primary transition-colors"
+            >
+              {t('post.edit')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!deleteMutation.isPending && window.confirm(t('post.commentDeleteConfirm'))) deleteMutation.mutate()
+              }}
+              disabled={deleteMutation.isPending}
+              className="text-xs text-text-muted hover:text-text-primary disabled:opacity-40 transition-colors"
+            >
+              {deleteMutation.isPending ? '…' : t('post.delete')}
+            </button>
+          </div>
+        )}
       </div>
-      <p className="text-sm text-text-secondary leading-relaxed ml-10 mb-2">{comment.content}</p>
+
+      <div className="ml-10 mb-2">
+        {isRemoved ? (
+          <p className="text-sm text-text-muted italic">{t('post.commentDeleted')}</p>
+        ) : editing ? (
+          <div className="space-y-2">
+            <textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              rows={3}
+              className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--text-primary)_18%,transparent)] resize-none"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => editMutation.mutate()}
+                disabled={!editValue.trim() || editMutation.isPending}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[var(--text-primary)] text-[var(--card-bg)] disabled:opacity-40"
+              >
+                {editMutation.isPending ? '…' : t('post.save')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false)
+                  setEditError('')
+                }}
+                className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--card-border)] text-text-secondary hover:bg-nav-hover"
+              >
+                {t('post.cancel')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary leading-relaxed">{comment.content}</p>
+        )}
+
+        {editError ? <p className="mt-2 text-[11px] text-red-400">{editError}</p> : null}
+      </div>
+
       <button
         type="button"
         onClick={() => setReplying((v) => !v)}
@@ -420,18 +555,127 @@ function CommentThread({
       {replies.length > 0 && (
         <div className="ml-10 mt-4 pl-4 border-l-2 border-[var(--card-border)] space-y-4">
           {replies.map((r) => (
-            <div key={r.id}>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-text-secondary">
-                  {r.author.displayName ?? r.author.username}
-                </span>
-                <span className="text-xs text-text-muted">{timeAgo(r.createdAt)}</span>
-              </div>
-              <p className="text-sm text-text-muted leading-relaxed">{r.content}</p>
-            </div>
+            <ReplyItem key={r.id} comment={r} postId={postId} />
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function ReplyItem({ comment, postId }: { comment: Comment; postId: string }) {
+  const { t } = useLocale()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [editing, setEditing] = useState(false)
+  const [editValue, setEditValue] = useState(comment.content)
+  const [editError, setEditError] = useState('')
+
+  const isRemoved = (comment.status ?? 'published') === 'removed'
+  const isMine = user?.id === comment.author.id
+  const wasEdited = !!comment.updatedAt && comment.updatedAt !== comment.createdAt
+
+  const editMutation = useMutation({
+    mutationFn: () => apiClient.patch(`/api/comments/${comment.id}`, { content: editValue }),
+    onSuccess: () => {
+      setEditing(false)
+      setEditError('')
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] })
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      setEditError(msg ?? t('post.commentEditFailed'))
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => apiClient.delete(`/api/comments/${comment.id}`),
+    onSuccess: () => {
+      setEditError('')
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] })
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      setEditError(msg ?? t('post.commentDeleteFailed'))
+    },
+  })
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-medium text-text-secondary truncate">
+            {comment.author.displayName ?? comment.author.username}
+          </span>
+          <span className="text-xs text-text-muted shrink-0">
+            {timeAgo(comment.createdAt)}
+            {wasEdited ? ` · ${t('post.edited')}` : ''}
+          </span>
+        </div>
+
+        {isMine && !isRemoved && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setEditValue(comment.content)
+                setEditing((v) => !v)
+                setEditError('')
+              }}
+              className="text-[11px] text-text-muted hover:text-text-secondary transition-colors"
+            >
+              {t('post.edit')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!deleteMutation.isPending && window.confirm(t('post.commentDeleteConfirm'))) deleteMutation.mutate()
+              }}
+              disabled={deleteMutation.isPending}
+              className="text-[11px] text-text-muted hover:text-text-secondary disabled:opacity-40 transition-colors"
+            >
+              {deleteMutation.isPending ? '…' : t('post.delete')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {isRemoved ? (
+        <p className="text-sm text-text-muted italic">{t('post.commentDeleted')}</p>
+      ) : editing ? (
+        <div className="space-y-2">
+          <textarea
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            rows={2}
+            className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--text-primary)_18%,transparent)] resize-none"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => editMutation.mutate()}
+              disabled={!editValue.trim() || editMutation.isPending}
+              className="px-3 py-1 text-xs font-semibold rounded-lg bg-[var(--text-primary)] text-[var(--card-bg)] disabled:opacity-40"
+            >
+              {editMutation.isPending ? '…' : t('post.save')}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(false)
+                setEditError('')
+              }}
+              className="px-3 py-1 text-xs font-semibold rounded-lg border border-[var(--card-border)] text-text-secondary hover:bg-nav-hover"
+            >
+              {t('post.cancel')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-text-muted leading-relaxed">{comment.content}</p>
+      )}
+
+      {editError ? <p className="mt-2 text-[11px] text-red-400">{editError}</p> : null}
     </div>
   )
 }

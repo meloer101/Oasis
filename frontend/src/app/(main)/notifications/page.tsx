@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useNotifications, useMarkAllRead } from '@/hooks/use-notifications'
 import { timeAgo } from '@/lib/utils'
 import { useLocale } from '@/hooks/use-locale'
+import { NotificationsSkeleton } from '@/components/ui/skeletons'
 
 const TYPE_ICONS: Record<string, string> = {
   vote_received: '⚡',
@@ -40,11 +41,7 @@ export default function NotificationsPage() {
   }, [data?.unreadCount])
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <NotificationsSkeleton />
   }
 
   const allNotifications = data?.notifications ?? []

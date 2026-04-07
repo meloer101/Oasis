@@ -41,14 +41,33 @@ export default function VoteButton({
   const [uiState, setUIState] = useState<UIState>('idle')
   const [amount, setAmount] = useState(10)
   const [votedType, setVotedType] = useState<'agree' | 'disagree' | null>(initialVoteType)
+  const [undoError, setUndoError] = useState('')
   const queryClient = useQueryClient()
   const { refreshBalance } = useAuth()
   const { t } = useLocale()
+
+  const revokeMutation = useMutation({
+    mutationFn: () => apiClient.delete(`/api/votes/${postId}`),
+    onSuccess: () => {
+      setUndoError('')
+      setVotedType(null)
+      queryClient.invalidateQueries({ queryKey })
+      refreshBalance()
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
+      if (msg === 'VOTE_TOO_OLD') setUndoError(t('vote.undoTooOld'))
+      else if (msg === 'AUTHOR_INSUFFICIENT_BALANCE') setUndoError(t('vote.undoAuthorInsufficient'))
+      else if (msg === 'VOTE_NOT_FOUND') setUndoError(t('vote.undoNotFound'))
+      else setUndoError(t('vote.undoFailed'))
+    },
+  })
 
   const mutation = useMutation({
     mutationFn: ({ amt, voteType }: { amt: number; voteType: 'agree' | 'disagree' }) =>
       apiClient.post('/api/votes', { postId, amount: amt, voteType }),
     onSuccess: (_data, variables) => {
+      setUndoError('')
       setVotedType(variables.voteType)
       setUIState('idle')
       queryClient.invalidateQueries({ queryKey })
@@ -56,51 +75,75 @@ export default function VoteButton({
     },
     onError: (err: unknown) => {
       const msg = (err as { response?: { data?: { error?: string } } }).response?.data?.error
-      if (msg === 'ALREADY_VOTED') setVotedType('agree')
+      if (msg === 'ALREADY_VOTED') queryClient.invalidateQueries({ queryKey })
       setUIState('idle')
     },
   })
 
   if (votedType !== null) {
     const isAgree = votedType === 'agree'
+    const undoBtn = (
+      <button
+        type="button"
+        onClick={() => {
+          if (!revokeMutation.isPending && window.confirm(t('vote.undoConfirm'))) revokeMutation.mutate()
+        }}
+        className="text-[10px] text-text-muted hover:text-text-secondary transition-colors"
+        title={t('vote.undo')}
+        disabled={revokeMutation.isPending}
+      >
+        {revokeMutation.isPending ? '…' : t('vote.undo')}
+      </button>
+    )
     if (variant === 'compact') {
       return (
-        <span
-          className={`inline-flex items-center gap-1 text-xs font-medium ${
-            isAgree ? 'text-text-primary' : 'text-text-muted'
-          }`}
-        >
-          {isAgree ? '✓' : '✗'} {isAgree ? '·' : ''}{' '}
-          {isAgree ? formatCoins(totalVoteAmount) : formatCoins(disagreeVoteAmount)}
+        <span className="inline-flex items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-medium ${
+              isAgree ? 'text-text-primary' : 'text-text-muted'
+            }`}
+          >
+            {isAgree ? '✓' : '✗'} {isAgree ? '·' : ''}{' '}
+            {isAgree ? formatCoins(totalVoteAmount) : formatCoins(disagreeVoteAmount)}
+          </span>
+          {undoBtn}
         </span>
       )
     }
     if (variant === 'rail') {
       return (
-        <div
-          className={`flex flex-col items-center gap-1 text-xs font-semibold ${
-            isAgree ? 'text-text-primary' : 'text-text-muted'
-          }`}
-        >
-          <span className="text-lg">{isAgree ? '✓' : '✗'}</span>
-          <span className="text-text-muted">{isAgree ? '·' : '·'}</span>
+        <div className="flex flex-col items-center gap-2">
+          <div
+            className={`flex flex-col items-center gap-1 text-xs font-semibold ${
+              isAgree ? 'text-text-primary' : 'text-text-muted'
+            }`}
+          >
+            <span className="text-lg">{isAgree ? '✓' : '✗'}</span>
+            <span className="text-text-muted">{isAgree ? '·' : '·'}</span>
+          </div>
+          {undoBtn}
+          {undoError ? <span className="text-[10px] text-red-400 text-center max-w-[7rem]">{undoError}</span> : null}
         </div>
       )
     }
     return (
-      <span
-        className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-          isAgree ? 'text-text-primary' : 'text-text-muted'
-        }`}
-      >
-        {isAgree ? '✓' : '✗'} {isAgree ? t('vote.agreed') : t('vote.disagreed')}
-        {voterCount > 0 && (
-          <span className="text-text-muted">
-            {isAgree
-              ? t('vote.peopleCoins', { count: voterCount, amount: formatCoins(totalVoteAmount) })
-              : t('vote.disagreeStats', { amount: formatCoins(disagreeVoteAmount) })}
-          </span>
-        )}
+      <span className="inline-flex items-center gap-2 flex-wrap">
+        <span
+          className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+            isAgree ? 'text-text-primary' : 'text-text-muted'
+          }`}
+        >
+          {isAgree ? '✓' : '✗'} {isAgree ? t('vote.agreed') : t('vote.disagreed')}
+          {voterCount > 0 && (
+            <span className="text-text-muted">
+              {isAgree
+                ? t('vote.peopleCoins', { count: voterCount, amount: formatCoins(totalVoteAmount) })
+                : t('vote.disagreeStats', { amount: formatCoins(disagreeVoteAmount) })}
+            </span>
+          )}
+        </span>
+        {undoBtn}
+        {undoError ? <span className="text-[10px] text-red-400">{undoError}</span> : null}
       </span>
     )
   }

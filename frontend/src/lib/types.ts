@@ -35,11 +35,14 @@ export interface User {
 // POSTS
 // ==============================
 
+export type PostCategory = 'idea' | 'tech' | 'else'
+
 export interface Post {
   id: string
   title: string
   content?: string
   contentType: 'markdown' | 'link' | 'image' | 'rich'
+  category: PostCategory
   linkUrl: string | null
   imageUrl: string | null
   circleId: string | null
@@ -63,6 +66,8 @@ export interface Comment {
   content: string
   parentId: string | null
   createdAt: string
+  updatedAt?: string
+  status?: 'published' | 'removed'
   author: Author
 }
 

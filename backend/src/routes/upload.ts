@@ -1,5 +1,8 @@
 import { Hono } from 'hono'
 import { authenticate, type AuthVariables } from '../middleware/auth.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('upload')
 
 export const uploadRoutes = new Hono<{ Variables: AuthVariables }>()
 
@@ -50,7 +53,7 @@ uploadRoutes.post('/image', authenticate, async (c) => {
 
   if (!res.ok) {
     const errText = await res.text()
-    console.error('Supabase Storage upload failed:', res.status, errText)
+    log.error('Supabase Storage upload failed', { httpStatus: res.status, detail: errText })
     return c.json({ error: 'Upload failed. Please try again.' }, 500)
   }
 

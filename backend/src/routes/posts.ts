@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, desc, sql, and, or, lt, inArray, ilike } from 'drizzle-orm'
+import { eq, desc, sql, and, or, lt, inArray, ilike, ne } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import {
   posts,
@@ -15,6 +15,7 @@ import {
   postTags,
   notifications,
   circles,
+  circleMembers,
 } from '../db/schema.js'
 import { authenticate, type AuthVariables } from '../middleware/auth.js'
 import { verifyAccessToken } from '../lib/jwt.js'
@@ -36,19 +37,26 @@ function decodeCursor(cursor: string): { value: string; id: string } {
 }
 
 // --- Schemas ---
-const createPostSchema = z.object({
-  title: z.string().min(1).max(300),
-  content: z.string().min(1),
-  contentType: z.enum(['markdown', 'link', 'image', 'rich']).default('markdown'),
-  circleId: z.string().uuid().optional(),
-  linkUrl: z.string().url().optional(),
-  imageUrl: z.string().url().optional(),
-  visibility: z.enum(['public', 'circle_only']).default('public'),
-  tags: z.array(z.string().min(1).max(50)).max(5).optional().default([]),
-})
+const createPostSchema = z
+  .object({
+    title: z.string().min(1).max(300),
+    content: z.string().min(1),
+    contentType: z.enum(['markdown', 'link', 'image', 'rich']).default('markdown'),
+    category: z.enum(['idea', 'tech', 'else']).default('else'),
+    circleId: z.string().uuid().optional(),
+    linkUrl: z.string().url().optional(),
+    imageUrl: z.string().url().optional(),
+    visibility: z.enum(['public', 'circle_only']).default('public'),
+    tags: z.array(z.string().min(1).max(50)).max(5).optional().default([]),
+  })
+  .refine((d) => d.visibility !== 'circle_only' || Boolean(d.circleId), {
+    message: 'circle_only posts require circleId',
+    path: ['visibility'],
+  })
 
 const feedQuerySchema = z.object({
   feed: z.enum(['hot', 'fresh', 'follow']).default('hot'),
+  category: z.enum(['idea', 'tech', 'else']).optional(),
   limit: z.coerce.number().int().min(1).max(50).default(20),
   cursor: z.string().optional(),
 })
@@ -70,6 +78,7 @@ const postSelect = {
   title: posts.title,
   content: posts.content,
   contentType: posts.contentType,
+  category: posts.category,
   linkUrl: posts.linkUrl,
   imageUrl: posts.imageUrl,
   circleId: posts.circleId,
@@ -100,6 +109,33 @@ function tryGetUserId(authHeader: string | undefined): string | undefined {
   }
 }
 
+/** Feed/search: hide circle_only unless viewer is a member of that circle. */
+function feedCircleVisibilityPredicate(currentUserId: string | undefined) {
+  if (!currentUserId) return ne(posts.visibility, 'circle_only')
+  return sql`(${posts.visibility} <> 'circle_only' OR EXISTS (
+    SELECT 1 FROM circle_members cm
+    WHERE cm.circle_id = ${posts.circleId} AND cm.user_id = ${currentUserId}
+  ))`
+}
+
+type CircleOnlyMeta = {
+  visibility: string
+  circleId: string | null
+  authorId: string
+}
+
+async function userCanViewCircleOnlyPost(meta: CircleOnlyMeta, viewerId: string | undefined): Promise<boolean> {
+  if (meta.visibility !== 'circle_only' || !meta.circleId) return true
+  if (viewerId && viewerId === meta.authorId) return true
+  if (!viewerId) return false
+  const [row] = await db
+    .select({ userId: circleMembers.userId })
+    .from(circleMembers)
+    .where(and(eq(circleMembers.circleId, meta.circleId), eq(circleMembers.userId, viewerId)))
+    .limit(1)
+  return Boolean(row)
+}
+
 /** Batch-fetch tags for a list of post IDs */
 async function fetchTagsForPosts(postIds: string[]): Promise<Record<string, string[]>> {
   if (postIds.length === 0) return {}
@@ -125,13 +161,13 @@ async function fetchUserVoteMap(
   const rows = await db
     .select({ postId: votes.postId, voteType: votes.voteType })
     .from(votes)
-    .where(and(eq(votes.voterId, userId), inArray(votes.postId, postIds)))
+    .where(and(eq(votes.voterId, userId), inArray(votes.postId, postIds), eq(votes.status, 'active')))
   return new Map(rows.map((r) => [r.postId, r.voteType as 'agree' | 'disagree']))
 }
 
 // GET /api/posts — feed with cursor pagination
 postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
-  const { feed, limit, cursor } = c.req.valid('query')
+  const { feed, category, limit, cursor } = c.req.valid('query')
   const fetchLimit = limit + 1
 
   const currentUserId = tryGetUserId(c.req.header('Authorization'))
@@ -149,7 +185,8 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
   const hotScoreExpr = sql<string>`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600))`
 
   if (feed === 'hot') {
-    const conditions = [eq(posts.status, 'published')]
+    const conditions = [eq(posts.status, 'published'), feedCircleVisibilityPredicate(currentUserId)]
+    if (category) conditions.push(eq(posts.category, category))
     if (cursor) {
       const { value, id } = decodeCursor(cursor)
       if (value && id) {
@@ -176,7 +213,8 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
       )
       .limit(fetchLimit)
   } else if (feed === 'fresh') {
-    const conditions = [eq(posts.status, 'published')]
+    const conditions = [eq(posts.status, 'published'), feedCircleVisibilityPredicate(currentUserId)]
+    if (category) conditions.push(eq(posts.category, category))
     if (cursor) {
       const { value, id } = decodeCursor(cursor)
       if (value && id) {
@@ -206,12 +244,13 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
 
     if (following.length === 0) {
       // Cold start: no follows yet — return hot feed items as fallback
+      const fbConditions = [eq(posts.status, 'published'), feedCircleVisibilityPredicate(currentUserId)]
       const hotItems = await db
         .select(postSelect)
         .from(posts)
         .innerJoin(users, eq(posts.authorId, users.id))
         .leftJoin(circles, eq(posts.circleId, circles.id))
-        .where(eq(posts.status, 'published'))
+        .where(and(...fbConditions))
         .orderBy(
           sql`(${posts.temperature}::numeric * POWER(0.98, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)) DESC`,
           desc(posts.id),
@@ -235,7 +274,12 @@ postRoutes.get('/', zValidator('query', feedQuerySchema), async (c) => {
     }
 
     const followingIds = following.map((f) => f.followingId)
-    const conditions = [eq(posts.status, 'published'), inArray(posts.authorId, followingIds)]
+    const conditions = [
+      eq(posts.status, 'published'),
+      inArray(posts.authorId, followingIds),
+      feedCircleVisibilityPredicate(currentUserId),
+    ]
+    if (category) conditions.push(eq(posts.category, category))
     if (cursor) {
       const { value, id } = decodeCursor(cursor)
       if (value && id) {
@@ -301,6 +345,7 @@ postRoutes.get('/search', zValidator('query', searchQuerySchema), async (c) => {
 
   const conditions = [
     eq(posts.status, 'published'),
+    feedCircleVisibilityPredicate(currentUserId),
     or(
       ilike(posts.title, pattern),
       ilike(posts.content, pattern),
@@ -359,7 +404,7 @@ postRoutes.get('/:id', async (c) => {
   const id = c.req.param('id')
   const currentUserId = tryGetUserId(c.req.header('Authorization'))
 
-  const [post] = await db
+  const [row] = await db
     .select({
       id: posts.id,
       title: posts.title,
@@ -369,6 +414,7 @@ postRoutes.get('/:id', async (c) => {
       imageUrl: posts.imageUrl,
       circleId: posts.circleId,
       visibility: posts.visibility,
+      authorId: posts.authorId,
       viewCount: posts.viewCount,
       commentCount: posts.commentCount,
       voterCount: posts.voterCount,
@@ -383,13 +429,40 @@ postRoutes.get('/:id', async (c) => {
         displayName: users.displayName,
         avatarUrl: users.avatarUrl,
       },
+      gateCircleName: circles.name,
+      gateCircleSlug: circles.slug,
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
+    .leftJoin(circles, eq(posts.circleId, circles.id))
     .where(and(eq(posts.id, id), eq(posts.status, 'published')))
     .limit(1)
 
-  if (!post) return c.json({ error: 'Post not found' }, 404)
+  if (!row) return c.json({ error: 'Post not found' }, 404)
+
+  const canView = await userCanViewCircleOnlyPost(
+    {
+      visibility: row.visibility,
+      circleId: row.circleId,
+      authorId: row.authorId,
+    },
+    currentUserId,
+  )
+  if (!canView) {
+    return c.json(
+      {
+        error: 'circle_only',
+        circle: {
+          id: row.circleId!,
+          name: row.gateCircleName ?? 'Circle',
+          slug: row.gateCircleSlug ?? '',
+        },
+      },
+      403,
+    )
+  }
+
+  const { authorId: _a, gateCircleName: _gn, gateCircleSlug: _gs, ...post } = row
 
   // Increment view count (fire-and-forget, non-critical)
   db.update(posts)
@@ -437,6 +510,13 @@ postRoutes.post('/', authenticate, zValidator('json', createPostSchema), async (
         })
         .returning({ id: tags.id })
       await tx.insert(postTags).values({ postId: post.id, tagId: tag.id })
+    }
+
+    if (payload.circleId) {
+      await tx
+        .update(circles)
+        .set({ postCount: sql`${circles.postCount} + 1` })
+        .where(eq(circles.id, payload.circleId))
     }
 
     // Post creation reward: +5 coins
@@ -488,14 +568,45 @@ postRoutes.delete('/:id', authenticate, async (c) => {
 // GET /api/posts/:id/comments
 postRoutes.get('/:id/comments', async (c) => {
   const postId = c.req.param('id')
+  const currentUserId = tryGetUserId(c.req.header('Authorization'))
 
   const [post] = await db
-    .select({ id: posts.id })
+    .select({
+      id: posts.id,
+      visibility: posts.visibility,
+      circleId: posts.circleId,
+      authorId: posts.authorId,
+    })
     .from(posts)
     .where(and(eq(posts.id, postId), eq(posts.status, 'published')))
     .limit(1)
 
   if (!post) return c.json({ error: 'Post not found' }, 404)
+
+  const canView = await userCanViewCircleOnlyPost(
+    { visibility: post.visibility, circleId: post.circleId, authorId: post.authorId },
+    currentUserId,
+  )
+  if (!canView) {
+    const [circ] = post.circleId
+      ? await db
+          .select({ name: circles.name, slug: circles.slug })
+          .from(circles)
+          .where(eq(circles.id, post.circleId))
+          .limit(1)
+      : [null]
+    return c.json(
+      {
+        error: 'circle_only',
+        circle: {
+          id: post.circleId!,
+          name: circ?.name ?? 'Circle',
+          slug: circ?.slug ?? '',
+        },
+      },
+      403,
+    )
+  }
 
   const result = await db
     .select({
@@ -503,6 +614,8 @@ postRoutes.get('/:id/comments', async (c) => {
       content: comments.content,
       parentId: comments.parentId,
       createdAt: comments.createdAt,
+      updatedAt: comments.updatedAt,
+      status: comments.status,
       author: {
         id: users.id,
         username: users.username,
@@ -512,7 +625,7 @@ postRoutes.get('/:id/comments', async (c) => {
     })
     .from(comments)
     .innerJoin(users, eq(comments.authorId, users.id))
-    .where(and(eq(comments.postId, postId), eq(comments.status, 'published')))
+    .where(and(eq(comments.postId, postId), inArray(comments.status, ['published', 'removed'])))
     .orderBy(comments.createdAt)
 
   return c.json(result)
@@ -529,12 +642,42 @@ postRoutes.post(
     const { content, parentId } = c.req.valid('json')
 
     const [post] = await db
-      .select({ id: posts.id, authorId: posts.authorId })
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        visibility: posts.visibility,
+        circleId: posts.circleId,
+      })
       .from(posts)
       .where(and(eq(posts.id, postId), eq(posts.status, 'published')))
       .limit(1)
 
     if (!post) return c.json({ error: 'Post not found' }, 404)
+
+    const canView = await userCanViewCircleOnlyPost(
+      { visibility: post.visibility, circleId: post.circleId, authorId: post.authorId },
+      userId,
+    )
+    if (!canView) {
+      const [circ] = post.circleId
+        ? await db
+            .select({ name: circles.name, slug: circles.slug })
+            .from(circles)
+            .where(eq(circles.id, post.circleId))
+            .limit(1)
+        : [null]
+      return c.json(
+        {
+          error: 'circle_only',
+          circle: {
+            id: post.circleId!,
+            name: circ?.name ?? 'Circle',
+            slug: circ?.slug ?? '',
+          },
+        },
+        403,
+      )
+    }
 
     if (parentId) {
       const [parent] = await db
@@ -585,6 +728,30 @@ postRoutes.post(
           relatedCommentId: comment.id,
           content: '有人评论了你的帖子',
         })
+      }
+
+      // Notify parent comment author on reply (if different from post author and commenter)
+      if (parentId) {
+        const [parentComment] = await tx
+          .select({ authorId: comments.authorId })
+          .from(comments)
+          .where(eq(comments.id, parentId))
+          .limit(1)
+
+        if (
+          parentComment &&
+          parentComment.authorId !== userId &&
+          parentComment.authorId !== post.authorId
+        ) {
+          await tx.insert(notifications).values({
+            userId: parentComment.authorId,
+            type: 'comment_on_post',
+            actorId: userId,
+            relatedPostId: postId,
+            relatedCommentId: comment.id,
+            content: '有人回复了你的评论',
+          })
+        }
       }
 
       return comment

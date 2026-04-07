@@ -16,7 +16,7 @@ import { Avatar } from '@/components/ui/avatar'
 function PanelCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`rounded-[var(--radius-card)] border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-[var(--shadow-elevated)] ${className}`}
+      className={`bg-transparent py-6 border-b border-[var(--border-subtle)] ${className}`}
     >
       {children}
     </div>
@@ -26,19 +26,17 @@ function PanelCard({ children, className = '' }: { children: React.ReactNode; cl
 function TreasuryCard({ balance }: { balance: number }) {
   const { t } = useLocale()
   return (
-    <div className="rounded-xl overflow-hidden border border-[var(--card-border)] shadow-md">
-      <div className="p-4 bg-[var(--text-primary)] text-[var(--card-bg)]">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-90">
-          {t('rightPanel.yourTreasury')}
-        </p>
-        <p className="text-2xl font-bold tabular-nums mt-1 tracking-tight">{formatCoins(balance)} AG</p>
-        <Link
-          href="/wallet"
-          className="mt-3 block w-full text-center text-sm font-semibold rounded-lg py-2.5 bg-[var(--card-bg)] text-[var(--text-primary)] border border-[var(--card-border)] hover:opacity-90 transition-opacity"
-        >
-          {t('rightPanel.claimRewards')}
-        </Link>
-      </div>
+    <div className="py-6 border-b border-[var(--border-subtle)]">
+      <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-3 opacity-80">
+        {t('rightPanel.yourTreasury')}
+      </p>
+      <p className="text-4xl font-medium tabular-nums tracking-tighter text-text-primary">{formatCoins(balance)} AG</p>
+      <Link
+        href="/wallet"
+        className="mt-5 inline-flex items-center justify-center w-full text-sm font-medium rounded-full py-2.5 bg-text-primary text-[var(--bg)] hover:opacity-80 transition-all active:scale-95 shadow-lg shadow-text-primary/10"
+      >
+        {t('rightPanel.claimRewards')}
+      </Link>
     </div>
   )
 }
@@ -58,11 +56,11 @@ function TopResonatorsCard() {
 
   return (
     <PanelCard>
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">
+      <div className="flex items-center justify-between gap-2 mb-5">
+        <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted opacity-80">
           {t('rightPanel.topResonators')}
         </p>
-        <Link href="/circles" className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary hover:text-text-primary hover:underline shrink-0">
+        <Link href="/circles" className="text-[10px] font-medium uppercase tracking-widest text-text-primary hover:opacity-70 transition-opacity shrink-0">
           {t('rightPanel.viewAll')} →
         </Link>
       </div>
@@ -70,33 +68,33 @@ function TopResonatorsCard() {
       {!isLoading && rows.length === 0 && (
         <p className="text-xs text-text-muted py-1">{t('rightPanel.noResonatorsYet')}</p>
       )}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {!isLoading &&
           rows.map((c) => {
             const u = c.creator
             const pct = resonancePercent(u.id)
             return (
-              <div key={c.id} className="flex items-center gap-2">
+              <div key={c.id} className="flex items-center gap-3 group">
                 <Avatar
                   src={u.avatarUrl}
                   name={u.displayName ?? u.username}
-                  className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_8%,var(--card-bg))] shrink-0 text-xs font-bold"
+                  className="w-10 h-10 rounded-full bg-[color-mix(in_srgb,var(--text-primary)_5%,var(--bg))] shrink-0 text-xs font-medium"
                   textClassName="text-text-secondary"
                 />
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/user/${u.username}`}
-                    className="text-sm font-medium text-text-primary hover:underline underline-offset-2 truncate block"
+                    className="text-sm font-medium text-text-primary hover:opacity-70 transition-opacity truncate block tracking-tight"
                   >
                     @{u.username}
                   </Link>
-                  <p className="text-[10px] text-text-muted tabular-nums">
+                  <p className="text-[10px] text-text-muted tabular-nums font-medium uppercase tracking-wider mt-0.5 opacity-70">
                     {pct}% {t('rightPanel.resonance')}
                   </p>
                 </div>
                 <Link
                   href={`/user/${u.username}`}
-                  className="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2.5 py-1 rounded-lg border border-border-subtle text-text-secondary hover:border-[color-mix(in_srgb,var(--text-primary)_25%,var(--card-border))] hover:text-text-primary transition-colors"
+                  className="shrink-0 text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-full border border-[var(--border-subtle)] text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-all active:scale-95"
                 >
                   {t('rightPanel.follow')}
                 </Link>
@@ -113,15 +111,20 @@ function ResonanceCard() {
   const pct = 74
   return (
     <PanelCard>
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-3">
+      <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-5 opacity-80">
         {t('rightPanel.globalResonance')}
       </p>
       <div
-        className="h-2.5 rounded-full overflow-hidden bg-gradient-to-r from-black/12 via-black/28 to-black/44 dark:from-white/10 dark:via-white/22 dark:to-white/36"
+        className="h-1.5 rounded-full overflow-hidden bg-[color-mix(in_srgb,var(--text-primary)_5%,var(--bg))]"
         aria-hidden
-      />
-      <p className="text-sm font-bold text-text-primary mt-3">{t('rightPanel.resonanceActive', { pct })}</p>
-      <p className="text-xs text-text-muted mt-1 leading-relaxed">{t('rightPanel.resonanceBlurb')}</p>
+      >
+        <div 
+          className="h-full rounded-full bg-text-primary transition-all duration-1000"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <p className="text-sm font-medium text-text-primary mt-4 tracking-tight">{t('rightPanel.resonanceActive', { pct })}</p>
+      <p className="text-xs text-text-secondary mt-2 leading-relaxed font-normal opacity-80">{t('rightPanel.resonanceBlurb')}</p>
     </PanelCard>
   )
 }
@@ -177,29 +180,29 @@ export default function RightPanel() {
       {postId && post ? (
         <>
           <PanelCard>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-3">
+            <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-5 opacity-80">
               {t('rightPanel.author')}
             </p>
-            <div className="flex items-start gap-3">
+            <div className="flex items-center gap-4">
               <Avatar
                 src={post.author.avatarUrl}
                 name={post.author.displayName ?? post.author.username}
-                className="w-12 h-12 rounded-full bg-[var(--text-primary)] shrink-0 text-lg font-bold"
-                textClassName="text-[var(--card-bg)]"
+                className="w-14 h-14 rounded-full bg-text-primary shrink-0 text-xl font-medium"
+                textClassName="text-[var(--bg)]"
               />
               <div className="min-w-0">
                 <Link
                   href={`/user/${post.author.username}`}
-                  className="font-semibold text-text-primary hover:underline underline-offset-2 block truncate"
+                  className="text-base font-medium text-text-primary hover:opacity-70 transition-opacity block truncate tracking-tight"
                 >
                   {post.author.displayName ?? post.author.username}
                 </Link>
-                <p className="text-xs text-text-muted truncate">@{post.author.username}</p>
+                <p className="text-sm text-text-muted truncate mt-0.5">@{post.author.username}</p>
               </div>
             </div>
             <Link
               href={`/user/${post.author.username}`}
-              className="mt-3 block w-full text-center text-sm font-medium rounded-lg py-2 border border-[var(--card-border)] hover:bg-nav-hover transition-colors"
+              className="mt-6 block w-full text-center text-xs font-medium uppercase tracking-widest rounded-full py-2.5 border border-[var(--border-subtle)] hover:bg-nav-hover transition-all active:scale-95"
             >
               {t('rightPanel.viewProfile')}
             </Link>

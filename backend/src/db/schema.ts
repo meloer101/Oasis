@@ -194,6 +194,8 @@ export const posts = pgTable(
     // markdown | link | image | rich
     linkUrl: varchar('link_url', { length: 500 }),
     imageUrl: varchar('image_url', { length: 500 }),
+    category: varchar('category', { length: 20 }).notNull().default('else'),
+    // idea | tech | else
     status: varchar('status', { length: 20 }).notNull().default('published'),
     // published | draft | removed
     visibility: varchar('visibility', { length: 20 }).notNull().default('public'),
@@ -289,10 +291,15 @@ export const votes = pgTable(
     amount: bigint('amount', { mode: 'number' }).notNull(),
     voteType: varchar('vote_type', { length: 20 }).notNull().default('agree'),
     // agree | disagree (future)
+    status: varchar('status', { length: 20 }).notNull().default('active'),
+    // active | revoked
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('idx_votes_unique').on(t.voterId, t.postId),
+    uniqueIndex('idx_votes_active_unique')
+      .on(t.voterId, t.postId)
+      .where(sql`${t.status} = 'active'`),
     index('idx_votes_post').on(t.postId),
     check('vote_amount_positive', sql`${t.amount} > 0`),
   ]

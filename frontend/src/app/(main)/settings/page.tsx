@@ -71,88 +71,115 @@ function SettingsProfileForm({
       : undefined
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-10">
       {/* Avatar */}
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-2">{t('settings.avatarUrl')}</label>
-        <div className="flex items-center gap-4 mb-3">
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.2em] text-text-muted block mb-6 opacity-80">{t('settings.avatarUrl')}</label>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 mb-6">
           <Avatar
             src={avatarUrl || null}
             name={displayName || user.username}
-            className="w-16 h-16 rounded-full bg-brand shrink-0 text-2xl font-bold"
-            textClassName="text-brand-foreground"
+            className="w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-text-primary shrink-0 text-4xl font-medium shadow-xl"
+            textClassName="text-[var(--bg)]"
           />
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleAvatarUpload(file)
-                e.target.value = ''
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="px-4 py-2 text-sm rounded-lg border border-[var(--card-border)] hover:bg-nav-hover transition-colors disabled:opacity-50 text-text-secondary font-medium"
-            >
-              {uploading ? t('settings.uploading') : t('settings.uploadAvatar')}
-            </button>
-            <p className="text-xs text-text-muted mt-1">JPG, PNG, GIF or WebP</p>
+          <div className="flex-1 min-w-0 space-y-4">
+            <div className="flex flex-wrap gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) void handleAvatarUpload(file)
+                  e.target.value = ''
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="px-6 py-2.5 text-sm rounded-full border border-[var(--border-subtle)] hover:bg-nav-hover transition-all active:scale-95 disabled:opacity-50 text-text-primary font-medium"
+              >
+                {uploading ? t('settings.uploading') : t('settings.uploadAvatar')}
+              </button>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={() => setAvatarUrl('')}
+                  className="px-6 py-2.5 text-sm rounded-full border border-transparent hover:text-red-500 transition-colors text-text-muted font-medium"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-text-muted font-normal uppercase tracking-widest opacity-60">JPG, PNG, GIF or WebP</p>
           </div>
         </div>
-        <input
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          placeholder="https://example.com/avatar.jpg"
-          className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
-        />
+        <div className="relative group">
+          <input
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://example.com/avatar.jpg"
+            className="w-full bg-transparent border-b border-[var(--border-subtle)] py-3 text-base text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:border-text-primary transition-all duration-300 font-normal"
+          />
+          <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-text-primary transition-all duration-500 group-focus-within:w-full" />
+        </div>
       </div>
 
       {/* Display name */}
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-1.5">{t('settings.displayName')}</label>
-        <input
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          placeholder={user.username}
-          maxLength={100}
-          className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors"
-        />
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.2em] text-text-muted block mb-4 opacity-80">{t('settings.displayName')}</label>
+        <div className="relative group">
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder={user.username}
+            maxLength={100}
+            className="w-full bg-transparent border-b border-[var(--border-subtle)] py-3 text-2xl font-medium text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:border-text-primary transition-all duration-300 tracking-tight"
+          />
+          <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-text-primary transition-all duration-500 group-focus-within:w-full" />
+        </div>
       </div>
 
       {/* Bio */}
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-1.5">{t('settings.bio')}</label>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder={t('settings.bioPlaceholder')}
-          rows={4}
-          maxLength={500}
-          className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-brand transition-colors resize-none"
-        />
-        <p className="text-xs text-text-muted mt-1 text-right">{bio.length}/500</p>
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.2em] text-text-muted block mb-4 opacity-80">{t('settings.bio')}</label>
+        <div className="relative group">
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder={t('settings.bioPlaceholder')}
+            rows={3}
+            maxLength={500}
+            className="w-full bg-transparent border-b border-[var(--border-subtle)] py-3 text-lg font-normal text-text-primary placeholder:text-text-muted/40 focus:outline-none focus:border-text-primary transition-all duration-300 resize-none leading-relaxed"
+          />
+          <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-text-primary transition-all duration-500 group-focus-within:w-full" />
+        </div>
+        <p className="text-[10px] text-text-muted mt-4 font-medium uppercase tracking-widest opacity-60 text-right">{bio.length}/500</p>
       </div>
 
       {mutation.isError && (
-        <p className="text-sm text-red-400">
+        <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 text-sm font-medium">
           {t('settings.saveError')}
           {apiErr ? ` — ${apiErr}` : ''}
-        </p>
+        </div>
       )}
 
-      <button
-        onClick={() => mutation.mutate()}
-        disabled={mutation.isPending}
-        className="px-6 py-2.5 rounded-lg bg-brand hover:opacity-90 disabled:opacity-40 text-brand-foreground text-sm font-medium transition-opacity"
-      >
-        {mutation.isPending ? t('settings.saving') : saved ? `✓ ${t('settings.saved')}` : t('settings.save')}
-      </button>
+      <div className="pt-4 flex items-center gap-6">
+        <button
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+          className="px-10 py-3 rounded-full bg-text-primary text-[var(--bg)] hover:opacity-80 disabled:opacity-40 text-sm font-medium transition-all active:scale-95 shadow-lg shadow-text-primary/10"
+        >
+          {mutation.isPending ? t('settings.saving') : saved ? `✓ ${t('settings.saved')}` : t('settings.save')}
+        </button>
+        {saved && (
+          <span className="text-sm font-medium text-text-primary animate-fade-in">
+            {t('settings.saved')}
+          </span>
+        )}
+      </div>
     </div>
   )
 }
@@ -160,13 +187,13 @@ function SettingsProfileForm({
 function AppearanceSection() {
   const { t } = useLocale()
   return (
-    <div className="space-y-5">
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-2">{t('theme.appearance')}</label>
+    <div className="space-y-12">
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.3em] text-text-muted block mb-6 opacity-80">{t('theme.appearance')}</label>
         <ThemeSelect />
       </div>
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-2">{t('sidebar.language')}</label>
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.3em] text-text-muted block mb-6 opacity-80">{t('sidebar.language')}</label>
         <LangSwitch />
       </div>
     </div>
@@ -176,17 +203,18 @@ function AppearanceSection() {
 function AccountSection({ user }: { user: MeUser }) {
   const { t } = useLocale()
   return (
-    <div className="space-y-5">
-      <div>
-        <label className="text-sm font-medium text-text-secondary block mb-1.5">{t('settings.username')}</label>
-        <p className="text-sm text-text-primary bg-[var(--input-bg)] border border-[var(--card-border)] rounded-lg px-3 py-2">
+    <div className="space-y-12">
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.3em] text-text-muted block mb-4 opacity-80">{t('settings.username')}</label>
+        <p className="text-2xl font-medium text-text-primary tracking-tight">
           @{user.username}
         </p>
-        <p className="text-xs text-text-muted mt-1">{t('settings.usernameReadonly')}</p>
+        <p className="text-xs text-text-muted mt-4 font-normal uppercase tracking-widest opacity-60">{t('settings.usernameReadonly')}</p>
       </div>
-      <div className="rounded-xl border border-[var(--card-border)] p-4">
-        <p className="text-sm font-medium text-text-primary mb-1">{t('settings.emailLabel')}</p>
-        <p className="text-sm text-text-muted">{user.email ?? '—'}</p>
+      <div className="py-6 border-b border-[var(--border-subtle)]">
+        <label className="text-xs font-medium uppercase tracking-[0.3em] text-text-muted block mb-4 opacity-80">{t('settings.emailLabel')}</label>
+        <p className="text-2xl font-medium text-text-primary tracking-tight">{user.email ?? '—'}</p>
+        <p className="text-xs text-text-muted mt-4 font-normal uppercase tracking-widest opacity-60">Your account email address</p>
       </div>
     </div>
   )
@@ -205,71 +233,78 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto px-4">
       {/* Header */}
       {user && (
-        <h1 className="text-2xl font-bold text-text-primary mb-6">
-          @{user.username}
-        </h1>
+        <div className="mb-12">
+          <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-4 opacity-80">
+            SETTINGS
+          </p>
+          <h1 className="text-4xl sm:text-5xl font-medium text-text-primary tracking-tighter leading-tight">
+            @{user.username}
+          </h1>
+        </div>
       )}
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-12">
         {/* Left nav */}
-        <aside className="w-44 shrink-0">
-          <nav className="space-y-0.5">
+        <aside className="w-full md:w-56 shrink-0">
+          <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-4 md:pb-0 scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${
                   activeTab === tab.key
-                    ? 'bg-nav-active text-text-primary font-medium'
+                    ? 'bg-text-primary text-[var(--bg)] font-medium shadow-md scale-[1.02]'
                     : 'text-text-secondary hover:bg-nav-hover hover:text-text-primary'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
+                <span className="text-base">{tab.icon}</span>
+                <span className="tracking-tight">{tab.label}</span>
               </button>
             ))}
           </nav>
         </aside>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 shadow-sm">
-          {activeTab === 'profile' && (
-            <>
-              <h2 className="text-lg font-semibold text-text-primary mb-5">{t('settings.navProfile')}</h2>
-              {isLoading ? (
-                <p className="text-sm text-text-muted">{t('settings.loadingProfile')}</p>
-              ) : user ? (
-                <SettingsProfileForm
-                  key={user.id}
-                  user={user}
-                  refreshBalance={refreshBalance}
-                  queryClient={queryClient}
-                />
-              ) : (
-                <p className="text-sm text-text-muted">{t('settings.mustLogin')}</p>
-              )}
-            </>
-          )}
-          {activeTab === 'appearance' && (
-            <>
-              <h2 className="text-lg font-semibold text-text-primary mb-5">{t('settings.navAppearance')}</h2>
-              <AppearanceSection />
-            </>
-          )}
-          {activeTab === 'account' && (
-            <>
-              <h2 className="text-lg font-semibold text-text-primary mb-5">{t('settings.navAccount')}</h2>
-              {user ? (
-                <AccountSection user={user} />
-              ) : (
-                <p className="text-sm text-text-muted">{t('settings.mustLogin')}</p>
-              )}
-            </>
-          )}
+        <div className="flex-1 min-w-0">
+          <div className="motion-safe:animate-fade-in-up">
+            {activeTab === 'profile' && (
+              <div key="profile">
+                <h2 className="text-2xl font-medium text-text-primary mb-8 tracking-tight">{t('settings.navProfile')}</h2>
+                {isLoading ? (
+                  <p className="text-sm text-text-muted animate-pulse">{t('settings.loadingProfile')}</p>
+                ) : user ? (
+                  <SettingsProfileForm
+                    key={user.id}
+                    user={user}
+                    refreshBalance={refreshBalance}
+                    queryClient={queryClient}
+                  />
+                ) : (
+                  <p className="text-sm text-text-muted">{t('settings.mustLogin')}</p>
+                )}
+              </div>
+            )}
+            {activeTab === 'appearance' && (
+              <div key="appearance">
+                <h2 className="text-2xl font-medium text-text-primary mb-8 tracking-tight">{t('settings.navAppearance')}</h2>
+                <AppearanceSection />
+              </div>
+            )}
+            {activeTab === 'account' && (
+              <div key="account">
+                <h2 className="text-2xl font-medium text-text-primary mb-8 tracking-tight">{t('settings.navAccount')}</h2>
+                {user ? (
+                  <AccountSection user={user} />
+                ) : (
+                  <p className="text-sm text-text-muted">{t('settings.mustLogin')}</p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

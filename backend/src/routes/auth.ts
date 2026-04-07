@@ -6,6 +6,9 @@ import { count, eq, sql, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userBalances, refreshTokens, coinTransactions } from '../db/schema.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('auth')
 import {
   signAccessToken,
   generateRefreshToken,
@@ -277,7 +280,7 @@ authRoutes.post('/login', loginLimiter, zValidator('json', loginSchema), async (
         transactionType: 'login_streak_bonus',
         note: `连续登录第 ${newStreak} 天，奖励 ${STREAK_BONUS} 枚认同币`,
       })
-    }).catch((err) => console.error('[streak] Error updating streak:', err))
+    }).catch((err) => log.error('Streak update failed', err))
   }
 
   const { accessToken, refreshToken } = await issueSession(

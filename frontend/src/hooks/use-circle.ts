@@ -2,13 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api-client'
 import type { Circle, Post } from '@/lib/types'
 
-export function useCircle(id: string) {
+export function useCircle(id: string, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled !== false && Boolean(id)
   return useQuery<Circle>({
     queryKey: ['circle', id],
     queryFn: async () => {
       const res = await apiClient.get(`/api/circles/${id}`)
       return res.data
     },
+    enabled,
   })
 }
 

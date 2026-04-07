@@ -2,6 +2,9 @@ import { sql, eq, and, gte, lt, inArray } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { userBalances, coinTransactions, users } from '../db/schema.js'
 import { checkAndUpdateBadge } from '../lib/badges.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('daily-coins')
 
 const DAILY_AMOUNT = 20
 /** Stable advisory lock key for daily distribution (arbitrary but fixed). */
@@ -43,7 +46,7 @@ export async function distributeDailyCoins(): Promise<{
       .limit(1)
 
     if (existing) {
-      console.log('[daily-coins] Already distributed today, skipping')
+      log.info('Already distributed today, skipping')
       return { kind: 'skipped' } satisfies TxResult
     }
 
@@ -115,9 +118,9 @@ export function scheduleDailyCoins(): void {
     distributeDailyCoins()
       .then(({ usersAffected, totalCoins, skipped }) => {
         if (skipped) return
-        console.log(`[daily-coins] Distributed ${totalCoins} coins to ${usersAffected} users`)
+        log.info('Distributed daily coins', { totalCoins, usersAffected })
       })
-      .catch((err) => console.error('[daily-coins] Error:', err))
+      .catch((err) => log.error('Distribution error', err))
 
     setTimeout(runAndReschedule, msUntilMidnight())
   }
@@ -125,13 +128,13 @@ export function scheduleDailyCoins(): void {
   distributeDailyCoins()
     .then(({ usersAffected, totalCoins, skipped }) => {
       if (skipped) {
-        console.log('[daily-coins] Startup check: already distributed today')
+        log.info('Startup check: already distributed today')
       } else {
-        console.log(`[daily-coins] Startup run: distributed ${totalCoins} coins to ${usersAffected} users`)
+        log.info('Startup run complete', { totalCoins, usersAffected })
       }
     })
-    .catch((err) => console.error('[daily-coins] Startup run error:', err))
+    .catch((err) => log.error('Startup run error', err))
 
   setTimeout(runAndReschedule, msUntilMidnight())
-  console.log(`[daily-coins] Next scheduled distribution in ${Math.round(msUntilMidnight() / 60000)} minutes`)
+  log.info('Next distribution scheduled', { inMinutes: Math.round(msUntilMidnight() / 60000) })
 }

@@ -12,6 +12,7 @@ import type { Post, Circle } from '@/lib/types'
 import { useLocale } from '@/hooks/use-locale'
 import { useCircles } from '@/hooks/use-circle'
 import { Avatar } from '@/components/ui/avatar'
+import { UserProfileSkeleton, PostCardSkeleton } from '@/components/ui/skeletons'
 
 const BADGE_META: Record<string, { emoji: string; color: string; bg: string }> = {
   newcomer: { emoji: '🌱', color: 'text-sage', bg: 'bg-sage/15 border-sage/30' },
@@ -103,7 +104,8 @@ export default function UserProfilePage() {
         imageUrl: p.imageUrl ?? null,
         content: '',
         circleId: null,
-        visibility: 'public',
+        visibility: 'public' as const,
+        category: 'else' as const,
         tags: [],
         disagreeVoteAmount: p.disagreeVoteAmount ?? 0,
         userVoteType: null,
@@ -117,11 +119,7 @@ export default function UserProfilePage() {
     : []
 
   if (profileLoading) {
-    return (
-      <div className="flex justify-center py-16">
-        <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
+    return <UserProfileSkeleton />
   }
 
   if (profileError || !profile) {
@@ -147,51 +145,49 @@ export default function UserProfilePage() {
         {t('user.back')}
       </button>
 
-      <header className="rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] overflow-hidden mb-6 shadow-sm">
+      <header className="mb-10 relative">
         <div
-          className="h-32 sm:h-40 w-full bg-gradient-to-r from-teal-400/85 via-emerald-300/55 to-amber-300/80 dark:from-teal-700/45 dark:via-cyan-900/35 dark:to-amber-700/40"
+          className="h-40 sm:h-52 w-full bg-gradient-to-r from-teal-400/20 via-emerald-300/10 to-amber-300/20 dark:from-teal-700/10 dark:via-cyan-900/5 dark:to-amber-700/10 rounded-3xl"
           aria-hidden
         />
-        <div className="px-6 sm:px-8 pb-6 sm:pb-8 -mt-14 sm:-mt-16 relative">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-8">
+        <div className="px-4 sm:px-6 -mt-16 sm:-mt-20 relative">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-10">
             <Avatar
               src={profile.avatarUrl}
               name={displayName}
-              className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-brand shrink-0 ring-4 ring-[var(--card-bg)] shadow-md text-3xl font-bold"
+              className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-brand shrink-0 ring-8 ring-[var(--bg)] shadow-xl text-4xl font-medium"
               textClassName="text-brand-foreground"
             />
 
-            <div className="flex-1 min-w-0 pb-0.5">
-              <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">{displayName}</h1>
+            <div className="flex-1 min-w-0 pb-2">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-3xl sm:text-4xl font-medium text-text-primary tracking-tight">{displayName}</h1>
                 {profile.founderNumber ? (
-                  <span className="text-xs bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 rounded-full px-2.5 py-0.5 font-semibold">
-                    Founder #{profile.founderNumber}
+                  <span className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 rounded-full px-3 py-1 font-medium tracking-wide">
+                    FOUNDER #{profile.founderNumber}
                   </span>
                 ) : null}
-                {profile.badges
-                  .filter((b) => b.isActive && b.badgeType !== 'founder' && BADGE_META[b.badgeType])
-                  .map((b) => {
-                    const meta = BADGE_META[b.badgeType]
-                    return (
-                      <span
-                        key={b.badgeType}
-                        className={`text-xs font-semibold border rounded-full px-2.5 py-0.5 ${meta.bg} ${meta.color}`}
-                      >
-                        {meta.emoji} {t(`wallet.badges.${b.badgeType}` as Parameters<typeof t>[0])}
-                      </span>
-                    )
-                  })}
               </div>
-              <p className="text-sm text-text-muted mb-2">@{profile.username}</p>
+              <p className="text-sm text-text-muted mb-4 font-medium tracking-tight">@{profile.username}</p>
               {profile.bio ? (
-                <p className="text-sm text-text-secondary leading-relaxed max-w-2xl italic">{profile.bio}</p>
+                <p className="text-base text-text-secondary leading-relaxed max-w-2xl font-normal">{profile.bio}</p>
               ) : (
-                <p className="text-sm text-text-muted">{t('user.noBio')}</p>
+                <p className="text-sm text-text-muted italic">{t('user.noBio')}</p>
               )}
-              <p className="text-xs text-text-muted mt-3">
-                {t('user.joined', { time: timeAgo(profile.createdAt) })}
-              </p>
+              <div className="flex items-center gap-4 mt-6">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-text-primary">{profile.followerCount}</span>
+                  <span className="text-xs text-text-muted uppercase tracking-wider">{t('user.followers')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-text-primary">{profile.followingCount}</span>
+                  <span className="text-xs text-text-muted uppercase tracking-wider">{t('user.followingCount')}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-text-primary">{profile.postCount}</span>
+                  <span className="text-xs text-text-muted uppercase tracking-wider">{t('user.posts')}</span>
+                </div>
+              </div>
             </div>
 
             {currentUser && !isOwnProfile ? (
@@ -199,36 +195,24 @@ export default function UserProfilePage() {
                 type="button"
                 onClick={() => followMutation.mutate(!isFollowing)}
                 disabled={followMutation.isPending}
-                className={`shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 ${
+                className={`shrink-0 px-8 py-2.5 rounded-full text-sm font-medium transition-all active:scale-95 disabled:opacity-50 ${
                   isFollowing
-                    ? 'bg-nav-hover text-text-primary border border-[var(--card-border)] hover:bg-nav-active'
-                    : 'bg-brand text-brand-foreground hover:opacity-90'
+                    ? 'bg-transparent text-text-primary border border-[var(--border-subtle)] hover:bg-nav-hover'
+                    : 'bg-text-primary text-[var(--bg)] hover:opacity-80'
                 }`}
               >
                 {isFollowing ? t('user.following') : t('user.follow')}
               </button>
             ) : null}
           </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
-            <ProfileStatCard label={t('user.followers')} value={profile.followerCount} />
-            <ProfileStatCard label={t('user.followingCount')} value={profile.followingCount} />
-            <ProfileStatCard label={t('user.posts')} value={profile.postCount} />
-            <ProfileStatCard
-              label={t('user.totalReceived')}
-              value={formatCoins(profile.totalReceived)}
-              suffix="⚡"
-              highlight
-            />
-          </div>
         </div>
 
-        <div className="flex border-t border-[var(--card-border)] px-2 bg-[var(--card-bg)]">
+        <div className="flex mt-12 border-b border-[var(--border-subtle)] px-2">
           <button
             type="button"
             onClick={() => setTab('posts')}
-            className={`px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-              tab === 'posts' ? 'border-brand text-text-primary' : 'border-transparent text-text-muted'
+            className={`px-6 py-4 text-sm font-medium border-b-2 -mb-px transition-all ${
+              tab === 'posts' ? 'border-text-primary text-text-primary' : 'border-transparent text-text-muted hover:text-text-secondary'
             }`}
           >
             {t('user.tabPosts')}
@@ -236,8 +220,8 @@ export default function UserProfilePage() {
           <button
             type="button"
             onClick={() => setTab('circles')}
-            className={`px-5 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-              tab === 'circles' ? 'border-brand text-text-primary' : 'border-transparent text-text-muted'
+            className={`px-6 py-4 text-sm font-medium border-b-2 -mb-px transition-all ${
+              tab === 'circles' ? 'border-text-primary text-text-primary' : 'border-transparent text-text-muted hover:text-text-secondary'
             }`}
           >
             {t('user.tabCircles')}
@@ -254,8 +238,9 @@ export default function UserProfilePage() {
             </h2>
           </div>
           {postsLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+            <div className="space-y-4">
+              <PostCardSkeleton />
+              <PostCardSkeleton />
             </div>
           ) : postsAsPost.length === 0 ? (
             <p className="text-sm text-text-muted text-center py-12">{t('user.noPosts')}</p>
@@ -275,8 +260,17 @@ export default function UserProfilePage() {
       ) : (
         <div>
           {circlesLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="w-5 h-5 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[0, 1].map((i) => (
+                <div key={i} className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 flex gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-[color-mix(in_srgb,var(--text-primary)_7%,var(--card-bg))] animate-pulse shrink-0" />
+                  <div className="flex-1 space-y-2 pt-1">
+                    <div className="h-4 w-24 rounded bg-[color-mix(in_srgb,var(--text-primary)_7%,var(--card-bg))] animate-pulse" />
+                    <div className="h-3 w-full rounded bg-[color-mix(in_srgb,var(--text-primary)_7%,var(--card-bg))] animate-pulse" />
+                    <div className="h-3 w-16 rounded bg-[color-mix(in_srgb,var(--text-primary)_7%,var(--card-bg))] animate-pulse" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : ownedCircles.length === 0 ? (
             <div className="text-center py-12 text-text-muted text-sm space-y-2">
@@ -335,22 +329,22 @@ function CircleMiniCard({ circle }: { circle: Circle }) {
   return (
     <Link
       href={`/circle/${circle.id}`}
-      className="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 hover:shadow-md transition-shadow flex gap-3"
+      className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--card-bg)] p-5 hover:shadow-lg transition-all duration-300 flex gap-4 group"
     >
-      <div className="w-12 h-12 rounded-xl bg-brand-muted flex items-center justify-center text-xl font-bold text-brand shrink-0">
+      <div className="w-14 h-14 rounded-xl bg-[color-mix(in_srgb,var(--text-primary)_5%,var(--bg))] flex items-center justify-center text-2xl font-medium text-text-primary shrink-0 transition-transform group-hover:scale-105">
         {circle.name.charAt(0).toUpperCase()}
       </div>
       <div className="min-w-0">
-        <p className="font-semibold text-text-primary truncate">{circle.name}</p>
+        <p className="font-medium text-text-primary truncate text-lg">{circle.name}</p>
         {circle.description ? (
-          <p className="text-xs text-text-muted line-clamp-2 mt-1">{circle.description}</p>
+          <p className="text-sm text-text-muted line-clamp-1 mt-1 font-normal">{circle.description}</p>
         ) : null}
-        <div className="flex gap-3 mt-2 text-[11px] text-text-muted">
+        <div className="flex gap-4 mt-3 text-[11px] text-text-muted uppercase tracking-wider font-medium">
           <span>
-            👤 {circle.memberCount} {t('circles.members')}
+            {circle.memberCount} {t('circles.members')}
           </span>
           <span>
-            📝 {circle.postCount} {t('circles.posts')}
+            {circle.postCount} {t('circles.posts')}
           </span>
         </div>
       </div>

@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "category" varchar(20) DEFAULT 'else' NOT NULL;

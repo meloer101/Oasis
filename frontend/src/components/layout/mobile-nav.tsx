@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useNotifications } from '@/hooks/use-notifications'
 import { useAuth } from '@/providers/auth-provider'
 import { useLocale } from '@/hooks/use-locale'
+import { getNewPostHref } from '@/lib/new-post-href'
 
 export default function MobileNav() {
   const pathname = usePathname()
@@ -14,6 +15,7 @@ export default function MobileNav() {
   const unread = notifData?.unreadCount ?? 0
 
   const profileHref = user ? `/user/${user.username}` : '/settings'
+  const newPostHref = getNewPostHref(pathname)
 
   const NAV_ITEMS = [
     { href: '/feed', icon: '◈', key: 'mobileNav.feed' as const, match: (p: string) => p === '/feed' },
@@ -23,7 +25,12 @@ export default function MobileNav() {
       key: 'mobileNav.circles' as const,
       match: (p: string) => p.startsWith('/circles') || p.startsWith('/circle'),
     },
-    { href: '/feed/new', icon: '＋', key: 'mobileNav.newPost' as const, match: (p: string) => p === '/feed/new' },
+    {
+      href: newPostHref,
+      icon: '＋',
+      key: 'mobileNav.newPost' as const,
+      match: (p: string) => p === '/feed/new' || p.startsWith('/feed/new?'),
+    },
     {
       href: '/notifications',
       icon: '🔔',

@@ -9,6 +9,8 @@ import { checkAndUpdateBadge } from '../lib/badges.js'
 
 export const voteRoutes = new Hono<{ Variables: AuthVariables }>()
 
+const REVOKE_WINDOW_MS = 10 * 60 * 1000
+
 const castVoteSchema = z.object({
   postId: z.string().uuid(),
   amount: z.number().int().min(1).max(10000),
@@ -43,11 +45,12 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
       if (!post) throw new Error('POST_NOT_FOUND')
       if (post.authorId === userId) throw new Error('CANNOT_VOTE_OWN_POST')
 
-      // 3. Check for duplicate vote — per post
+      // 3. Check for duplicate vote — per post (FOR UPDATE prevents race between concurrent requests)
       const [existingVote] = await tx
         .select({ id: votes.id })
         .from(votes)
-        .where(and(eq(votes.voterId, userId), eq(votes.postId, postId)))
+        .where(and(eq(votes.voterId, userId), eq(votes.postId, postId), eq(votes.status, 'active')))
+        .for('update')
         .limit(1)
 
       if (existingVote) throw new Error('ALREADY_VOTED')
@@ -65,7 +68,7 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
       // 5. Record the vote with voteType
       const [vote] = await tx
         .insert(votes)
-        .values({ voterId: userId, postId, amount, voteType })
+        .values({ voterId: userId, postId, amount, voteType, status: 'active' })
         .returning()
 
       const AUTHOR_EARN_CAP = 200
@@ -189,5 +192,169 @@ voteRoutes.post('/', authenticate, zValidator('json', castVoteSchema), async (c)
     }
 
     return c.json({ error: message }, (statusMap[message] ?? 500) as 402 | 403 | 404 | 409 | 500)
+  }
+})
+
+// DELETE /api/votes/:postId — revoke an active vote (refund + rollback)
+voteRoutes.delete('/:postId', authenticate, async (c) => {
+  const userId = c.get('userId')
+  const postId = c.req.param('postId')
+
+  try {
+    z.string().uuid().parse(postId)
+  } catch {
+    return c.json({ error: 'INVALID_POST_ID' }, 400)
+  }
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const [vote] = await tx
+        .select({
+          id: votes.id,
+          amount: votes.amount,
+          voteType: votes.voteType,
+          createdAt: votes.createdAt,
+        })
+        .from(votes)
+        .where(and(eq(votes.voterId, userId), eq(votes.postId, postId), eq(votes.status, 'active')))
+        .limit(1)
+
+      if (!vote) throw new Error('VOTE_NOT_FOUND')
+
+      const createdAtMs = new Date(vote.createdAt).getTime()
+      if (Number.isFinite(createdAtMs) && Date.now() - createdAtMs > REVOKE_WINDOW_MS) {
+        throw new Error('VOTE_TOO_OLD')
+      }
+
+      const [post] = await tx
+        .select({ id: posts.id, authorId: posts.authorId })
+        .from(posts)
+        .where(eq(posts.id, postId))
+        .limit(1)
+
+      if (!post) throw new Error('POST_NOT_FOUND')
+
+      // Sum how much the author actually received for this vote (cap may have reduced it)
+      const [authorEarnedRow] = await tx
+        .select({ earned: sql<string>`COALESCE(SUM(${coinTransactions.amount}), 0)` })
+        .from(coinTransactions)
+        .where(and(eq(coinTransactions.relatedVoteId, vote.id), eq(coinTransactions.transactionType, 'vote_received')))
+
+      const authorAmount = Number(authorEarnedRow?.earned ?? 0)
+      const burnAmount = Math.max(0, vote.amount - authorAmount)
+
+      // Lock voter balance row
+      const [voterBalance] = await tx
+        .select()
+        .from(userBalances)
+        .where(eq(userBalances.userId, userId))
+        .for('update')
+
+      if (!voterBalance) throw new Error('BALANCE_NOT_FOUND')
+
+      // Lock author balance row only when we need to refund from author
+      if (authorAmount > 0) {
+        const [authorBalance] = await tx
+          .select()
+          .from(userBalances)
+          .where(eq(userBalances.userId, post.authorId))
+          .for('update')
+
+        if (!authorBalance || authorBalance.balance < authorAmount) {
+          throw new Error('AUTHOR_INSUFFICIENT_BALANCE')
+        }
+
+        await tx
+          .update(userBalances)
+          .set({
+            balance: sql`${userBalances.balance} - ${authorAmount}`,
+            totalEarned: sql`GREATEST(${userBalances.totalEarned} - ${authorAmount}, 0)`,
+            updatedAt: new Date(),
+          })
+          .where(eq(userBalances.userId, post.authorId))
+
+        await tx.insert(coinTransactions).values({
+          fromUserId: post.authorId,
+          toUserId: userId,
+          amount: authorAmount,
+          transactionType: 'vote_revoked_refund',
+          relatedPostId: postId,
+          relatedVoteId: vote.id,
+          note: 'Vote revoked refund',
+        })
+      }
+
+      // Refund voter: full amount
+      await tx
+        .update(userBalances)
+        .set({
+          balance: sql`${userBalances.balance} + ${vote.amount}`,
+          totalSpent: sql`GREATEST(${userBalances.totalSpent} - ${vote.amount}, 0)`,
+          updatedAt: new Date(),
+        })
+        .where(eq(userBalances.userId, userId))
+
+      if (burnAmount > 0) {
+        await tx.insert(coinTransactions).values({
+          fromUserId: null,
+          toUserId: userId,
+          amount: burnAmount,
+          transactionType: 'vote_revoked_unburn_mint',
+          relatedPostId: postId,
+          relatedVoteId: vote.id,
+          note: 'Unburn mint for revoked vote',
+        })
+      }
+
+      await tx
+        .update(votes)
+        .set({ status: 'revoked', revokedAt: new Date() })
+        .where(eq(votes.id, vote.id))
+
+      // Roll back post stats and temperature
+      if (vote.voteType === 'agree') {
+        await tx
+          .update(posts)
+          .set({
+            voterCount: sql`GREATEST(${posts.voterCount} - 1, 0)`,
+            totalVoteAmount: sql`GREATEST(${posts.totalVoteAmount} - ${vote.amount}, 0)`,
+            temperature: sql`((GREATEST(${posts.totalVoteAmount} - ${vote.amount}, 0) - ${posts.disagreeVoteAmount})::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.id, postId))
+      } else {
+        await tx
+          .update(posts)
+          .set({
+            voterCount: sql`GREATEST(${posts.voterCount} - 1, 0)`,
+            disagreeVoteAmount: sql`GREATEST(${posts.disagreeVoteAmount} - ${vote.amount}, 0)`,
+            temperature: sql`((${posts.totalVoteAmount} - GREATEST(${posts.disagreeVoteAmount} - ${vote.amount}, 0))::numeric / GREATEST(${posts.viewCount}::numeric, 1)) * 1000`,
+            updatedAt: new Date(),
+          })
+          .where(eq(posts.id, postId))
+      }
+
+      return { authorAmount, burnAmount }
+    })
+
+    checkAndUpdateBadge(userId).catch(() => {})
+    // Best-effort: if author was involved in refund, their badge may change too
+    if (result.authorAmount > 0) {
+      const [post] = await db.select({ authorId: posts.authorId }).from(posts).where(eq(posts.id, postId)).limit(1)
+      if (post?.authorId) checkAndUpdateBadge(post.authorId).catch(() => {})
+    }
+
+    return c.json({ success: true, refunded: true })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'UNKNOWN_ERROR'
+    const statusMap: Record<string, number> = {
+      INVALID_POST_ID: 400,
+      BALANCE_NOT_FOUND: 404,
+      POST_NOT_FOUND: 404,
+      VOTE_NOT_FOUND: 404,
+      VOTE_TOO_OLD: 409,
+      AUTHOR_INSUFFICIENT_BALANCE: 409,
+    }
+    return c.json({ error: message }, (statusMap[message] ?? 500) as 400 | 404 | 409 | 500)
   }
 })

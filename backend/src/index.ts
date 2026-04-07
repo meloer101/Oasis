@@ -4,11 +4,17 @@ import { serve } from '@hono/node-server'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
+import { sql } from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
+import { db } from './db/index.js'
+import { createLogger } from './lib/logger.js'
+import { httpLogger } from './middleware/http-logger.js'
+
+const appLogger = createLogger('app')
 import { authRoutes } from './routes/auth.js'
 import { postRoutes } from './routes/posts.js'
 import { voteRoutes } from './routes/votes.js'
+import { commentRoutes } from './routes/comments.js'
 import { userRoutes } from './routes/users.js'
 import { followRoutes } from './routes/follows.js'
 import { walletRoutes } from './routes/wallet.js'
@@ -79,7 +85,7 @@ function corsOriginOption():
 const app = new Hono()
 
 // Global middleware
-app.use('*', logger())
+app.use('*', httpLogger)
 app.use(
   '*',
   cors({
@@ -89,13 +95,43 @@ app.use(
 )
 
 // Health check
-app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }))
+app.get('/health', async (c) => {
+  const timestamp = new Date().toISOString()
+  const uptime = Math.floor(process.uptime())
+  let dbStatus: 'ok' | 'error' = 'ok'
+  let dbError: string | undefined
+
+  try {
+    await Promise.race([
+      db.execute(sql`SELECT 1`),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('DB health check timed out')), 3000)
+      ),
+    ])
+  } catch (err) {
+    dbStatus = 'error'
+    dbError = err instanceof Error ? err.message : String(err)
+    appLogger.error('Health check: DB unreachable', err)
+  }
+
+  const status = dbStatus === 'ok' ? 'ok' : 'degraded'
+  return c.json(
+    {
+      status,
+      timestamp,
+      uptime,
+      db: { status: dbStatus, ...(dbError ? { error: dbError } : {}) },
+    },
+    status === 'ok' ? 200 : 503,
+  )
+})
 
 // Routes
 app.route('/api/auth', authRoutes)
 app.route('/api/auth/oauth', oauthRoutes)
 app.route('/api/posts', postRoutes)
 app.route('/api/votes', voteRoutes)
+app.route('/api/comments', commentRoutes)
 app.route('/api/users', userRoutes)
 app.route('/api/users', followRoutes)
 app.route('/api/wallet', walletRoutes)
@@ -126,12 +162,12 @@ app.onError((err, c) => {
   if (err instanceof HTTPException) {
     return c.json({ error: err.message }, err.status)
   }
-  console.error('Unhandled error:', err)
+  appLogger.error('Unhandled error', err)
   return c.json({ error: 'Internal server error' }, 500)
 })
 
 const port = Number(process.env.PORT ?? 3001)
-console.log(`🚀 Oasis API running on http://localhost:${port}`)
+appLogger.info('Oasis API started', { port })
 
 serve({ fetch: app.fetch, port })
 

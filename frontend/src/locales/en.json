@@ -180,6 +180,8 @@
       "post_reward": "Post reward",
       "comment_reward": "Comment reward",
       "vote_received": "Post agreed",
+      "vote_revoked_refund": "Vote revoked refund",
+      "vote_revoked_unburn_mint": "Vote revoked return",
       "transaction_fee_burned": "Platform fee",
       "circle_join_fee": "Join circle",
       "system_mint": "System grant",
@@ -190,6 +192,10 @@
   "feedNew": {
     "title": "New post",
     "cancel": "Cancel",
+    "draftFound": "Found an unpublished draft.",
+    "draftRestore": "Restore",
+    "draftDiscard": "Discard",
+    "draftDiscardConfirm": "Discard this draft?",
     "markdown": "Body",
     "richText": "Rich text",
     "link": "Link",
@@ -200,12 +206,19 @@
     "tagsHint": "Press Enter or comma to add tags",
     "circle": "Post to circle",
     "circleNone": "No circle (public feed)",
+    "visibility": "Who can see this",
+    "visibilityPublic": "Everyone (global feed + circle)",
+    "visibilityCircleOnly": "Circle members only",
+    "postingInCircle": "Posting in circle",
+    "postGloballyInstead": "Post to global feed instead",
+    "invalidCircleLink": "This circle link is invalid or the circle no longer exists.",
     "rewardHint": "Earn +5 Agreecoins for posting",
     "publishing": "Publishing…",
     "publish": "Publish",
     "publishError": "Failed to publish. Please try again.",
     "titleRequired": "Title is required",
     "contentRequired": "Content is required",
+    "categoryLabel": "Category",
     "tipsTitle": "Writing a great post",
     "tip1": "Write a clear, descriptive title that summarizes your post in one sentence.",
     "tip2": "Use headings, images, and code blocks to make your post easy to read.",
@@ -232,10 +245,18 @@
     "disagreeLabel": "coins doubted",
     "capReached": "Author earnings capped — your agreement still counts toward temperature",
     "verifyAgreement": "Verify agreement",
-    "challengeInsight": "Challenge insight"
+    "challengeInsight": "Challenge insight",
+    "undo": "Undo",
+    "undoConfirm": "Undo this vote? Coins will be refunded and stats rolled back.",
+    "undoFailed": "Undo failed",
+    "undoTooOld": "Undo not available after 10 minutes",
+    "undoAuthorInsufficient": "Author balance too low to undo",
+    "undoNotFound": "No revocable vote found"
   },
   "post": {
     "share": "Share",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
     "readTime": "{min} min read",
     "notFound": "Post not found.",
     "goBack": "Go back",
@@ -249,6 +270,14 @@
     "commentPlaceholder": "Add a comment… (+2 coins)",
     "post": "Post",
     "reply": "Reply",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edited": "Edited",
+    "commentDeleted": "This comment was deleted.",
+    "commentDeleteConfirm": "Delete this comment?",
+    "commentEditFailed": "Failed to edit comment",
+    "commentDeleteFailed": "Failed to delete comment",
     "delete": "Delete",
     "deleteConfirm": "Delete this post? This cannot be undone.",
     "distribute": "Distribute",
@@ -257,7 +286,11 @@
     "vibeQuestioning": "Questioning",
     "vibeTrending": "Trending-hot",
     "stakeConsensus": "Stake consensus",
-    "stakeConsensusSubtitle": "Add Agreecoin to signal agreement or challenge this insight."
+    "stakeConsensusSubtitle": "Add Agreecoin to signal agreement or challenge this insight.",
+    "circleOnlyTitle": "Members only",
+    "circleOnlyDescription": "This post is visible only to members of its circle. Join the circle to read it.",
+    "viewCircle": "View circle",
+    "membersOnlyShort": "Members only"
   },
   "tag": {
     "notFound": "Tag “{name}” does not exist",
@@ -303,7 +336,16 @@
       "owner": "Owner",
       "joinPaid": "Join ({amount} coins)",
       "join": "Join circle",
-      "empty": "No posts in this circle yet"
+      "empty": "No posts in this circle yet",
+      "newPost": "New post in circle",
+      "writeFirstPost": "Write the first post",
+      "joinConfirmPrompt": "Joining costs {amount} coins. Confirm?",
+      "joinConfirm": "Confirm",
+      "joinCancel": "Cancel",
+      "joinFailed": "Failed to join. Please try again.",
+      "joinInsufficientFunds": "Insufficient Agreecoin balance.",
+      "joinSuccess": "Successfully joined!",
+      "leaveFailed": "Failed to leave. Please try again."
     }
   },
   "notifications": {
@@ -339,6 +381,13 @@
     "featuredInsight": "Featured insight",
     "ariaMainTabs": "Feed scope",
     "ariaSortTabs": "Discover sort order",
+    "ariaCategoryFilter": "Content category filter",
+    "category": {
+      "all": "All",
+      "idea": "Idea",
+      "tech": "Tech",
+      "else": "Other"
+    },
     "heroEyebrow": "Editorial",
     "heroTitle": "Signal from structured discussion",
     "heroSubtitle": "Read high-signal threads, follow credible voices, and participate with Agreecoin-weighted consensus.",
@@ -372,5 +421,11 @@
     "followingCount": "Following",
     "totalReceived": "coins received",
     "recentContributions": "Recent contributions"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again, or return to the home page.",
+    "retry": "Try again",
+    "goHome": "Go home"
   }
 }

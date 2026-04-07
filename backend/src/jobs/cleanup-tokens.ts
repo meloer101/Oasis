@@ -1,6 +1,9 @@
 import { lt } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { refreshTokens } from '../db/schema.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('cleanup-tokens')
 
 /**
  * Remove expired refresh token rows (DB hygiene).
@@ -35,17 +38,15 @@ export function scheduleCleanupRefreshTokens(): void {
     cleanupExpiredRefreshTokens()
       .then(({ deleted }) => {
         if (deleted > 0) {
-          console.log(`[cleanup-tokens] Removed ${deleted} expired refresh token(s)`)
+          log.info('Removed expired refresh tokens', { deleted })
         }
       })
-      .catch((err) => console.error('[cleanup-tokens] Error:', err))
+      .catch((err) => log.error('Cleanup error', err))
 
     setTimeout(runAndReschedule, msUntilNextRun())
   }
 
   const firstDelay = msUntilNextRun()
   setTimeout(runAndReschedule, firstDelay)
-  console.log(
-    `[cleanup-tokens] Next expired-token cleanup (00:30 UTC) in ${Math.round(firstDelay / 60000)} minutes`
-  )
+  log.info('Next cleanup scheduled', { inMinutes: Math.round(firstDelay / 60000) })
 }

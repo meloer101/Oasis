@@ -3,6 +3,9 @@ import { eq, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { users, userFollows, notifications } from '../db/schema.js'
 import { authenticate, type AuthVariables } from '../middleware/auth.js'
+import { createLogger } from '../lib/logger.js'
+
+const log = createLogger('follows')
 
 export const followRoutes = new Hono<{ Variables: AuthVariables }>()
 
@@ -35,7 +38,7 @@ followRoutes.post('/:username/follow', authenticate, async (c) => {
     actorId: currentUserId,
     content: '有人关注了你',
   }).catch((err) => {
-    console.error('[follows] Failed to insert new_follower notification:', err)
+    log.error('Failed to insert follow notification', err)
   })
 
   return c.json({ success: true })
