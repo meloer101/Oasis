@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useParams, usePathname } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { useLocale } from '@/hooks/use-locale'
-import { usePopularTags } from '@/hooks/use-popular-tags'
 import { useCircles } from '@/hooks/use-circle'
 import { usePost } from '@/hooks/use-post'
 import { useWallet } from '@/hooks/use-wallet'
@@ -107,6 +106,39 @@ function TopResonatorsCard() {
   )
 }
 
+function TrendingCirclesCard() {
+  const { t } = useLocale()
+  const { data: circles, isLoading } = useCircles()
+  const trending = (circles ?? []).slice(0, 5)
+
+  return (
+    <PanelCard>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
+        {t('sidebar.trendingCircles')}
+      </p>
+      <div className="space-y-1">
+        {isLoading && <p className="text-xs text-text-muted py-1">{t('feed.loading')}</p>}
+        {!isLoading &&
+          trending.map((circle) => (
+            <Link
+              key={circle.id}
+              href={`/circle/${circle.id}`}
+              className="flex items-center justify-between gap-2 px-1 py-2 rounded-lg text-sm text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-all duration-300 group"
+            >
+              <span className="truncate group-hover:translate-x-0.5 transition-transform">#{circle.name}</span>
+              <span className="text-[10px] text-text-muted shrink-0 tabular-nums font-medium opacity-60">
+                {circle.memberCount.toLocaleString()}
+              </span>
+            </Link>
+          ))}
+        {!isLoading && trending.length === 0 && (
+          <p className="text-xs text-text-muted py-1">{t('sidebar.noCirclesYet')}</p>
+        )}
+      </div>
+    </PanelCard>
+  )
+}
+
 function ResonanceCard() {
   const { t } = useLocale()
   const pct = 74
@@ -145,7 +177,6 @@ export default function RightPanel() {
   const pathname = usePathname()
   const params = useParams()
   const { user: me, balance } = useAuth()
-  const { data: popular } = usePopularTags(8)
   const { rightPanelOpen } = useLayoutShell()
   const isFeedHome = pathname === '/feed'
 
@@ -323,22 +354,7 @@ export default function RightPanel() {
       {isFeedHome ? (
         <TopResonatorsCard />
       ) : !postId ? (
-        <PanelCard>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-text-muted mb-2">
-            {t('rightPanel.trendingTags')}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {(popular ?? []).map((tag) => (
-              <Link
-                key={tag.id}
-                href={`/tag/${encodeURIComponent(tag.name)}`}
-                className="text-sm px-2.5 py-1 rounded-lg bg-nav-hover text-text-secondary border border-border-subtle/60 hover:text-text-primary hover:border-[color-mix(in_srgb,var(--text-primary)_22%,var(--card-border))] transition-colors"
-              >
-                #{tag.name}
-              </Link>
-            ))}
-          </div>
-        </PanelCard>
+        <TrendingCirclesCard />
       ) : null}
 
       <footer className="pt-3 text-[10px] text-text-muted uppercase tracking-[0.12em] text-center leading-relaxed flex flex-wrap justify-center gap-x-2 gap-y-1">

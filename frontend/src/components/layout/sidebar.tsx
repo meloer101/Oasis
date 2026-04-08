@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLocale } from '@/hooks/use-locale'
-import { useCircles } from '@/hooks/use-circle'
+import { usePopularTags } from '@/hooks/use-popular-tags'
 import { useLayoutShell } from '@/providers/layout-shell-provider'
 import { useAuth } from '@/providers/auth-provider'
 import { Avatar } from '@/components/ui/avatar'
@@ -48,8 +48,7 @@ function SidebarInner({
   const { t } = useLocale()
   const pathname = usePathname()
   const newPostHref = getNewPostHref(pathname)
-  const { data: circles, isLoading } = useCircles()
-  const trending = (circles ?? []).slice(0, 5)
+  const { data: popularTags, isLoading } = usePopularTags(8)
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full">
@@ -106,26 +105,26 @@ function SidebarInner({
 
       <div className="pt-8 mt-4 shrink-0 px-2">
         <p className="px-4 text-[10px] font-medium uppercase tracking-[0.3em] text-text-muted mb-4 opacity-60">
-          {t('sidebar.trendingCircles')}
+          {t('sidebar.trendingTags')}
         </p>
-        <div className="space-y-1 max-h-48 overflow-y-auto px-1">
+        <div className="max-h-48 overflow-y-auto px-1">
           {isLoading && <p className="px-4 text-xs text-text-muted py-1">{t('feed.loading')}</p>}
-          {!isLoading &&
-            trending.map((circle) => (
-              <Link
-                key={circle.id}
-                href={`/circle/${circle.id}`}
-                onClick={onNavigate}
-                className="flex items-center justify-between gap-2 px-4 py-2 rounded-full text-sm text-text-secondary hover:bg-nav-hover hover:text-text-primary transition-all duration-300 group"
-              >
-                <span className="truncate group-hover:translate-x-0.5 transition-transform">#{circle.name}</span>
-                <span className="text-[10px] text-text-muted shrink-0 tabular-nums font-medium opacity-60">
-                  {circle.memberCount.toLocaleString()}
-                </span>
-              </Link>
-            ))}
-          {!isLoading && trending.length === 0 && (
-            <p className="px-4 text-xs text-text-muted py-1">{t('sidebar.noCirclesYet')}</p>
+          {!isLoading && (
+            <div className="flex flex-wrap gap-2 px-3">
+              {(popularTags ?? []).map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/tag/${encodeURIComponent(tag.name)}`}
+                  onClick={onNavigate}
+                  className="text-sm px-2.5 py-1 rounded-lg bg-nav-hover text-text-secondary border border-border-subtle/60 hover:text-text-primary hover:border-[color-mix(in_srgb,var(--text-primary)_22%,var(--card-border))] transition-colors"
+                >
+                  #{tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          {!isLoading && (popularTags ?? []).length === 0 && (
+            <p className="px-4 text-xs text-text-muted py-1">{t('rightPanel.noTagsYet')}</p>
           )}
         </div>
       </div>

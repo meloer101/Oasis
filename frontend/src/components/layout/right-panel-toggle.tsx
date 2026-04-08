@@ -34,10 +34,8 @@ export default function RightPanelToggle() {
       aria-expanded={rightPanelOpen}
       aria-label={t('rightPanel.toggleAria')}
       title={rightPanelOpen ? (t('rightPanel.toggleHide') as string) : (t('rightPanel.toggleShow') as string)}
-      className={`hidden xl:inline-flex absolute z-40 items-center gap-2 border border-[var(--border-subtle)] bg-[var(--card-bg)] text-text-primary shadow-[0_4px_24px_rgb(0_0_0/0.08)] backdrop-blur-xl transition-[right,box-shadow] duration-300 ease-[var(--ease-out-expo)] hover:shadow-[0_6px_28px_rgb(0_0_0/0.12)] hover:border-[color-mix(in_srgb,var(--text-primary)_12%,var(--border-subtle))] active:scale-[0.98] motion-reduce:transition-none ${
-        rightPanelOpen
-          ? 'top-3 rounded-l-xl rounded-r-none border-r-0 py-2.5 pl-3 pr-2'
-          : 'top-3 rounded-l-xl py-2.5 pl-3 pr-3 ring-1 ring-[color-mix(in_srgb,var(--text-primary)_6%,transparent)]'
+      className={`hidden xl:inline-flex fixed z-[35] top-[calc(var(--header-height)+0.5rem)] items-center gap-2 border border-[var(--border-subtle)] bg-[var(--card-bg)] text-text-primary shadow-[0_4px_24px_rgb(0_0_0/0.08)] backdrop-blur-xl transition-[right,box-shadow] duration-300 ease-[var(--ease-out-expo)] hover:shadow-[0_6px_28px_rgb(0_0_0/0.12)] hover:border-[color-mix(in_srgb,var(--text-primary)_12%,var(--border-subtle))] active:scale-[0.98] motion-reduce:transition-none rounded-l-xl py-2.5 pl-3 ${
+        rightPanelOpen ? 'rounded-r-none border-r-0 pr-2' : 'pr-3 ring-1 ring-[color-mix(in_srgb,var(--text-primary)_6%,transparent)]'
       }`}
       style={{ right: rightPanelOpen ? PANEL_W : 0 }}
     >
